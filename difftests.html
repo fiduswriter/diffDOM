@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>DOM diff test</title>
+    <script src="moreJS.js"></script>
+    <script src="moreDOM.js"></script>
+    <style>
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+      h1 {
+        text-align: center;
+      }
+      section {
+        width: 100%;
+        text-align: justify;
+      }
+      textarea {
+        display: inline-block;
+        width: 32%;
+        margin: 0 5px;
+        padding: 0;
+        border: 1px solid black;
+        overflow-x: scroll;
+      }
+    </style>
+    <script>
+      var testCount = 1;
+      
+      function addToPage(d1,d2,diffs) {
+        var a = make("div"),
+            t1 = make("textarea"), h1,
+            t2 = make("textarea"), h2,
+            t3 = make("textarea"), h3;
+        t1.value = d1.innerHTML;
+        t2.value = d2.innerHTML;
+        t3.value = "" + diffs.join("\n");
+
+        h1 = t1.value.split("\n").length;
+        h2 = t2.value.split("\n").length;
+        h3 = t3.value.split("\n").length;
+        var h = Math.max(Math.max(h1,h2),h3) + 1, spacing = 15, th = spacing * h;
+
+        t1.setAttribute("style","line-height: 12px; height: "+(th)+"px;");
+        t2.setAttribute("style","line-height: 12px; height: "+(th)+"px;");
+        t3.setAttribute("style","line-height: 12px; height: "+(th)+"px;");
+
+        a.appendChild(t1);
+        a.appendChild(t2);
+        a.appendChild(t3);
+
+        var h = make("h2","Test "+(testCount++)),
+            div = document.querySelector("#results");
+        div.appendChild(h);
+        div.appendChild(a);
+      }
+      
+      function test(s1, s2) {
+        var d1 = make("div",s1),
+            d2 = make("div",s2),
+            diffs = getDiff(d1,d2);
+        addToPage(d1,d2,diffs);
+        var _ = d1;
+        d1 = d2;
+        d2 = _;
+        diffs = getDiff(d1,d2);
+        addToPage(d1,d2,diffs);
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>DOM diff</h1>
+    
+    <div id="results"></div>
+
+    <script>
+      // ACTUAL TESTS
+      test("<p>This is a test</p>", "<p>This <i>is</i> a test</p>");
+      test("<p>This is a long test</p>", "<p>This <i>is <b>a</b> long</i> test</p>");
+    </script>
+
+  </body>
+</html>

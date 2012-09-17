@@ -10,6 +10,14 @@
     }
   };
 
+  /**
+   * create element shortcut
+   */
+  window.make = function(tagName, content) {
+    var e = document.createElement(tagName);
+    if(content) e.innerHTML = content;
+    return e;
+  }
 
   /**
    * Take a snapshot of a NodeSet, and return
@@ -172,27 +180,40 @@ log("insertion", d1, d2);
           // find the elements in d1 that are not in d2
           for(var pos=0; pos<l1; pos++) {
             if(s2.contains(s1[pos]) === -1) {
-log("element "+pos+" from fragment 1 is missing in fragment 2");
-              // but, where should it be inserted?
-              var elementPos = pos+1, insertPos = -1, e1;
-              while(insertPos === -1 && elementPos<s1.length) {
-                e1 = s1[elementPos++];
-                // skip over token text nodes
-                if(e1.nodeType === 3 && e1.textContent.trim()==="") {
-                  continue;
-                }
-                // if not a token text node, do a containment check
-                insertPos = s2.contains(e1);
+log("element "+pos+" from fragment 1 is missing (or an update on a fragment) in fragment 2");
+
+              // special case: <tag>[text]</tag> -> <tag>[text]<element>...</element>[text]</tag>
+              if(s2[pos] && s2[pos].nodeType===3 && s1[pos].nodeType===3 && s1[pos+2].nodeType===3)
+              {
+                console.log("text -> text <element> text");
+                console.log("not processed yet (it will now simply see two inserts, and miss out on an update)");
               }
+
+              // not a special case
+              else {
+                // but, where should it be inserted?
+                var elementPos = pos+1, insertPos = -1, e1;
+                while(insertPos === -1 && elementPos<s1.length) {
+                  e1 = s1[elementPos++];
+                  // skip over token text nodes
+                  if(e1.nodeType === 3 && e1.textContent.trim()==="") {
+                    continue;
+                  }
+                  // if not a token text node, do a containment check
+                  insertPos = s2.contains(e1);
+                }
 
 log("next extant s1 element: "+(elementPos-1)+", which has position s2["+insertPos+"]");
 
-              // If insertPos is still -1, we should append.
-              // Otherwise, we should insert at insertPos.
-              var diffRoute = arrayCopy(route);
-              diffRoute.splice(len,3,pos,-1,"insertion", insertPos);
-              var idx = routes.indexOf(route);
-              if(idx>-1) { routes[idx] = diffRoute } else { routes.push(diffRoute); }
+                // If insertPos is still -1, we should append.
+                // Otherwise, we should insert at insertPos.
+                var diffRoute = arrayCopy(route);
+                diffRoute.splice(len,4,pos,-1,"insertion", insertPos);
+                var idx = routes.indexOf(route);
+                if(idx>-1) { routes[idx] = diffRoute } else { routes.push(diffRoute); }
+              }
+
+
             }
           }
         }
@@ -218,6 +239,8 @@ log("element "+pos+" from fragment 2 is missing in fragment 1");
     // the last attempt will find no differences, but
     // will do so because it's "deemed safe".
     if(routes.length>1) { routes.splice(routes.indexOf(0), 1); }
+
+    console.log(routes);
 
     return routes;
   }
