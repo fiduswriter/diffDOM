@@ -1,0 +1,18 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+h1 {
+  text-align: center;
+}
+section {
+  width:100%;
+}
+textarea, iframe {
+  display: inline-block;
+  width: 49%;
+  height: 400px;
+  border: 1px solid black;
+}
+textarea { float: left; }
+iframe { float: right; }

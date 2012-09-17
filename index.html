@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>DOM diff test</title>
+    <script src="moreJS.js"></script>
+    <script src="moreDOM.js"></script>
+    <style>
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+      h1 {
+        text-align: center;
+      }
+      section {
+        width: 100%;
+        text-align: justify;
+      }
+      textarea {
+        display: inline-block;
+        width: 32%;
+        margin: 0;
+        padding: 0;
+        height: 400px;
+        border: 1px solid black;
+        overflow-x: scroll;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>DOM diff</h1>
+
+    <section>
+
+      <!-- section one -->
+      <textarea id="one">
+        <p>test paragraph 1</p>
+        <input type="text" value="tp1"><br>
+
+        <script type="text/javascript"
+                src="http://localhost/processing.js/github/processing.js"></script>
+
+        <div>
+          <p>test paragraph 2</p>
+          <input type="text" value="tp2">
+          <section>
+            <p>test paragraph 3</p>
+            <p>test paragraph 4</p>
+            <input type="text" value="tp4">
+          </section>
+        </div>
+      </textarea>
+
+      <!-- section two -->
+      <textarea id="two">
+        <p>test paragraph 1</p>
+        <input type="text" value="tp1"><br>
+
+        <script type="text/javascript"
+                src="http://localhost/processing.js/github/processing.js"></script>
+
+        <div>
+          <p>test paragraph 2</p>
+          <input type="text" value="tp2">
+          <section>
+            <p>test paragraph 3</p>
+            <p>test paragraph 4</p>
+            <input type="text" value="tp4">
+          </section>
+        </div>
+      </textarea>
+
+      <!-- diff -->
+      <textarea id="three" readonly nowrap></textarea>
+    </section>
+
+    <script src="diff.js"></script>
+  </body>
+</html>
