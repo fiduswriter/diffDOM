@@ -82,8 +82,6 @@ var parse = function() {
         last=complexDiff.positions.length;
         if(last>0) {
           textAreaContent += "  repositioning: \n";
-          console.log(e1);
-          console.log(e2);
           var s1, s2;
           for(pos=0; pos<last; pos++) {
             entry = complexDiff.positions[pos];
