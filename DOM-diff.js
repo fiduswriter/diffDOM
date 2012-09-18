@@ -52,7 +52,7 @@ function hashAll(element, undef) {
 
 
 // HTML attributes that count towards outer equality
-var HTMLattributes = ["id", "class", "style", "type", "src", "href"];
+var HTMLattributes = ["id", "class", "style", "type", "src", "href", "value", "rel", "width", "height"];
 
 
 /**
