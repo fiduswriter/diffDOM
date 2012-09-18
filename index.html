@@ -5,6 +5,7 @@
     <title>DOM diff test</title>
     <script src="moreJS.js"></script>
     <script src="moreDOM.js"></script>
+    <script src="slowparse.js"></script>
     <style>
       html, body {
         height: 100%;
@@ -73,9 +74,10 @@
       </textarea>
 
       <!-- diff -->
-      <textarea id="three" readonly nowrap></textarea>
+      <textarea id="three" readonly nowrap wrap="off"></textarea>
     </section>
 
+    <script src="DOM-diff.js"></script>
     <script src="diff.js"></script>
   </body>
 </html>

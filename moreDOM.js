@@ -57,6 +57,9 @@
    *         0 if equal,
    *        or a <number>[] representing the
    *        route in this element to a diff.
+   *
+   * FIXME: as long as the tagname stays the same, outerchange (class, etc) should be a modification, not top diff.
+   *
    */
   window.equal = function equal(e1, e2, after) {
 
@@ -65,20 +68,17 @@
     // fine, so that we can find further problems.
     var soffset = (after && after.length!==0 ? after.splice(0,1)[0] : 0);
     if(soffset === -1) {
-log("route found. pretending it's fine.");
       return 0;
     }
 
     // different element (1)?
     if(e1.nodeType !== e2.nodeType) {
-log("type difference",e1.nodeName,e2.nodeName);
       return -1;
     }
 
     // shortcut handling for text?
     if(e1.nodeType===3 && e2.nodeType===3) {
       if(e1.textContent.trim() != e2.textContent.trim()) {
-log("text content difference",e1.textContent,e2.textContent);
         return -1;
       }
       return 0;
@@ -86,24 +86,24 @@ log("text content difference",e1.textContent,e2.textContent);
 
     // different element (2)?
     if(e1.nodeName !== e2.nodeName) {
-log("tag difference",e1.nodeName,e2.nodeName);
       return -1;
     }
 
     // different content?
     if(e1.childNodes.length !== e2.childNodes.length) {
-log("child list difference",e1.childNodes.length,e2.childNodes.length);
       return -1;
     }
 
-    // different child node list?
+    // Different child node list?
+    // Find where the first difference is
     var i, last = e1.childNodes.length, eq, ret;
-
-    // iterate and check
     for(i=soffset; i<last; i++) {
+      // recurse to see if these children differ
       eq = equal(e1.childNodes[i], e2.childNodes[i], after);
-      if(eq !== 0) {
-log("child difference", i, e1.childNodes[i], e2.childNodes[i]);
+      if(eq !== 0)
+      {
+        // (first) difference found. "eq" will indicate
+        // which childNodes position the diff is found at.
         return [i].concat(eq);
       }
     }
@@ -117,7 +117,7 @@ log("child difference", i, e1.childNodes[i], e2.childNodes[i]);
                  "href",
                  "src",
                  "rel",
-                 "__more__attributes__here"],
+                 "__more__attributes__here__"],
         a, last = attrs.length,
         attr, a1, a2;
 
@@ -155,93 +155,10 @@ log("child difference", i, e1.childNodes[i], e2.childNodes[i]);
       route = newRoute;
     }
 
-    // Some of these routes may be incomplete,
-    // as they will be for insertion/removal.
-    var r, last=routes.length-1, i, len,
-        d1, d2, // dom elements
-        s1, s2, // element.childNodes snapshots
-        l1, l2; // element.childNodes.length
-    for(r=0; r<last; r++) {
-      route = routes[r];
-      d1 = e1;
-      d2 = e2;
-      len = route.length-1;
-      for(i=0; i<len; i++) {
-        d1 = d1.childNodes[route[i]];
-        d2 = d2.childNodes[route[i]]; }
-      s1 = snapshot(d1.childNodes);
-      s2 = snapshot(d2.childNodes);
-      l1 = s1.length;
-      l2 = s2.length;
-      if(l1!==0 || l2!==0) {
-        // do "real" diff checking here
-        if(l1>l2) {
-log("insertion", d1, d2);
-          // find the elements in d1 that are not in d2
-          for(var pos=0; pos<l1; pos++) {
-            if(s2.contains(s1[pos]) === -1) {
-log("element "+pos+" from fragment 1 is missing (or an update on a fragment) in fragment 2");
-
-              // special case: <tag>[text]</tag> -> <tag>[text]<element>...</element>[text]</tag>
-              if(s2[pos] && s2[pos].nodeType===3 && s1[pos].nodeType===3 && s1[pos+2].nodeType===3)
-              {
-                console.log("text -> text <element> text");
-                console.log("not processed yet (it will now simply see two inserts, and miss out on an update)");
-              }
-
-              // not a special case
-              else {
-                // but, where should it be inserted?
-                var elementPos = pos+1, insertPos = -1, e1;
-                while(insertPos === -1 && elementPos<s1.length) {
-                  e1 = s1[elementPos++];
-                  // skip over token text nodes
-                  if(e1.nodeType === 3 && e1.textContent.trim()==="") {
-                    continue;
-                  }
-                  // if not a token text node, do a containment check
-                  insertPos = s2.contains(e1);
-                }
-
-log("next extant s1 element: "+(elementPos-1)+", which has position s2["+insertPos+"]");
-
-                // If insertPos is still -1, we should append.
-                // Otherwise, we should insert at insertPos.
-                var diffRoute = arrayCopy(route);
-                diffRoute.splice(len,4,pos,-1,"insertion", insertPos);
-                var idx = routes.indexOf(route);
-                if(idx>-1) { routes[idx] = diffRoute } else { routes.push(diffRoute); }
-              }
-
-
-            }
-          }
-        }
-
-        else {
-log("removal", d1, d2);
-          // find the elements in d2 that are not in d1
-          for(var pos=0; pos<l2; pos++) {
-            if(s1.contains(s2[pos]) === -1) {
-log("element "+pos+" from fragment 2 is missing in fragment 1");
-              // FIXME: pushing for testing purposes only!
-              var diffRoute = arrayCopy(route);
-              diffRoute.splice(len,3,pos,-1,"removal");
-              var idx = routes.indexOf(route);
-              if(idx>-1) { routes[idx] = diffRoute } else { routes.push(diffRoute); }
-            }
-          }
-        }
-      }
-    }
-
     // Remove "0" from routes if length > 1, since
     // the last attempt will find no differences, but
     // will do so because it's "deemed safe".
     if(routes.length>1) { routes.splice(routes.indexOf(0), 1); }
-
-    console.log(routes);
-
     return routes;
   }
 
