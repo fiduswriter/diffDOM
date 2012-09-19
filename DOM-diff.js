@@ -165,14 +165,3 @@ function childDiff(c1, c2) {
   //console.log(localdiff);
   return localdiff;
 }
-
-
-/*
-function getDiff(e1, e2) {
-  hashAll(e1);
-  hashAll(e2);
-
-  boolean outerDiff = outerEquality(e1,e2);
-  LIST childDiff = innerEquality(e1,e2);  
-}
-*/

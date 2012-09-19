@@ -112,156 +112,165 @@ var parse = function(frame, doUpdate) {
   var routes = getDiff(d1,d2), route, iroute,
       d, lastRoute = routes.length, v,
       textAreaContent="";
+
   for(d = 0; d < lastRoute; d++) {
 
-    // shortcuts
-    if (routes[d] === 0) { textAreaContent += "no difference\n\n"; }
-    else if (routes[d] === -1) { textAreaContent += "top level difference\n\n"; }
+    // shortcut
+    if (routes[d] === 0) {
+      textAreaContent += "no difference\n\n";
+      continue;
+    }
 
-    // real work
+    // rewrite so we do can resolve the top-level diff
+    if (routes[d] === -1) {
+      textAreaContent += "top level difference\n\n";
+      routes[d] = [-1];
+    }
+
+    // follow the route to the elements
+    route = arrayCopy(routes[d]),
+    iroute = arrayCopy(routes[d]);
+    var diffRoute = "difference route: " + route,
+        e1 = d1, e2 = d2,
+        e = route.splice(0,1)[0];
+
+
+    while (e !== -1) {
+      e1 = e1.childNodes[e];
+      e2 = e2.childNodes[e];
+      e = route.splice(0,1)[0]; }
+
+    // text node update? simples!
+    if(e1.nodeType===3 && e2.nodeType===3) {
+      textAreaContent += diffRoute + "\n" +
+                         "e1: " + (e1? serialise(e1) : "<missing>") + "\n" +
+                         "e2: " + (e2? serialise(e2) : "<missing>") + "\n" +
+                         "\n";
+
+      // IFRAME UPDATING
+      if(doUpdate) {
+        var element = frame.find(iroute),
+            parent = element.parentNode;
+        parent.replaceChild(e1,element);
+      }
+      // IFRAME UPDATING
+    }
+
+    // childnode diff... Not so simple.
     else {
-      // follow the route to the elements
-      route = arrayCopy(routes[d]),
-      iroute = arrayCopy(routes[d]);
-      var diffRoute = "difference route: " + route,
-          e1 = d1, e2 = d2, e;
-      while(route.length>0 && route[0]!==-1) {
-        e = route.splice(0,1);
-        e1 = e1.childNodes[e];
-        e2 = e2.childNodes[e]; }
+      var complexDiff = innerEquality(e1,e2), outerDiff; // from DOM-diff.js
+      textAreaContent += "complex " + diffRoute + "\n";
 
-      // text node update? simples!
-      if(e1.nodeType===3 && e2.nodeType===3) {
-        textAreaContent += diffRoute + "\n" +
-                           "e1: " + (e1? serialise(e1) : "<missing>") + "\n" +
-                           "e2: " + (e2? serialise(e2) : "<missing>") + "\n" +
-                           "\n";
+      var pos, last, entry, outerDiff;
 
-        // IFRAME UPDATING
-        if(doUpdate) {
-          var element = frame.find(iroute),
-              parent = element.parentNode;
-          parent.replaceChild(e1,element);
+      // check for attribute differences
+      outerDiff = outerEquality(e1,e2); // from DOM-diff.js
+      if(outerDiff.length>0) {
+        textAreaContent += "  outerHTML changes: \n";
+        last = outerDiff.length;
+        for(pos=0; pos<last; pos++) {
+          entry = outerDiff[pos];
+          textAreaContent += "    attribute: '"+entry[0]+"', left: '"+entry[1]+"', right: '"+entry[2]+"'\n";
+
+          // IFRAME UPDATING
+          if(doUpdate) {
+            var element = frame.find(iroute);
+            element.setAttribute(entry[0], entry[1]);
+          }
+          // IFRAME UPDATING
         }
-        // IFRAME UPDATING
       }
 
-      // childnode diff... Not so simple.
-      else {
-        var complexDiff = innerEquality(e1,e2), outerDiff; // from DOM-diff.js
-        textAreaContent += "complex " + diffRoute + "\n";
-
-        var pos, last, entry, outerDiff;
-
-        // check for attribute differences
-        outerDiff = outerEquality(e1,e2); // from DOM-diff.js
-        if(outerDiff.length>0) {
-          textAreaContent += "  outerHTML changes: \n";
-          last = outerDiff.length;
-          for(pos=0; pos<last; pos++) {
-            entry = outerDiff[pos];
-            textAreaContent += "    attribute: '"+entry[0]+"', left: '"+entry[1]+"', right: '"+entry[2]+"'\n";
-
-            // IFRAME UPDATING
-            if(doUpdate) {
-              var element = frame.find(iroute);
-              element.setAttribute(entry[0], entry[1]);
-            }
-            // IFRAME UPDATING
-          }
-        }
-
-        // Shortcut on "no complex diffs found". This
-        // basically implies we did find an outer diff.
-        if(!complexDiff) {
-          textAreaContent += "\n";
-          continue;
-        }
-
-        // check for node removals
-        last = complexDiff.removals.length;
-        if(last>0) {
-          textAreaContent += "  removals: \n";
-          //for(pos=last-1; pos>=0; pos--) {
-          for(pos=0; pos<last; pos++) {
-            entry = complexDiff.removals[pos];
-            textAreaContent += "    right["+entry[0]+"] ("+serialise(entry[1])+")\n";
-
-            // IFRAME UPDATING
-            if(doUpdate) {
-              /**
-                A problem is that by applying complex diffs,
-                we are changing subsequent routes. For now,
-                as a hack, we're going to apply one diff,
-                and then immediately return "-1", so that
-                a new diff is computed between the desired
-                result, and the intermediate update
-
-                FIXME: The real solution to this is to track
-                nodeset changes while applying the diff. This
-                should happen in the Frame object, in the
-                update(diff) function.
-              **/
-              var element = frame.find(iroute).childNodes[entry[0]];
-              element.parentNode.removeChild(element);
-              t2.value = frame.body.innerHTML;
-              return -1;
-            }
-            // IFRAME UPDATING
-          }
-        }
-
-        // check for node insertions
-        last = complexDiff.insertions.length;
-        if(last>0) {
-          textAreaContent += "  insertions: \n";
-          for(pos=0; pos<last; pos++) {
-            entry = complexDiff.insertions[pos];
-            textAreaContent += "    left["+entry[0]+"] ("+serialise(entry[1])+")\n";
-
-            // IFRAME UPDATING
-            if(doUpdate) {
-              /**
-                A problem is that by applying complex diffs,
-                we are changing subsequent routes. For now,
-                as a hack, we're going to apply one diff,
-                and then immediately return "-1", so that
-                a new diff is computed between the desired
-                result, and the intermediate update
-
-                FIXME: The real solution to this is to track
-                nodeset changes while applying the diff. This
-                should happen in the Frame object, in the
-                update(diff) function.
-              **/
-              var element = frame.find(iroute);
-              element.insertBefore(entry[1], element.childNodes[entry[0]]);
-              t2.value = frame.body.innerHTML;
-              return -1;
-            }
-            // IFRAME UPDATING
-          }
-        }
-
-        // check for node rearrangements
-        last=complexDiff.positions.length;
-        if(last>0) {
-          textAreaContent += "  repositioning: \n";
-          var s1, s2;
-          for(pos=0; pos<last; pos++) {
-            entry = complexDiff.positions[pos];
-            textAreaContent += "    right["+entry[1]+"]->left["+entry[0]+"] ("+serialise(e1.childNodes[entry[0]])+")\n";
-
-            // IFRAME UPDATING
-            if(doUpdate) {
-              // ... code comes later ...
-            }
-            // IFRAME UPDATING
-          }
-        }
-
+      // Shortcut on "no complex diffs found". This
+      // basically implies we did find an outer diff.
+      if(!complexDiff) {
         textAreaContent += "\n";
+        continue;
       }
+
+      // check for node removals
+      last = complexDiff.removals.length;
+      if(last>0) {
+        textAreaContent += "  removals: \n";
+        //for(pos=last-1; pos>=0; pos--) {
+        for(pos=0; pos<last; pos++) {
+          entry = complexDiff.removals[pos];
+          textAreaContent += "    right["+entry[0]+"] ("+serialise(entry[1])+")\n";
+
+          // IFRAME UPDATING
+          if(doUpdate) {
+            /**
+              A problem is that by applying complex diffs,
+              we are changing subsequent routes. For now,
+              as a hack, we're going to apply one diff,
+              and then immediately return "-1", so that
+              a new diff is computed between the desired
+              result, and the intermediate update
+
+              FIXME: The real solution to this is to track
+              nodeset changes while applying the diff. This
+              should happen in the Frame object, in the
+              update(diff) function.
+            **/
+            var element = frame.find(iroute).childNodes[entry[0]];
+            element.parentNode.removeChild(element);
+            t2.value = frame.body.innerHTML;
+            return -1;
+          }
+          // IFRAME UPDATING
+        }
+      }
+
+      // check for node insertions
+      last = complexDiff.insertions.length;
+      if(last>0) {
+        textAreaContent += "  insertions: \n";
+        for(pos=0; pos<last; pos++) {
+          entry = complexDiff.insertions[pos];
+          textAreaContent += "    left["+entry[0]+"] ("+serialise(entry[1])+")\n";
+
+          // IFRAME UPDATING
+          if(doUpdate) {
+            /**
+              A problem is that by applying complex diffs,
+              we are changing subsequent routes. For now,
+              as a hack, we're going to apply one diff,
+              and then immediately return "-1", so that
+              a new diff is computed between the desired
+              result, and the intermediate update
+
+              FIXME: The real solution to this is to track
+              nodeset changes while applying the diff. This
+              should happen in the Frame object, in the
+              update(diff) function.
+            **/
+            var element = frame.find(iroute);
+            element.insertBefore(entry[1], element.childNodes[entry[0]]);
+            t2.value = frame.body.innerHTML;
+            return -1;
+          }
+          // IFRAME UPDATING
+        }
+      }
+
+      // check for node rearrangements
+      last=complexDiff.positions.length;
+      if(last>0) {
+        textAreaContent += "  repositioning: \n";
+        var s1, s2;
+        for(pos=0; pos<last; pos++) {
+          entry = complexDiff.positions[pos];
+          textAreaContent += "    right["+entry[1]+"]->left["+entry[0]+"] ("+serialise(e1.childNodes[entry[0]])+")\n";
+
+          // IFRAME UPDATING
+          if(doUpdate) {
+            // ... code comes later ...
+          }
+          // IFRAME UPDATING
+        }
+      }
+
+      textAreaContent += "\n";
     }
   }
 
