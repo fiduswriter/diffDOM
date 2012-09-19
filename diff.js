@@ -182,8 +182,8 @@ var parse = function(frame, doUpdate) {
         last = complexDiff.removals.length;
         if(last>0) {
           textAreaContent += "  removals: \n";
-          for(pos=last-1; pos>=0; pos--) {
-          //for(pos=0; pos<last; pos++) {
+          //for(pos=last-1; pos>=0; pos--) {
+          for(pos=0; pos<last; pos++) {
             entry = complexDiff.removals[pos];
             textAreaContent += "    right["+entry[0]+"] ("+serialise(entry[1])+")\n";
 
@@ -287,9 +287,15 @@ frame.set(make("div",t2.value));
 // bind event handling and parse
 t1.onkeyup = function() {
   log("(1) parsing...");
-  while (
-    parse(frame, true) 
-   === -1) {}
+  var safetyLimit = 100;
+  while (--safetyLimit>0 && parse(frame, true) === -1) {}
+  if(safetyLimit===0) {
+    if(console && console.log) {
+      console.log("safety limit reached...");
+    } else {
+      alert("console.log doesn't exist; parsing safety limit reached. Save this diff as a test case!");
+    }
+  }
 };
 
 parse();
