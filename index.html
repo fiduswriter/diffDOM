@@ -18,9 +18,9 @@
         width: 100%;
         text-align: justify;
       }
-      textarea {
+      textarea, iframe {
         display: inline-block;
-        width: 32%;
+        width: 24%;
         margin: 0;
         padding: 0;
         height: 400px;
@@ -37,6 +37,8 @@
 
       <!-- section one -->
       <textarea id="one">
+        <iframe width="100%" src="http://www.youtube.com/embed/8uDuls5TyNE" frameborder="0" allowfullscreen></iframe>
+
         <p>test paragraph 1</p>
         <input type="text" value="tp1"><br>
 
@@ -54,27 +56,20 @@
         </div>
       </textarea>
 
-      <!-- section two -->
-      <textarea id="two">
-        <p>test paragraph 1</p>
-        <input type="text" value="tp1"><br>
-
-        <script type="text/javascript"
-                src="http://localhost/processing.js/github/processing.js"></script>
-
-        <div>
-          <p>test paragraph 2</p>
-          <input type="text" value="tp2">
-          <section>
-            <p>test paragraph 3</p>
-            <p>test paragraph 4</p>
-            <input type="text" value="tp4">
-          </section>
-        </div>
-      </textarea>
+      <!-- section two, for reference only, mirrors the iframe source -->
+      <textarea id="two" readonly></textarea>
 
       <!-- diff -->
       <textarea id="three" readonly nowrap wrap="off"></textarea>
+      
+      <!-- content frame -->
+      <iframe>
+        <head>
+          <meta charset="utf-8">
+          <title>preview frame</title>
+        </head>
+        <body></body>
+      </iframe>
     </section>
 
     <script src="DOM-diff.js"></script>
