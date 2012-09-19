@@ -23,7 +23,7 @@ Frame.prototype = {
     var e = this.body,
         route = snapshot(treeRoute),
         pos = route.splice(0,1)[0];
-    while(pos!==-1) { 
+    while(pos!==-1) {
       e = e.childNodes[pos];
       pos = route.splice(0,1)[0];
     }
@@ -59,9 +59,10 @@ Frame.prototype = {
   },
 
   // Update the DOM, based on a snapshot
-  // of a DOM NodeSet.
+  // of a DOM NodeSet, and a diff that
+  // indicates what should happen.
   update: function(elements, diff) {
-
+    // ... code comes later ...
   },
 
   // update the head's script set. This
@@ -177,14 +178,36 @@ var parse = function(frame, doUpdate) {
           continue;
         }
 
-        // check for node rearrangements
-        last=complexDiff.positions.length;
+        // check for node removals
+        last = complexDiff.removals.length;
         if(last>0) {
-          textAreaContent += "  repositioning: \n";
-          var s1, s2;
-          for(pos=0; pos<last; pos++) {
-            entry = complexDiff.positions[pos];
-            textAreaContent += "    right["+entry[1]+"]->left["+entry[0]+"] ("+serialise(e1.childNodes[entry[0]])+")\n";
+          textAreaContent += "  removals: \n";
+          for(pos=last-1; pos>=0; pos--) {
+          //for(pos=0; pos<last; pos++) {
+            entry = complexDiff.removals[pos];
+            textAreaContent += "    right["+entry[0]+"] ("+serialise(entry[1])+")\n";
+
+            // IFRAME UPDATING
+            if(doUpdate) {
+              /**
+                A problem is that by applying complex diffs,
+                we are changing subsequent routes. For now,
+                as a hack, we're going to apply one diff,
+                and then immediately return "-1", so that
+                a new diff is computed between the desired
+                result, and the intermediate update
+
+                FIXME: The real solution to this is to track
+                nodeset changes while applying the diff. This
+                should happen in the Frame object, in the
+                update(diff) function.
+              **/
+              var element = frame.find(iroute).childNodes[entry[0]];
+              element.parentNode.removeChild(element);
+              t2.value = frame.body.innerHTML;
+              return -1;
+            }
+            // IFRAME UPDATING
           }
         }
 
@@ -195,18 +218,48 @@ var parse = function(frame, doUpdate) {
           for(pos=0; pos<last; pos++) {
             entry = complexDiff.insertions[pos];
             textAreaContent += "    left["+entry[0]+"] ("+serialise(entry[1])+")\n";
+
+            // IFRAME UPDATING
+            if(doUpdate) {
+              /**
+                A problem is that by applying complex diffs,
+                we are changing subsequent routes. For now,
+                as a hack, we're going to apply one diff,
+                and then immediately return "-1", so that
+                a new diff is computed between the desired
+                result, and the intermediate update
+
+                FIXME: The real solution to this is to track
+                nodeset changes while applying the diff. This
+                should happen in the Frame object, in the
+                update(diff) function.
+              **/
+              var element = frame.find(iroute);
+              element.insertBefore(entry[1], element.childNodes[entry[0]]);
+              t2.value = frame.body.innerHTML;
+              return -1;
+            }
+            // IFRAME UPDATING
           }
         }
 
-        // check for node removals
-        last = complexDiff.removals.length;
+        // check for node rearrangements
+        last=complexDiff.positions.length;
         if(last>0) {
-          textAreaContent += "  removals: \n";
+          textAreaContent += "  repositioning: \n";
+          var s1, s2;
           for(pos=0; pos<last; pos++) {
-            entry = complexDiff.removals[pos];
-            textAreaContent += "    right["+entry[0]+"] ("+serialise(entry[1])+")\n";
+            entry = complexDiff.positions[pos];
+            textAreaContent += "    right["+entry[1]+"]->left["+entry[0]+"] ("+serialise(e1.childNodes[entry[0]])+")\n";
+
+            // IFRAME UPDATING
+            if(doUpdate) {
+              // ... code comes later ...
+            }
+            // IFRAME UPDATING
           }
         }
+
         textAreaContent += "\n";
       }
     }
@@ -234,7 +287,9 @@ frame.set(make("div",t2.value));
 // bind event handling and parse
 t1.onkeyup = function() {
   log("(1) parsing...");
-  parse(frame, true);
+  while (
+    parse(frame, true) 
+   === -1) {}
 };
 
 parse();
