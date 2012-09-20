@@ -291,9 +291,6 @@ var parse = function(frame, doUpdate) {
           }
           // IFRAME UPDATING
         }
-
-        // this is a security measure, more than anything.
-        return -1;
       }
 
       textAreaContent += "\n";
@@ -318,23 +315,6 @@ var find = function(s) { return document.querySelector(s); },
 t2.value = t1.value;
 frame.set(make("div",t2.value));
 
-
 // bind event handling and parse
-t1.onkeyup = function() {
-  //console.log("(1) parsing...");
-  var safetyLimit = 100;
-  while (--safetyLimit>0 && parse(frame, true) === -1) {}
-  if(safetyLimit===0) {
-    if(console && console.log) {
-      console.log("parsing safety limit reached. Save this diff as a test case!");
-      console.log("left:");
-      console.log(t1.value);
-      console.log("right:");
-      console.log(t2.value);
-    } else {
-      alert("console.log doesn't exist; parsing safety limit reached. Save this diff as a test case!");
-    }
-  }
-};
-
-parse();
+t1.onkeyup = function() { parse(frame, true) };
+parse(frame, true);
