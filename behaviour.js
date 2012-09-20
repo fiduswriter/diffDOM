@@ -99,7 +99,7 @@ var parse = function(frame, doUpdate) {
   if(ret.error) {
     t1.style.background = "rgba(255,0,0,0.1)";
     return;
-  } else { t1.style.background = "inherit"; }
+  } else { t1.style.background = "white"; }
   // end of validation - if we get here, we can update.
 
 

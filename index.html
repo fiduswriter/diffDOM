@@ -6,10 +6,10 @@
     <script src="DOM-diff.js"></script>
     <script src="slowparse.js"></script>
     <style>
-      html, body {
-        height: 100%;
-        overflow: hidden;
+      body {
+        background-color: #FFFFE0;
       }
+      
       h1 {
         text-align: center;
       }
@@ -17,9 +17,10 @@
         width: 100%;
         text-align: justify;
       }
+
       textarea, iframe {
         display: inline-block;
-        width: 24%;
+        width: 24.5%;
         margin: 0;
         padding: 0;
         height: 400px;
@@ -27,15 +28,97 @@
         overflow-x: scroll;
         font-size: 90%;
         font-family: monospace;
+        background-color: white;
+      }
+      
+      .textblock {
+        width: 800px;
+        margin: auto;
+        margin-bottom: 1em;
+        border: 1px solid brown;
+        background-color: #FFFFF0;
+        padding: 0 0.5em;
       }
     </style>
   </head>
 
   <body>
     <h1>DOM diff</h1>
+    
+    <section class="textblock">
+      <h2>What does it do?</h2>
+      
+      <p>This is a demonstrator of a DOM "diff" implementation: it takes
+      two DOM elements, compares them, and then generates the sequence of
+      removals, insertions, and relocations that are necessary to transform
+      the second element into the first.</p>
+      
+      <p>This is particularly useful when you're doing HTML previews, and
+      you don't want to refresh the entire preview page just because someone
+      typed a single letter in a list element, or when you're doing live
+      editing and you don't want to reset audio, video or canvas elements
+      that are active on the page.</p>
+      
+      <h2>...why?</h2>
+      
+      <p><i>Hack the planet</i>. Also, having worked on the
+      <a href="https://webmaker.org/en-US/tools/#thimble">Thimble</a>
+      html editing tool for <a href="http://Webmaker.org">Mozilla Webmaker</a>,
+      which does full preview refreshing, I wondered how hard it would be to
+      implement a system that only updated those parts that got changed, rather
+      than the entire page preview. As it turns out, it's a few days work to
+      get it all working correctly, and hopefully we can now tailor it to 
+      make using Thimble even better.</p>
+      
+      <h2>...and where do I get this thing?</h2>
+      
+      <p>Right here. You're actually on a github page, and the code is
+      housed in the same place. For the code view, just head over to
+      <a href=https://github.com/Pomax/DOM-diff/tree/gh-pages">this view instead</a>.
+      It needs a bit of cleanup and refractoring, but feel free to play
+      with it, and let me know if you run across any bugs. Things can
+      only get better =)</p>
+      
+      <p>If you're going to fork this, everything's in the <code>gh-pages</code>
+      branch, not master, because it's a demonstrator. Having it go
+      straight to the webpage branch makes far more sense than keeping
+      it in master and copying it over all the time.</p>
+    </section>
 
+
+    <!--
+    
+      PLAY WITH THIS!
+    
+    -->
+
+    <h1>Play with it!</h1>    
+    
+    <section class="textblock">
+      <p>Go change the HTML code in the textarea on the left.
+      Everytime you change something, the second textarea should
+      be updated so that it becomes identical to the first, and
+      the difference that was applied should be listed in the third
+      textarea. Also, to prove it really does only apply selective
+      changes, the default code has a youtube video and some input
+      fields. In the preview on the right, start playing the video,
+      and change the text in the text fields, then start editing
+      the HTML code. Give some element a <code>style="border: 20px solid red"</code>
+      or insert a <code>&lt;ul&gt;&lt;li&gt;lol&lt;/li&gt;&lt;/ul&gt;</code>,
+      change a paragraph's text, or go crazy and add a full
+      <code>&lt;style&gt;...&lt;/style&gt;</code> block!</p>
+      
+      <p>You'll also notice that the textarea goes red while
+      you have invalid HTML code in the textarea (so it doesn't
+      try to update to something illegal). This comes courtesy
+      of the <a href="https://github.com/mozilla/slowparse">slowparse</a>
+      project, which is awesome, and totally open to improvements
+      if you want to help improve that =)</p>
+    </section>
+    
+    <h1>The Demo:</h1>
+    
     <section>
-
       <!-- section one -->
       <textarea id="one" nowrap wrap="off">
 <iframe width="100%" src="http://www.youtube.com/embed/8uDuls5TyNE" frameborder="0" allowfullscreen></iframe>
