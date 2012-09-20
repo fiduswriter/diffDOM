@@ -1,5 +1,6 @@
 // iframe modeling object
 var Frame = function(iframe) {
+
   this.window = iframe.contentWindow;
   this.document = iframe.contentDocument;
   this.head = this.document.head;
@@ -302,19 +303,36 @@ var parse = function(frame, doUpdate) {
   return true;
 };
 
-// quick find/make, and the text areas
-var find = function(s) { return document.querySelector(s); },
-    make = function(t,c) { var d = document.createElement(t); if(c) d.innerHTML = c; return d; },
-    t1 = find("#one"),
-    t2 = find("#two"),
-    t3 = find("#three"),
-    frame = new Frame(find("iframe"));
 
+// global, for now.
+var find,
+    make,
+    t1,t2,t3,
+    frame;
 
-// set frame content
-t2.value = t1.value;
-frame.set(make("div",t2.value));
+/**
+ * initialise the global variables,
+ * and parse handling.
+ */
+function init() {
+  document.removeEventListener("DOMContentLoaded", init, false);
 
-// bind event handling and parse
-t1.onkeyup = function() { parse(frame, true) };
-parse(frame, true);
+  // quick find/make, and the text areas
+  find = function(s) { return document.querySelector(s); },
+  make = function(t,c) { var d = document.createElement(t); if(c) d.innerHTML = c; return d; },
+  t1 = find("#one"),
+  t2 = find("#two"),
+  t3 = find("#three"),
+  frame = new Frame(find("iframe"));
+
+  // set frame content
+  t2.value = t1.value;
+  frame.set(make("div",t2.value));
+
+  // bind event handling and parse
+  t1.onkeyup = function() { parse(frame, true) };
+  parse(frame, true);
+}
+
+// kickstart on DOM ready
+document.addEventListener("DOMContentLoaded", init, false);
