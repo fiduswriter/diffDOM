@@ -3,8 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>DOM diff test</title>
-    <script src="moreJS.js"></script>
-    <script src="moreDOM.js"></script>
+    <script src="DOM-diff.js"></script>
     <script src="slowparse.js"></script>
     <style>
       html, body {
@@ -26,6 +25,8 @@
         height: 400px;
         border: 1px solid black;
         overflow-x: scroll;
+        font-size: 90%;
+        font-family: monospace;
       }
     </style>
   </head>
@@ -36,28 +37,28 @@
     <section>
 
       <!-- section one -->
-      <textarea id="one">
-        <iframe width="100%" src="http://www.youtube.com/embed/8uDuls5TyNE" frameborder="0" allowfullscreen></iframe>
+      <textarea id="one" nowrap wrap="off">
+<iframe width="100%" src="http://www.youtube.com/embed/8uDuls5TyNE" frameborder="0" allowfullscreen></iframe>
 
-        <p>test paragraph 1</p>
-        <input type="text" value="tp1"><br>
+<p>test paragraph 1</p>
+<input type="text" value="tp1"><br>
 
-        <script type="text/javascript"
-                src="http://localhost/processing.js/github/processing.js"></script>
+<script type="text/javascript"
+        src="http://localhost/processing.js/github/processing.js"></script>
 
-        <div>
-          <p>test paragraph 2</p>
-          <input type="text" value="tp2">
-          <section>
-            <p>test paragraph 3</p>
-            <p>test paragraph 4</p>
-            <input type="text" value="tp4">
-          </section>
-        </div>
+<div>
+  <p>test paragraph 2</p>
+  <input type="text" value="tp2">
+  <section>
+    <p>test paragraph 3</p>
+    <p>test paragraph 4</p>
+    <input type="text" value="tp4">
+  </section>
+</div>
       </textarea>
 
       <!-- section two, for reference only, mirrors the iframe source -->
-      <textarea id="two" readonly></textarea>
+      <textarea id="two" readonly nowrap wrap="off"></textarea>
 
       <!-- diff -->
       <textarea id="three" readonly nowrap wrap="off"></textarea>
@@ -72,7 +73,6 @@
       </iframe>
     </section>
 
-    <script src="DOM-diff.js"></script>
-    <script src="diff.js"></script>
+    <script src="behaviour.js"></script>
   </body>
 </html>

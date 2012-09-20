@@ -88,8 +88,6 @@ Frame.prototype = {
   }
 };
 
-
-
 /**
  * What to do when someone types in either of the source code textareas
  */
@@ -109,7 +107,7 @@ var parse = function(frame, doUpdate) {
   var d1 = make("div", t1.value),
       d2 = make("div", t2.value);
 
-  var routes = getDiff(d1,d2), route, iroute,
+  var routes = DOMdiff.getDiff(d1,d2), route, iroute,
       d, lastRoute = routes.length, v,
       textAreaContent="";
 
@@ -133,8 +131,6 @@ var parse = function(frame, doUpdate) {
     var diffRoute = "difference route: " + route,
         e1 = d1, e2 = d2,
         e = route.splice(0,1)[0];
-
-
     while (e !== -1) {
       e1 = e1.childNodes[e];
       e2 = e2.childNodes[e];
@@ -158,13 +154,13 @@ var parse = function(frame, doUpdate) {
 
     // childnode diff... Not so simple.
     else {
-      var complexDiff = innerEquality(e1,e2), outerDiff; // from DOM-diff.js
+      var complexDiff = DOMdiff.innerEquality(e1,e2),
+          pos, last, entry;
+
       textAreaContent += "complex " + diffRoute + "\n";
 
-      var pos, last, entry, outerDiff;
-
       // check for attribute differences
-      outerDiff = outerEquality(e1,e2); // from DOM-diff.js
+      var outerDiff = DOMdiff.outerEquality(e1,e2);
       if(outerDiff.length>0) {
         textAreaContent += "  outerHTML changes: \n";
         last = outerDiff.length;
@@ -192,30 +188,32 @@ var parse = function(frame, doUpdate) {
       last = complexDiff.removals.length;
       if(last>0) {
         textAreaContent += "  removals: \n";
-        //for(pos=last-1; pos>=0; pos--) {
-        for(pos=0; pos<last; pos++) {
+        // NOTE: remove elements from tail to head
+        for(pos=last-1; pos>=0; pos--) {
           entry = complexDiff.removals[pos];
           textAreaContent += "    right["+entry[0]+"] ("+serialise(entry[1])+")\n";
 
           // IFRAME UPDATING
           if(doUpdate) {
-            /**
-              A problem is that by applying complex diffs,
-              we are changing subsequent routes. For now,
-              as a hack, we're going to apply one diff,
-              and then immediately return "-1", so that
-              a new diff is computed between the desired
-              result, and the intermediate update
-
-              FIXME: The real solution to this is to track
-              nodeset changes while applying the diff. This
-              should happen in the Frame object, in the
-              update(diff) function.
-            **/
-            var element = frame.find(iroute).childNodes[entry[0]];
-            element.parentNode.removeChild(element);
+            var element = frame.find(iroute).childNodes[entry[0]],
+                parent = element.parentNode;
+            parent.removeChild(element);
             t2.value = frame.body.innerHTML;
-            return -1;
+            
+            // update the relocations, because by removing X,
+            // any relocation of the type left[a]->right[b] 
+            // where b is X or higher, should now be
+            // left[a] -> right[b-1] -- Note that the following
+            // code is POC, and still needs cleaning up.
+
+            // FIXME: clean up this code
+            for(var i=0; i<complexDiff.relocations.length; i++) {
+              var relocation = complexDiff.relocations[i];
+              if(relocation[1] >= entry[0]) {
+                relocation[1]--;
+              }
+            }
+
           }
           // IFRAME UPDATING
         }
@@ -225,49 +223,77 @@ var parse = function(frame, doUpdate) {
       last = complexDiff.insertions.length;
       if(last>0) {
         textAreaContent += "  insertions: \n";
+        // NOTE: insert elements from head to tail
         for(pos=0; pos<last; pos++) {
           entry = complexDiff.insertions[pos];
           textAreaContent += "    left["+entry[0]+"] ("+serialise(entry[1])+")\n";
 
           // IFRAME UPDATING
           if(doUpdate) {
-            /**
-              A problem is that by applying complex diffs,
-              we are changing subsequent routes. For now,
-              as a hack, we're going to apply one diff,
-              and then immediately return "-1", so that
-              a new diff is computed between the desired
-              result, and the intermediate update
-
-              FIXME: The real solution to this is to track
-              nodeset changes while applying the diff. This
-              should happen in the Frame object, in the
-              update(diff) function.
-            **/
             var element = frame.find(iroute);
             element.insertBefore(entry[1], element.childNodes[entry[0]]);
             t2.value = frame.body.innerHTML;
-            return -1;
+
+            // update the relocations, because by inserting X,
+            // any relocation of the type left[a]->right[b] 
+            // where b is X or higher, should now be
+            // left[a] -> right[b+1] -- Note that the following
+            // code is POC, and still needs cleaning up.
+
+            // FIXME: clean up this code
+            for(var i=0; i<complexDiff.relocations.length; i++) {
+              var relocation = complexDiff.relocations[i];
+              if(relocation[1] >= entry[0]) {
+                relocation[1]++;
+              }
+            }
+
           }
           // IFRAME UPDATING
         }
       }
 
-      // check for node rearrangements
-      last=complexDiff.positions.length;
+      // preform just-moved-around updates
+      last = complexDiff.relocations.length;
       if(last>0) {
-        textAreaContent += "  repositioning: \n";
-        var s1, s2;
-        for(pos=0; pos<last; pos++) {
-          entry = complexDiff.positions[pos];
-          textAreaContent += "    right["+entry[1]+"]->left["+entry[0]+"] ("+serialise(e1.childNodes[entry[0]])+")\n";
+        textAreaContent += "  relocations: \n";
+
+        var element, nodes, nlen,
+            child, next,
+            oldPos, newPos;
+
+        // NOTE: relocate elements from tail to head
+        for(pos=last-1; pos>=0; pos--) {
+          element = frame.find(iroute);
+          nodes = element.childNodes;
+          entry = complexDiff.relocations[pos];
+          textAreaContent += "    left["+entry[0]+"] <-> right["+entry[1]+"]\n";// ("+serialise(nodes[entry[1]])+")\n";
 
           // IFRAME UPDATING
-          if(doUpdate) {
-            // ... code comes later ...
+          if(false && doUpdate) {
+            nlen = nodes.length;
+            oldPos = entry[1];
+            child = element.childNodes[oldPos];
+            newPos = entry[0];
+            next = (newPos<nlen ? element.childNodes[newPos] : child);
+
+            // end of the list relocation
+            if(child===next) {
+              element.appendChild(child);
+            }
+
+            // mid-list relocation
+            else {
+              element.insertBefore(child, next);
+            }
+
+            t2.value = frame.body.innerHTML;
           }
           // IFRAME UPDATING
         }
+
+        // this is a security measure, more than anything.
+        return -1;
       }
 
       textAreaContent += "\n";
@@ -295,12 +321,16 @@ frame.set(make("div",t2.value));
 
 // bind event handling and parse
 t1.onkeyup = function() {
-  log("(1) parsing...");
+  //console.log("(1) parsing...");
   var safetyLimit = 100;
   while (--safetyLimit>0 && parse(frame, true) === -1) {}
   if(safetyLimit===0) {
     if(console && console.log) {
-      console.log("safety limit reached...");
+      console.log("parsing safety limit reached. Save this diff as a test case!");
+      console.log("left:");
+      console.log(t1.value);
+      console.log("right:");
+      console.log(t2.value);
     } else {
       alert("console.log doesn't exist; parsing safety limit reached. Save this diff as a test case!");
     }
