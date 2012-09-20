@@ -98,7 +98,7 @@ var parse = function(frame, doUpdate) {
   var ret = Slowparse.HTML(document, t1.value);
   if(ret.error) {
     t1.style.background = "rgba(255,0,0,0.1)";
-    return;
+    return false;
   } else { t1.style.background = "white"; }
   // end of validation - if we get here, we can update.
 
@@ -111,19 +111,18 @@ var parse = function(frame, doUpdate) {
       d, lastRoute = routes.length, v,
       textAreaContent="";
 
-  for(d = 0; d < lastRoute; d++) {
+  // If nothing changed, don't bother with the rest
+  // of the code. It won't do anything =)
+  if(lastRoute===1 && routes[0]===0) { return false; }
 
+  // If we do have change routes, apply them.
+  for(d = 0; d < lastRoute; d++)
+  {
     // shortcut
-    if (routes[d] === 0) {
-      textAreaContent += "no difference\n\n";
-      continue;
-    }
+    if (routes[d] === 0) { continue; }
 
     // rewrite so we do can resolve the top-level diff
-    if (routes[d] === -1) {
-      textAreaContent += "top level difference\n\n";
-      routes[d] = [-1];
-    }
+    if (routes[d] === -1) { routes[d] = [-1]; }
 
     // follow the route to the elements
     route = arrayCopy(routes[d]),
@@ -300,6 +299,7 @@ var parse = function(frame, doUpdate) {
   // show report, and update textarea if we updated the iframe
   t3.value = (doUpdate? "[diff used in update]\n\n" : '') + textAreaContent;
   if(doUpdate) { t2.value = t1.value; }
+  return true;
 };
 
 // quick find/make, and the text areas
