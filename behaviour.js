@@ -166,14 +166,36 @@ var parse = function(frame, doUpdate) {
         last = outerDiff.length;
         for(pos=0; pos<last; pos++) {
           entry = outerDiff[pos];
-          textAreaContent += "    attribute: '"+entry[0]+"', left: '"+entry[1]+"', right: '"+entry[2]+"'\n";
+          
+          if(entry[0]==="nodeName") {
+            textAreaContent += "    tag name difference. left: '"+entry[1]+"', right: '"+entry[2]+"'\n";
 
-          // IFRAME UPDATING
-          if(doUpdate) {
-            var element = frame.find(iroute);
-            element.setAttribute(entry[0], entry[1]);
+            // IFRAME UPDATING
+            if(doUpdate) {
+              var element = frame.find(iroute),
+                  newElement = document.createElement(entry[1]);
+              // copy children over
+              while(element.childNodes.length>0) {
+                newElement.appendChild(element.childNodes[0]);
+              }
+              // copy element attributes over
+              newElement.attributes = element.attributes;
+              // and replace!
+              element.parentNode.replaceChild(newElement, element);
+            }
+            // IFRAME UPDATING
           }
-          // IFRAME UPDATING
+          
+          else {
+            textAreaContent += "    attribute: '"+entry[0]+"', left: '"+entry[1]+"', right: '"+entry[2]+"'\n";
+
+            // IFRAME UPDATING
+            if(doUpdate) {
+              var element = frame.find(iroute);
+              element.setAttribute(entry[0], entry[1]);
+            }
+            // IFRAME UPDATING
+          }
         }
       }
 

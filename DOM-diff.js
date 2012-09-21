@@ -119,8 +119,7 @@ var DOMdiff = (function() {
   };
   window.snapshot = snapshot;
   
-
-
+  
   // HTML attributes that count towards outer equality
   var HTMLattributes = ["id", "class", "style", "type", "src", "href", "value", "rel", "width", "height"];
 
@@ -131,7 +130,15 @@ var DOMdiff = (function() {
    */
   function outerEquality(e1, e2) {
     var diff = [];
-    // TODO: add tagname changes (i.e. "div" -> "span")
+    
+    // do the tags agree?
+    if(e1.nodeType===1 && e2.nodeType===1) {
+      if(e1.nodeName !== e2.nodeName) {
+        diff.push(["nodeName",e1.nodeName,e2.nodeName]);
+      }
+    }
+    
+    // do the attributes agree?
     if(e1.getAttribute && e2.getAttribute) {
       var attr,
           a, a1, a2,
