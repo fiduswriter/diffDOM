@@ -136,22 +136,29 @@ var DOMdiff = (function() {
     }
 
     // do the attributes agree?
-    if(e1.getAttribute && e2.getAttribute) {
-
-      // HTML attributes that count towards outer equality
-      // FIXME: do diff between e1.attributes/e2.attributes,
-      //        instead.
-      var HTMLattributes = ["id", "class", "style", "type", "src", "href", "value", "rel", "width", "height"];
-
-      var attr,
-          a, a1, a2,
-          len = HTMLattributes.length;
+    if(e1.attributes && e2.attributes) {
+      var attributes = e1.attributes,
+          len = attributes.length,
+          a, a1, a2, attr;
+      
+      // attribute insertion/modification diff
       for (a=0; a<len; a++) {
-        attr = HTMLattributes[a];
+        attr = attributes[a].nodeName;
         a1 = e1.getAttribute(attr);
         a2 = e2.getAttribute(attr);
         if(a1==a2) continue;
-        diff.push([attr,a1, a2]);
+        diff.push([attr,a1,a2]);
+      }
+      
+      // attribute removal diff
+      attributes = e2.attributes;
+      len = attributes.length;
+      for (a=0; a<len; a++) {
+        attr = attributes[a].nodeName;
+        a1 = e1.getAttribute(attr);
+        a2 = e2.getAttribute(attr);
+        if(a1==a2) continue;
+        diff.push([attr,a1,a2]);
       }
     }
     return diff;

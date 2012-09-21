@@ -192,7 +192,8 @@ var parse = function(frame, doUpdate) {
             // IFRAME UPDATING
             if(doUpdate) {
               var element = frame.find(iroute);
-              element.setAttribute(entry[0], entry[1]);
+              if(entry[1]==null) { element.removeAttribute(entry[0]); }
+              else { element.setAttribute(entry[0], entry[1]); }
             }
             // IFRAME UPDATING
           }
