@@ -55,13 +55,14 @@ var DOMdiff = (function() {
         hashString = element.nodeName;
 
     // HTML element?
-    if(element.getAttribute) {
+    if(element.attributes) {
       var attr,
           a,
-          len = HTMLattributes.length;
+          attributes = element.attributes,
+          len = attributes.length;
       for (a=0; a<len; a++) {
-        attr = HTMLattributes[a];
-        hashString += attr+":"+element.getAttribute(attr);
+        attr = attributes[a];
+        hashString += attr.nodeName+":"+attr.nodeValue;
       }
     }
 
@@ -118,10 +119,6 @@ var DOMdiff = (function() {
     return newlist;
   };
   window.snapshot = snapshot;
-  
-  
-  // HTML attributes that count towards outer equality
-  var HTMLattributes = ["id", "class", "style", "type", "src", "href", "value", "rel", "width", "height"];
 
   /**
    * Do these elements agree on their HTML attributes?
@@ -137,9 +134,15 @@ var DOMdiff = (function() {
         diff.push(["nodeName",e1.nodeName,e2.nodeName]);
       }
     }
-    
+
     // do the attributes agree?
     if(e1.getAttribute && e2.getAttribute) {
+
+      // HTML attributes that count towards outer equality
+      // FIXME: do diff between e1.attributes/e2.attributes,
+      //        instead.
+      var HTMLattributes = ["id", "class", "style", "type", "src", "href", "value", "rel", "width", "height"];
+
       var attr,
           a, a1, a2,
           len = HTMLattributes.length;
