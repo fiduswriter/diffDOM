@@ -131,6 +131,7 @@ var DOMdiff = (function() {
    */
   function outerEquality(e1, e2) {
     var diff = [];
+    // TODO: add tagname changes (i.e. "div" -> "span")
     if(e1.getAttribute && e2.getAttribute) {
       var attr,
           a, a1, a2,
