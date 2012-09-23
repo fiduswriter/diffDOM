@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>DOM-diff Unit Tests</title>
+    <link rel="stylesheet" href="test/qunit-1.10.0.css">
+    <script src="DOM-diff.js"></script>
+    <script src="test/qunit-1.10.0.js"></script>
+    <script>
+      var get = function(id) { return document.querySelector("#"+id); };
+
+      var arrayEqual = function(test, target) {
+        // null values
+        if(test==null && target!=null) return false;
+        if(test!=null && target==null) return false;
+        if(test==null && target==null) return true;
+
+        var testType = test.constructor.name,
+            targetType = target.constructor.name;
+        
+        // array equalities
+        if(testType === "Array" && testType == targetType) {
+          var i, last=test.length, result = true;
+          for(i=0; i<last; i++) {
+            result = result && arrayEqual(test[i], target[i]);
+          }
+          return result;
+        }
+        
+        if(testType == "Text" && targetType == "String") {
+          return test.textContent.trim() == target.trim();
+        }
+
+        // primitives
+        if(typeof test != "object" && typeof target != "object") return test == target;
+
+        // objects/arrays
+        if(typeof test != "object" && typeof target == "object") return false;
+        if(typeof test == "object" && typeof target != "object") return false;
+
+        return false;
+      };
+
+      var getTestFile = function(testNumber) {
+        var xhr = new XMLHttpRequest(),
+            url = "test/tests/"+testNumber+".html";        
+        xhr.open("GET",url,false);
+        xhr.send(null);
+        return xhr.responseText;
+      };
+
+      var getTestData = function(testNumber) {
+        var test = getTestFile(testNumber).split("---"),
+            d1 = make("div"),
+            d2 = make("div");
+        d1.innerHTML = test[1].trim();
+        d2.innerHTML = test[0].trim();
+        var elements = { e1: d1.childNodes[0], e2: d2.childNodes[0] };
+        return elements;
+      };
+    </script>
+  </head>
+  <body>
+    <div id="qunit"></div>
+    <script>function runTests() { document.removeEventListener("DOMContentLoaded",runTests,false);
+
+
+        test("Simple text test", function() {
+          var test = getTestData("001"),
+              e1 = test.e1,
+              e2 = test.e2,
+              oeq = DOMdiff.outerEquality(e1,e2),
+              ieq = DOMdiff.innerEquality(e1,e2),
+              diff = DOMdiff.getDiff(e1,e2);
+
+          equal(oeq.length, 0, "correct outer equality");
+          equal(ieq.insertions.length, 1, "correct number of inner insertions");
+          equal(ieq.insertions[0][0], 0, "correct inner insertion position");
+          equal(ieq.insertions[0][1].textContent, "test 2", "correct inner insertion value");
+          equal(ieq.removals.length, 1, "correct number of inner removals");
+          equal(ieq.removals[0][0], 0, "correct inner removal position");
+          equal(ieq.removals[0][1].textContent, "test 1", "correct inner removal value");
+          equal(diff.length, 1, "correct number of diffs");
+          equal(arrayEqual(diff, [[0,-1]]), true, "correct diff route");
+        });
+
+
+        test("Simple tagchange test", function() {
+          var test = getTestData("002"),
+              e1 = test.e1,
+              e2 = test.e2,
+              oeq = DOMdiff.outerEquality(e1,e2),
+              ieq = DOMdiff.innerEquality(e1,e2),
+              diff = DOMdiff.getDiff(e1,e2);
+
+          equal(oeq.length, 1, "correct number of outer inequalities");
+          equal(arrayEqual(oeq, [["nodeName","I","P"]]), true, "correct outer equality");
+          equal(ieq, false, "correct inner equality");
+          equal(diff.length, 1, "correct number of diffs");
+          equal(arrayEqual(diff, [-1]), true, "correct diff route");
+        });
+
+
+        test("Simple attribute change test", function() {
+          var test = getTestData("003"),
+              e1 = test.e1,
+              e2 = test.e2,
+              oeq = DOMdiff.outerEquality(e1,e2),
+              ieq = DOMdiff.innerEquality(e1,e2),
+              diff = DOMdiff.getDiff(e1,e2);
+
+          equal(oeq.length, 1, "correct number of outer inequalities");
+          equal(arrayEqual(oeq, [["style","border: 1px solid black",null]]), true, "correct outer equality");
+          equal(ieq, false, "correct inner equality");
+          equal(diff.length, 1, "correct number of diffs");
+          equal(arrayEqual(diff, [-1]), true, "correct diff route");
+        });
+
+
+        test("Attribute and tag name change test", function() {
+          var test = getTestData("004"),
+              e1 = test.e1,
+              e2 = test.e2,
+              oeq = DOMdiff.outerEquality(e1,e2),
+              ieq = DOMdiff.innerEquality(e1,e2),
+              diff = DOMdiff.getDiff(e1,e2);
+
+          equal(oeq.length, 2, "correct number of outer inequalities");
+          equal(arrayEqual(oeq, [
+            ["nodeName","I","P"],
+            ["style","border: 1px solid black",null]
+          ]), true, "correct outer equality");
+          equal(ieq, false, "correct inner equality");
+          equal(diff.length, 1, "correct number of diffs");
+          equal(arrayEqual(diff, [-1]), true, "correct diff route");
+        });
+
+        test("Big fragment test", function() {
+          var test = getTestData("005"),
+              e1 = test.e1,
+              e2 = test.e2,
+              oeq = DOMdiff.outerEquality(e1,e2),
+              ieq = DOMdiff.innerEquality(e1,e2),
+              diff = DOMdiff.getDiff(e1,e2);
+
+          equal(oeq.length, 0, "correct number of outer inequalities");
+          equal(ieq.insertions.length, 2, "correct number of inner insertions");
+          equal(arrayEqual(ieq.insertions, [[0, ""], [2, ""]]), true, "correct inner equality");
+
+          equal(ieq.removals.length, 9, "correct number of inner removals");
+          equal(ieq.removals[1][1].nodeName, "IFRAME", "correct iframe removal");
+          equal(ieq.removals[3][1].nodeName, "P", "correct paragram removal");
+          equal(ieq.removals[5][1].nodeName, "INPUT", "correct input removal");
+          equal(ieq.removals[6][1].nodeName, "BR", "correct break removal");
+          
+          equal(diff.length, 1, "correct number of diffs");
+          equal(arrayEqual(diff, [-1]), true, "correct diff route");
+        });
+
+
+    } document.addEventListener("DOMContentLoaded",runTests,false);</script>   
+  </body>
+</html>
