@@ -1,7 +1,7 @@
 /**
  * Perform a difference check between two DOM elements
  *
- * (c) Mike "Pomax" Kamermans, but you can freely use it.
+ * written by Mike "Pomax" Kamermans, but you can freely use it however you see fit.
  */
 var DOMdiff = (function() {
 
