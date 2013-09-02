@@ -1,44 +1,37 @@
 /**
  * Perform a difference check between two DOM elements
  *
- * written by Mike "Pomax" Kamermans, but you can freely use it however you see fit.
+ * This code is in the public domain.
  */
-var DOMdiff = (function() {
-
-  var diffObject = {};
-
-  var debug = false;
-  var log = function() {
-    if(debug) {
-      console.log.apply(console, arguments)
-    }
-  };
-
+(function() {
 
   /**
-   * create element shortcut
+   * existential function
    */
-  var make = function(tagName, content) {
-    var e = document.createElement(tagName);
-    if(content) e.innerHTML = content;
-    return e;
-  };
-  window.make = make;
+  function exists(e) {
+    return (e !== null && e !== undefined);
+  }
 
+  /**
+   * Take a snapshot of anything that pretends to be an
+   * array but lacks all the normal array functions (like
+   * NodeList, HTMLCollection, etc)
+   */
+  function snapshot(list) {
+    return Array.prototype.slice.call(list);
+  }
 
   /**
    * A JavaScript implementation of the Java hashCode() method.
    */
-  function hashCode(str,undef) {
-    if(str===null || str===undef) return 0;
-
-    var hash = 0, i, last = str.length;
+  function hashCode(str) {
+    if (str === null || str === undefined) return 0;
+    var hashCode = 0, i, last = str.length;
     for (i = 0; i < last; ++i) {
-      hash = (hash * 31 + str.charCodeAt(i)) & 0xFFFFFFFF;
+      hashCode = (hashCode * 31 + str.charCodeAt(i)) & 0xFFFFFFFF;
     }
-    return hash;
+    return hashCode;
   }
-
 
   /**
    * Form a hash code for elements.
@@ -48,13 +41,13 @@ var DOMdiff = (function() {
    *
    * @return a numerical digest hash code
    */
-  function hashAll(element, undef) {
+  function hashAll(element) {
     var child,
-        last = (element.childNodes === undef ? 0 : element.childNodes.length),
+        last = exists(element.childNodes) ? element.childNodes.length : 0,
         hash = 0,
         hashString = element.nodeName;
 
-    // HTML element?
+    // hash attributes, if they exist
     if(element.attributes) {
       var attr,
           a,
@@ -62,63 +55,22 @@ var DOMdiff = (function() {
           len = attributes.length;
       for (a=0; a<len; a++) {
         attr = attributes[a];
-        hashString += attr.nodeName+":"+attr.nodeValue;
+        hashString += attr.nodeName + ":" + attr.nodeValue;
       }
     }
 
     // update the hash
-    hash = hashCode( (hashString+element.textContent).replace(/\s+/g,''));
-    
-    // if children, work in their hash, too.
+    hash = hashCode((hashString + element.textContent).replace(/\s+/g,''));
+
+    // if there are children, work in their hash, too.
     for(child = last-1; child >=0; child--) {
       hash = (hash * 31 + hashAll(element.childNodes[child])) & 0xFFFFFFFF;
     }
-    
+
     // okay, we're done. Set and return
-    element["hashCode"] = hash;
+    element.hashCode = hash;
     return hash;
   }
-
-
-  /**
-   * "Hard" (primitive) array copy. No idea why
-   * JavaScript doesn't have this baked in...
-   */
-  var arrayCopy = function arrayCopy(arr) {
-    var narr = [], a, l=arr.length;
-    for(a=0; a<l; a++) { narr[a] = arr[a]; }
-    return narr;
-  };
-  window.arrayCopy = arrayCopy;
-    
-
-  /**
-   * Take a snapshot of a NodeSet, and return
-   * it as a normal array, becaue NodeSets are
-   * views on the DOM, and change when it does.
-   */
-  var snapshot = function snapshot(list) {
-    var newlist = [], i=0, last=list.length;
-    for(;i<last;i++) { newlist.push(list[i]); }
-
-    // extend the array with a more lenient
-    // "contains" function, relying on the
-    // equal(e1,e2) function instead.
-    newlist.contains = (function(last, i) {
-      return function(e) {
-        for(i=0;i<last;i++) {
-          if(equal(e, this[i])===0) {
-            return i; }}
-        return -1; }; }(last));
-
-    // ideally at this point we would make
-    // the array immutable, since it is not
-    // a plain array but a NodeSet snapshot.
-
-    // Return this extended array.
-    return newlist;
-  };
-  window.snapshot = snapshot;
 
   /**
    * Do these elements agree on their HTML attributes?
@@ -127,7 +79,7 @@ var DOMdiff = (function() {
    */
   function outerEquality(e1, e2) {
     var diff = [];
-    
+
     // do the tags agree?
     if(e1.nodeType===1 && e2.nodeType===1) {
       if(e1.nodeName !== e2.nodeName) {
@@ -140,7 +92,7 @@ var DOMdiff = (function() {
       var attributes = e1.attributes,
           len = attributes.length,
           a, a1, a2, attr;
-      
+
       // attribute insertion/modification diff
       for (a=0; a<len; a++) {
         attr = attributes[a].nodeName;
@@ -149,7 +101,7 @@ var DOMdiff = (function() {
         if(a1==a2) continue;
         diff.push([attr,a1,a2]);
       }
-      
+
       // attribute removal diff
       attributes = e2.attributes;
       len = attributes.length;
@@ -163,7 +115,6 @@ var DOMdiff = (function() {
     }
     return diff;
   };
-  diffObject.outerEquality = outerEquality;
 
 
   /**
@@ -180,7 +131,6 @@ var DOMdiff = (function() {
     var localdiff = childDiff(c1,c2);
     return (localdiff.insertions.length > 0 || localdiff.removals.length > 0 ?  localdiff : false);
   };
-  diffObject.innerEquality = innerEquality;
 
 
   /**
@@ -213,6 +163,9 @@ var DOMdiff = (function() {
    * @return a local content diff
    */
   function childDiff(c1, c2) {
+    c1 = snapshot(c1);
+    c2 = snapshot(c2);
+
     var relocations = [],
         insertions = [],
         removals = [];
@@ -254,7 +207,7 @@ var DOMdiff = (function() {
         removals.push([c, child]);
       }
     }
-    
+
     // and then insertions, based on unmarked c1 elements
     last = c1.length;
     for(c=0; c<last; c++) {
@@ -266,12 +219,11 @@ var DOMdiff = (function() {
 
     // form result object and return
     var localdiff = {
-      c1: snapshot(c1),
-      c2: snapshot(c2),
       relocations: relocations,
       insertions: insertions,
       removals: removals
     };
+
     return localdiff;
   }
 
@@ -290,7 +242,7 @@ var DOMdiff = (function() {
    * FIXME: as long as the tagname stays the same, outerchange (class, etc) should be a modification, not top diff.
    *
    */
-  var equal = function equal(e1, e2, after) {
+  function equal(e1, e2, after) {
 
     // first: if this element is a previous route's problem
     // point, we're going to TOTALLY ignore it and pretend it's
@@ -358,28 +310,25 @@ var DOMdiff = (function() {
       return -1;
     }
 
-    // nothing left to fail on - consider
-    // these two elements equal.
+    // nothing left to fail on - consider these two elements equal.
     return 0;
-  };
+  }
 
 
   /**
-   * Generate an annotated diff between
-   * two DOM fragments. Particularly useful
-   * for live render updating.
+   * Generate an annotated diff between two DOM fragments. Particularly
+   * useful for live render updating.
    *
-   * "after" indicates a route that is already
-   * known to fail, causing equal() to check
-   * only elements that come after this route.
+   * "after" indicates a route that is already known to fail, causing
+   * equal() to check only elements that come after this route.
    */
-  var getDiff = function getDiff(e1, e2) {
+  function getDiff(e1, e2) {
     var route = equal(e1,e2),
         routes = [route],
         newRoute;
 
     while(typeof route === "object") {
-      newRoute = equal(e1,e2,arrayCopy(route));
+      newRoute = equal(e1,e2,route.slice());
       routes.push(newRoute);
       route = newRoute;
     }
@@ -389,44 +338,206 @@ var DOMdiff = (function() {
     // will do so because it's "deemed safe".
     if(routes.length>1) { routes.splice(routes.indexOf(0), 1); }
     return routes;
-  };
-  diffObject.getDiff = getDiff;
+  }
 
   /**
-   * Serialise a DOM element properly.
+   * find an element in a DOM tree
    */
-  var serialise = function serialise(e) {
-    // text node
-    if(e.nodeType===3) {
-      return "{ nodeType: 'text', text: '"+e.textContent.trim()+"'}";
+  function find(element, route) {
+    var route = route.slice(),
+        pos = route.splice(0,1)[0];
+    while(pos!==-1) {
+      element = element.childNodes[pos];
+      pos = route.splice(0,1)[0];
     }
+    return element;
+  }
 
-    // DOM node (assumed!)
-    var ret = ['nodeName: "'+e.nodeName+'"'],
-        attrs = ['id', 'style', 'class', 'value' /* more non-object attributes here */],
-        attr, a, val;
+  /**
+   * Convert a diff between two elements into an operation set.
+   */
+  function convertDiff(routes, d1, d2) {
+    routes = routes.slice();
+    var route,
+        iroute,
+        d,
+        lastRoute = routes.length,
+        v,
+        operations = [],
+        e, e1, e2;
 
-    for(a=attrs.length-1; a>=0; a--) {
-      attr = attrs[a];
-      if(!attr || Object.hasOwnProperty(e,attr) || !e.getAttribute) continue;
-      val = e.getAttribute(attr);
-      if(val === undefined || val === null || typeof val === "function") { continue; }
-      else { ret.push(attr + ': "' + val + '"'); }
-    }
+    // If nothing changed, don't bother with the rest
+    // of the code. It won't do anything.
+    if(lastRoute === 1 && routes[0] === 0) { return; }
 
-    var last = e.childNodes.length, child, children;
-    if(last>0) {
-      children = [];
-      for(a=0; a<last; a++) {
-        child = e.childNodes[a];
-        children.push(serialise(child));
+    // If we do have change routes, apply them.
+    for(d = 0; d < lastRoute; d++) {
+
+      // shortcut for empty operation routes
+      if (routes[d] === 0) { continue; }
+
+      // rewrite so we do can resolve the top-level diff
+      if (routes[d] === -1) { routes[d] = [-1]; }
+
+      // follow the route to the elements
+      route = routes[d].slice();
+      iroute = routes[d].slice();
+
+      e = route.splice(0,1)[0];
+      e1 = d1;
+      e2 = d2;
+
+      while (e !== -1) {
+        e1 = e1.childNodes[e];
+        e2 = e2.childNodes[e];
+        e = route.splice(0,1)[0];
       }
-      ret.push("children: [" + children.join(", ") + "]");
+
+      // text node updates are simple
+      if (e1.nodeType === 3 && e2.nodeType === 3) {
+        operations.push(function updateText(target, replacement) {
+          return function updateText() {
+            target.nodeValue = replacement;
+          };
+        }(e2, e1.nodeValue));
+        continue;
+      }
+
+      // childnode differences are more work.
+      var complexDiff = innerEquality(e1, e2),
+          pos,
+          last,
+          entry,
+          outerDiff = outerEquality(e1,e2);
+
+      // operations based on differences in the outerHTML
+      if (outerDiff.length > 0) {
+        last = outerDiff.length;
+        for (pos = 0; pos < last; pos++) {
+          entry = outerDiff[pos];
+
+          // different node name
+          if(entry[0] === "nodeName") {
+            operations.push(function changeNodeName(element, newElement) {
+              return function changeNodeName() {
+                // copy children over
+                while(element.childNodes.length>0) {
+                  newElement.appendChild(element.childNodes[0]);
+                }
+                // copy element attributes over
+                newElement.attributes = element.attributes;
+                // and replace!
+                element.parentNode.replaceChild(newElement, element);
+              };
+            }(find(d2, iroute), document.createElement(entry[1])));
+          }
+
+          // attribute differences
+          else {
+            operations.push(function changeAttributeValue(element, attribute, value) {
+              return function changeAttributeValue() {
+                if(exists(value)) { element.setAttribute(attribute, value); }
+                else { element.removeAttribute(attribute); }
+              }
+            }(find(d2, iroute), entry[0], entry[1]));
+          }
+        }
+      }
+
+      // Shortcut on "no complex diffs found". This
+      // basically implies we did find an outer diff.
+      if (!complexDiff) {
+        continue;
+      }
+
+      // remove operations based on differences in the innerHTML
+      last = complexDiff.removals.length;
+      if (last > 0) {
+        for(pos=last-1; pos>=0; pos--) {
+          entry = complexDiff.removals[pos];
+
+          operations.push(function removeElement(element) {
+            return function removeElement() {
+              var parent = element.parentNode;
+              parent.removeChild(element);
+            };
+          }(find(d2, iroute).childNodes[entry[0]]));
+
+          // update the relocations, because by removing X,
+          // any relocation of the type left[a]->right[b]
+          // where b is X or higher, should now be
+          // left[a] -> right[b-1] -- Note that the following
+          // code is POC, and still needs cleaning up.
+
+          for(var i=0; i<complexDiff.relocations.length; i++) {
+            var relocation = complexDiff.relocations[i];
+            if(relocation[1] >= entry[0]) {
+              relocation[1]--;
+            }
+          }
+        }
+      }
+
+      // insert operations based on differences in the innerHTML
+      last = complexDiff.insertions.length;
+      if (last > 0) {
+        for(pos=last-1; pos>=0; pos--) {
+          entry = complexDiff.insertions[pos];
+          var element = find(d2, iroute);
+
+          operations.push(function insertElement(element, insertion, reference) {
+            return function insertElement() {
+              element.insertBefore(insertion, reference);
+            };
+          }(element, entry[1], element.childNodes[entry[0]]));
+
+          // update the relocations, because by inserting X,
+          // any relocation of the type left[a]->right[b]
+          // where b is X or higher, should now be
+          // left[a] -> right[b+1] -- Note that the following
+          // code is POC, and still needs cleaning up.
+
+          for(var i=0; i<complexDiff.relocations.length; i++) {
+            var relocation = complexDiff.relocations[i];
+            if(relocation[1] >= entry[0]) {
+              relocation[1]++;
+            }
+          }
+        }
+      }
+
+      // TODO: process merely-moved-around updates
+      last = complexDiff.relocations.length;
+      if (last > 0) { /* ... */ }
     }
 
-    return "{" + ret.join(", ") + "}";
+    // return our series of transformation functions.
+    return operations;
   };
-  window.serialise = serialise;
-  
-  return diffObject;
+
+  // our diffing object.
+  var diffObject = {
+    outerEquality: outerEquality,
+    innerEquality: innerEquality,
+    getDiff: getDiff,
+    applyDiff: function(diff, d1, d2) {
+      var transforms = convertDiff(diff, d1, d2);
+      if(transforms) {
+        transforms = transforms.reverse();
+        transforms.forEach(function(fn) {
+          fn();
+        });
+      }
+    }
+  };
+
+  // Can we register ourselves as an AMD module?
+  if (window.define) {
+    define(function() {
+      return diffObject;
+    });
+  }
+
+  // We cannot. Bind as a global object, instead.
+  else { window.DOMdiff = diffObject; }
 }());

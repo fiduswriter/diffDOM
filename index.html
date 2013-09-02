@@ -8,41 +8,41 @@
 
   <body>
     <h1>DOM diff</h1>
-    
+
     <section class="textblock">
       <h2>What does it do?</h2>
-      
+
       <p>This is a demonstrator of a DOM "diff" implementation: it takes
       two DOM elements, compares them, and then generates the sequence of
       removals, insertions, and relocations that are necessary to transform
       the second element into the first.</p>
-      
+
       <p>This is particularly useful when you're doing HTML previews, and
       you don't want to refresh the entire preview page just because someone
       typed a single letter in a list element, or when you're doing live
       editing and you don't want to reset audio, video or canvas elements
       that are active on the page.</p>
-      
+
       <h2>...why?</h2>
-      
+
       <p><i>Hack the planet</i>. Also, having worked on the
       <a href="https://webmaker.org/en-US/tools/#thimble">Thimble</a>
       html editing tool for <a href="http://Webmaker.org">Mozilla Webmaker</a>,
       which does full preview refreshing, I wondered how hard it would be to
       implement a system that only updated those parts that got changed, rather
       than the entire page preview. As it turns out, it's a few days work to
-      get it all working correctly, and hopefully we can now tailor it to 
+      get it all working correctly, and hopefully we can now tailor it to
       make using Thimble even better.</p>
-      
+
       <h2>...and where do I get this thing?</h2>
-      
+
       <p>Right here. You're actually on a github page, and the code is
       housed in the same place. For the code view, just head over to
       <a href="https://github.com/Pomax/DOM-diff/tree/gh-pages">this view instead</a>.
       It needs a bit of cleanup and refractoring, but feel free to play
       with it, and let me know if you run across any bugs. Things can
       only get better =)</p>
-      
+
       <p>If you're going to fork this, everything's in the <code>gh-pages</code>
       branch, not master, because it's a demonstrator. Having it go
       straight to the webpage branch makes far more sense than keeping
@@ -51,13 +51,13 @@
 
 
     <!--
-    
+
       PLAY WITH THIS!
-    
+
     -->
 
-    <h1>Play with it!</h1>    
-    
+    <h1>Play with it!</h1>
+
     <section class="textblock">
       <p>Go change the HTML code in the textarea on the left.
       Everytime you change something, the second textarea should
@@ -71,7 +71,7 @@
       or insert a <code>&lt;ul&gt;&lt;li&gt;lol&lt;/li&gt;&lt;/ul&gt;</code>,
       change a paragraph's text, or go crazy and add a full
       <code>&lt;style&gt;...&lt;/style&gt;</code> block!</p>
-      
+
       <p>You'll also notice that the textarea goes red while
       you have invalid HTML code in the textarea (so it doesn't
       try to update to something illegal). This comes courtesy
@@ -79,9 +79,9 @@
       project, which is awesome, and totally open to improvements
       if you want to help improve that =)</p>
     </section>
-    
+
     <h1>The Demo:</h1>
-    
+
     <section>
       <!-- section one -->
       <textarea id="one" nowrap wrap="off">
@@ -89,9 +89,6 @@
 
 <p>test paragraph 1</p>
 <input type="text" value="tp1"><br>
-
-<script type="text/javascript"
-        src="http://localhost/processing.js/github/processing.js"></script>
 
 <div>
   <p>test paragraph 2</p>
@@ -109,7 +106,7 @@
 
       <!-- diff -->
       <textarea id="three" readonly nowrap wrap="off"></textarea>
-      
+
       <!-- content frame -->
       <iframe>
         <head>

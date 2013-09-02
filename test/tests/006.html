@@ -1,0 +1,49 @@
+<div>
+  <iframe style="width: 100%; height: 66%;" src="http://www.youtube.com/embed/8uDuls5TyNE" frameborder="0" allowfullscreen></iframe>
+  <p>test paragraph 1</p>
+  <input type="text" value="tp1"><br>
+  <div>
+    <p>test paragraph 2</p>
+    <input type="text" value="tp2">
+
+    <section>
+      <p>test paragraph 3</p>
+      <p>test paragraph 4</p>
+      <input type="text" value="tp4">
+    </section>
+  </div>     
+</div>
+
+---
+
+<div>
+  <iframe style="width: 100%; height: 66%;" src="http://www.youtube.com/embed/8uDuls5TyNE" frameborder="0" allowfullscreen></iframe>
+  <p>test paragraph 1</p>
+  <input type="text" value="tp1"><br>
+  <div>
+    <section>
+      <p>test paragraph 3</p>
+      <p>test paragraph 4</p>
+      <input type="text" value="tp4">
+    </section>
+
+    <p>test paragraph 2</p>
+    <input type="text" value="tp2">
+  </div>
+</div>
+
+---
+
+The paragraph "test paragraph 2" and its
+input sibling have been moved down, so that
+the content of the div goes from:
+
+  [p, input, section]
+
+to:
+
+  [section, p, input]
+
+Insertions and removals may be for text nodes,
+but there should be no HTML element removals
+and insertions; only relocations.

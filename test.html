@@ -17,7 +17,7 @@
 
         var testType = test.constructor.name,
             targetType = target.constructor.name;
-        
+
         // array equalities
         if(testType === "Array" && testType == targetType) {
           var i, last=test.length, result = true;
@@ -26,7 +26,7 @@
           }
           return result;
         }
-        
+
         if(testType == "Text" && targetType == "String") {
           return test.textContent.trim() == target.trim();
         }
@@ -43,7 +43,7 @@
 
       var getTestFile = function(testNumber) {
         var xhr = new XMLHttpRequest(),
-            url = "test/tests/"+testNumber+".html";        
+            url = "test/tests/"+testNumber+".html";
         xhr.open("GET",url,false);
         xhr.send(null);
         return xhr.responseText;
@@ -51,8 +51,8 @@
 
       var getTestData = function(testNumber) {
         var test = getTestFile(testNumber).split("---"),
-            d1 = make("div"),
-            d2 = make("div");
+            d1 = document.createElement("div"),
+            d2 = document.createElement("div");
         d1.innerHTML = test[1].trim();
         d2.innerHTML = test[0].trim();
         var elements = { e1: d1.childNodes[0], e2: d2.childNodes[0] };
@@ -152,12 +152,12 @@
           equal(ieq.removals[3][1].nodeName, "P", "correct paragram removal");
           equal(ieq.removals[5][1].nodeName, "INPUT", "correct input removal");
           equal(ieq.removals[6][1].nodeName, "BR", "correct break removal");
-          
+
           equal(diff.length, 1, "correct number of diffs");
           equal(arrayEqual(diff, [-1]), true, "correct diff route");
         });
 
 
-    } document.addEventListener("DOMContentLoaded",runTests,false);</script>   
+    } document.addEventListener("DOMContentLoaded",runTests,false);</script>
   </body>
 </html>
