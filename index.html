@@ -61,18 +61,19 @@
     <section class="textblock">
       <p>Go change the HTML code in the textarea on the left.
       Everytime you change something, the second textarea should
-      be updated so that it becomes identical to the first, and
-      the difference that was applied should be listed in the third
-      textarea. Also, to prove it really does only apply selective
+      be updated so that it becomes identical to the first
+      Also, to prove it really does only apply selective
       changes, the default code has a youtube video and some input
       fields. In the preview on the right, start playing the video,
       and change the text in the text fields, then start editing
       the HTML code. Give some element a <code>style="border: 20px solid red"</code>
       or insert a <code>&lt;ul&gt;&lt;li&gt;lol&lt;/li&gt;&lt;/ul&gt;</code>,
       change a paragraph's text, or go crazy and add a full
-      <code>&lt;style&gt;...&lt;/style&gt;</code> block!</p>
+      <code>&lt;style&gt;...&lt;/style&gt;</code> block!
+      That youtube video will keep playing while you're editing
+      the source. Because this is DOM diffing, baby!</p>
 
-      <p>You'll also notice that the textarea goes red while
+      <p>You'll also notice that the left textarea goes red while
       you have invalid HTML code in the textarea (so it doesn't
       try to update to something illegal). This comes courtesy
       of the <a href="https://github.com/mozilla/slowparse">slowparse</a>
