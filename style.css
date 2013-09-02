@@ -23,6 +23,10 @@ textarea, iframe {
   background-color: white;
 }
 
+iframe {
+  width: 48%;
+}
+
 .textblock {
   width: 800px;
   margin: auto;
