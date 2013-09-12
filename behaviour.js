@@ -23,8 +23,6 @@
     var serialized = JSON.stringify(routes);
     var deserialized = JSON.parse(serialized);
     DOMdiff.applyDiff(deserialized, d1, d2);
-
-    // show second DOM's updated source code
     t2.value = d2.innerHTML;
 
     // update iframe

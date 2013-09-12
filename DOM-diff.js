@@ -5,6 +5,20 @@
  */
 (function() {
 
+
+  /**
+   * Hate HTML APIs so very much. SO VERY MUCH!
+   */
+  (function(functions, prototypes) {
+    var p;
+    prototypes.forEach(function(p) {
+      functions.forEach(function(f) {
+        p[f] = Array.prototype[f];
+      });
+    });
+  }(["forEach", "indexOf", "slice"], [NodeList.prototype, HTMLCollection.prototype]));
+
+
   /**
    * existential function
    */
@@ -129,7 +143,7 @@
     c1 = snapshot(e1.childNodes);
     c2 = snapshot(e2.childNodes);
     var localdiff = childDiff(c1,c2);
-    return (localdiff.insertions.length > 0 || localdiff.removals.length > 0 ?  localdiff : false);
+    return (localdiff.length > 0 ?  localdiff : false);
   };
 
 
@@ -145,16 +159,34 @@
   function getPositions(list, reference) {
     var hash = reference.hashCode,
         c, last = list.length, child,
+        tn, rn
         result = [];
     for(c=0; c<last; c++) {
       child = list[c];
-      if(child.hashCode === hash) {
+      if(reference.nodeType === 3) {
+        if(child.nodeType === 3 && child.data == reference.data) {
+          result.push(c);
+        }
+      } else if(child.hashCode === hash) {
         result.push(c);
       }
     }
+
     return result;
   }
 
+  /**
+   * Get the child-position based path to this element
+   */
+  function getPath(element, top) {
+    var path = [], pos;
+    while(element !== top) {
+      pos = Array.prototype.indexOf.call(element.parentNode.childNodes, element);
+      path = [pos].concat(path);
+      element = element.parentNode;
+    }
+    return path;
+  }
 
   /**
    * Create a diff between .childNode
@@ -166,37 +198,48 @@
     c1 = snapshot(c1);
     c2 = snapshot(c2);
 
-    var relocations = [],
-        insertions = [],
-        removals = [];
+    var ops = [];
 
     // First, find all elements that have
     // either not changed, or were simply
     // moved around rather than changed.
-    var c, last=c1.length, child, hash, positions, pos;
+    var c, last=c1.length, child, positions, pos, ioffset = 0;
     for(c=0; c<last; c++) {
       child = c1[c];
       positions = getPositions(c2, child);
 
+      console.log("positions", c, positions);
+
       // not found in list c2
-      if(positions.length===0) continue;
+      if(positions.length===0) {
+        ops.push({type: "insert", pos : c, element: child});
+        ioffset++;
+        continue;
+      }
 
       // found more than once in list c2
-      if(positions.length>1) continue;
+      if(positions.length>1) {
+        // these ambiguous elements are the worst.
+        for(var p=0; p<positions.length; p++) {
+          pos = positions[p];
+          if(!c2[pos]["marked"]) {
+            c2[pos]["marked"] = true;
+            break;
+          }
+        }
+        continue;
+      }
 
-      // This element might be moved. However, we only
-      // record this for unique elements, to avoid ambiguity.
+      // same position (corrected for insertion offset) - don't bother these elements
       pos = positions[0];
-      if(c!==pos && getPositions(c1, child).length <= 1) {
-        relocations.push([c, pos]);
-        child["marked"] = true;
+      if(c===pos+ioffset) {
         c2[pos]["marked"] = true;
+        continue;
       }
 
-      else if(c===pos) {
-        child["marked"] = true;
-        c2[pos]["marked"] = true;
-      }
+      // This element might have been moved. (move to before pos ...)
+      ops.push({type: "move", pos: c+1, oldpos: pos+ioffset});
+      c2[pos]["marked"] = true;
     }
 
     // Then we check all removals, based on unmarked c2 elements
@@ -204,27 +247,13 @@
     for(c=0; c<last; c++) {
       child = c2[c];
       if(!child["marked"]) {
-        removals.push([c, child]);
+        ops.push({type: "remove", pos: c});
+        ioffset--;
       }
     }
 
-    // and then insertions, based on unmarked c1 elements
-    last = c1.length;
-    for(c=0; c<last; c++) {
-      child = c1[c];
-      if(!child["marked"]) {
-        insertions.push([c, child]);
-      }
-    }
-
-    // form result object and return
-    var localdiff = {
-      relocations: relocations,
-      insertions: insertions,
-      removals: removals
-    };
-
-    return localdiff;
+    // return transformation
+    return ops;
   }
 
 
@@ -253,13 +282,13 @@
     }
 
     // different element (1)?
-    if(e1.nodeType !== e2.nodeType) {
+    if (e1.nodeType !== e2.nodeType) {
       return -1;
     }
 
     // shortcut handling for text?
-    if(e1.nodeType===3 && e2.nodeType===3) {
-      if(e1.textContent.trim() != e2.textContent.trim()) {
+    if (e1.nodeType === 3 && e2.nodeType === 3) {
+      if(e1.data !== e2.data) {
         return -1;
       }
       return 0;
@@ -395,11 +424,19 @@
 
       // text node updates are simple
       if (e1.nodeType === 3 && e2.nodeType === 3) {
-        operations.push(function updateText(target, replacement) {
-          return function updateText() {
-            target.nodeValue = replacement;
+        operations.push(function updateText(top, target, replacement) {
+          var updateText = function updateText() {
+            target.data = replacement;
           };
-        }(e2, e1.nodeValue));
+          updateText.toString = function toString() {
+            return JSON.stringify({
+              type: "updateText",
+              path: getPath(target, top),
+              text: replacement
+            });
+          };
+          return updateText;
+        }(d2, e2, e1.data));
         continue;
       }
 
@@ -418,8 +455,8 @@
 
           // different node name
           if(entry[0] === "nodeName") {
-            operations.push(function changeNodeName(element, newElement) {
-              return function changeNodeName() {
+            operations.push(function changeNodeName(top, element, newElement) {
+              var changeNodeName = function changeNodeName() {
                 // copy children over
                 while(element.childNodes.length>0) {
                   newElement.appendChild(element.childNodes[0]);
@@ -429,17 +466,34 @@
                 // and replace!
                 element.parentNode.replaceChild(newElement, element);
               };
-            }(find(d2, iroute), document.createElement(entry[1])));
+              changeNodeName.toString = function toString() {
+                return JSON.stringify({
+                  type: "changeNodeName",
+                  path: getPath(element, top),
+                  nodename: newElement.nodeName
+                });
+              };
+              return changeNodeName;
+            }(d2, find(d2, iroute), document.createElement(entry[1])));
           }
 
           // attribute differences
           else {
-            operations.push(function changeAttributeValue(element, attribute, value) {
-              return function changeAttributeValue() {
+            operations.push(function changeAttributeValue(top, element, attribute, value) {
+              var changeAttributeValue = function changeAttributeValue() {
                 if(exists(value)) { element.setAttribute(attribute, value); }
                 else { element.removeAttribute(attribute); }
-              }
-            }(find(d2, iroute), entry[0], entry[1]));
+              };
+              changeAttributeValue.toString = function toString() {
+                return JSON.stringify({
+                  type: "changeAttributeValue",
+                  path: getPath(element, top),
+                  attribute: attribute,
+                  value: value
+                });
+              };
+              return changeAttributeValue;
+            }(d2, find(d2, iroute), entry[0], entry[1]));
           }
         }
       }
@@ -450,68 +504,78 @@
         continue;
       }
 
-      // remove operations based on differences in the innerHTML
-      last = complexDiff.removals.length;
-      if (last > 0) {
-        for(pos=last-1; pos>=0; pos--) {
-          entry = complexDiff.removals[pos];
+      // first handle inserts and relocations
+      var roffset = 0;
+      complexDiff.forEach(function(entry) {
+        var parent = find(d2, iroute);
 
-          operations.push(function removeElement(element) {
-            return function removeElement() {
-              var parent = element.parentNode;
-              parent.removeChild(element);
+        if (entry.type === "insert") {
+          operations.push(function insertElement(top, parent, insertion, pos) {
+            var reference = parent.childNodes[pos];
+            var insertElement = function insertElement() {
+              console.log("insertion");
+              if(reference) {
+                console.log("at>"+pos, parent.childNodes, ": inserting", insertion, "before", reference);
+                parent.insertBefore(insertion, reference);
+              } else {
+                console.log("at>"+pos, parent.childNodes, ": appending", insertion);
+                parent.appendChild(insertion);
+                console.log(parent.childNodes);
+              }
             };
-          }(find(d2, iroute).childNodes[entry[0]]));
-
-          // update the relocations, because by removing X,
-          // any relocation of the type left[a]->right[b]
-          // where b is X or higher, should now be
-          // left[a] -> right[b-1] -- Note that the following
-          // code is POC, and still needs cleaning up.
-
-          for(var i=0; i<complexDiff.relocations.length; i++) {
-            var relocation = complexDiff.relocations[i];
-            if(relocation[1] >= entry[0]) {
-              relocation[1]--;
-            }
-          }
-        }
-      }
-
-      // insert operations based on differences in the innerHTML
-      last = complexDiff.insertions.length;
-      if (last > 0) {
-        for(pos=last-1; pos>=0; pos--) {
-          entry = complexDiff.insertions[pos];
-          var element = find(d2, iroute);
-
-          operations.push(function insertElement(element, insertion, reference) {
-            return function insertElement() {
-              element.insertBefore(insertion, reference);
+            insertElement.toString = function toString() {
+              return JSON.stringify({
+                type: "insertElement",
+                path: getPath(reference, top),
+                nodetype: insertion.nodeType,
+                data: (insertion.nodeType === 3 ? insertion.textValue : insertion.outerHTML)
+              });
             };
-          }(element, entry[1], element.childNodes[entry[0]]));
-
-          // update the relocations, because by inserting X,
-          // any relocation of the type left[a]->right[b]
-          // where b is X or higher, should now be
-          // left[a] -> right[b+1] -- Note that the following
-          // code is POC, and still needs cleaning up.
-
-          for(var i=0; i<complexDiff.relocations.length; i++) {
-            var relocation = complexDiff.relocations[i];
-            if(relocation[1] >= entry[0]) {
-              relocation[1]++;
-            }
-          }
+            return insertElement;
+          }(d2, parent, entry.element, entry.pos));
         }
-      }
 
-      // TODO: process merely-moved-around updates
-      last = complexDiff.relocations.length;
-      if (last > 0) { /* ... */ }
+        if (entry.type === "move") {
+          operations.push(function moveElement(parent, oldpos, pos) {
+            var moveElement = function moveElement() {
+              console.log("relocation");
+              var element = parent.childNodes[oldpos];
+              var reference = parent.childNodes[pos];
+              console.log(oldpos+">"+pos, parent.childNodes, ": moving", element, "to before", reference);
+              parent.insertBefore(element, reference);
+            };
+            moveElement.toString = function toString() {
+              return JSON.stringify({
+                type: "moveElement",
+                oldpos: oldpos,
+                pos: pos
+              });
+            };
+            return moveElement;
+          }(parent, entry.oldpos, entry.pos));
+        }
+
+        if (entry.type === "remove") {
+          operations.push(function removeElement(top, parent, pos) {
+            var removeElement = function removeElement() {
+              console.log("removal");
+              console.log(">"+(pos- roffset), parent.childNodes);
+              parent.removeChild(parent.childNodes[pos - roffset]);
+              roffset++;
+            };
+            removeElement.toString = function toString() {
+              return JSON.stringify({
+                type: "removeElement",
+                path: getPath(parent, top),
+                pos: pos
+              });
+            };
+            return removeElement;
+          }(d2, parent, entry.pos));
+        }
+      });
     }
 
-    // return our series of transformation functions.
     return operations;
   };
 
@@ -523,7 +587,6 @@
     applyDiff: function(diff, d1, d2) {
       var transforms = convertDiff(diff, d1, d2);
       if(transforms) {
-        transforms = transforms.reverse();
         transforms.forEach(function(fn) {
           fn();
         });
