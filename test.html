@@ -224,8 +224,7 @@
         if (stable.length === 1) {
           var subset = stable[0];
           if(subset["old"] === 0  && subset["new"] === 0 &&  subset.length === t1.childNodes.length) {
-            // there are no child differences at this depth. So compare
-            // attributes, and then go down.
+            // there are no child differences at this depth, so check further downstream.
             for(var i=0, last=t1.childNodes.length; i<last; i++) {
               findDiff(t1.childNodes[i], t2.childNodes[i], grow(route, i));
             }
@@ -233,14 +232,14 @@
           }
         }
 
-        var gap1 = (function() {
+        var gap1 = (function() { // [true,true,...] with length t1.childNodes.length
               var arr = [];
               for (var i=0, last=t1.childNodes.length; i<last; i++) {
                 arr[i] = true;
               }
               return arr;
             }()),
-            gap2 = (function() {
+            gap2 = (function() { // [true,true,...] with length t2.childNodes.length
               var arr = [];
               for (var i=0, last=t2.childNodes.length; i<last; i++) {
                 arr[i] = true;
@@ -249,6 +248,7 @@
             }()),
             group = 1;
 
+        // give elements from the same subset the same group number
         stable.forEach(function(subset) {
           var i, end;
           for(i = subset["old"], end = i + subset.length; i < end; i++) {
