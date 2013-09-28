@@ -3,6 +3,12 @@
   <head>
     <meta charset="utf-8">
     <title>tree based DOM diffs</title>
+    <style>
+      #t1, #t2 {
+        border: 1px solid black;
+        margin-bottom: 1em;
+      }
+    </style>
   </head>
   <body>
 
@@ -10,36 +16,49 @@
       Test elements for diffing
     -->
 
+<!--
     <div id="t1">
-      <p>test</p>
-      <p>test2</p>
-      <b><em>bold emphatic</em></b>
-      <hr>
-      <ol data-tooltip="magnificent">
-        <li>one</li>
-        <li>two</li>
-        <li>three</li>
-        <li><ul>
-          <li>yes.</li>
-        </ul></li>
-      </ol>
+        <p>test</p>
+        <p class="p" style="width:100%;">test2</p>
+        <div>
+          <ol>
+            <li>test</li>
+          </ol>
+        </div>
     </div>
 
     <div id="t2">
-      <p>test</p>
-      <p>test2</p>
-      <b><em>bold emphatic</em></b>
-      <hr class="serpico">
-      <ol>
-        <li>one</li>
-        <li>two</li>
-        <li>three</li>
-        <li><ul>
-          <li>no.</li>
-        </ul></li>
-        <li>four</li> <!-- problem -->
-      </ol>
+        <p>test</p>
+        <p class="p" data-title="test two">test2</p>
+        <div>
+          <ol>wefewfwef
+            <li>test</li>
+          </ol>
+        </div>
     </div>
+-->
+
+    <div id="t1">
+        <p>test</p>
+        <p class="p" style="width:100%;">test2</p>
+        <div>
+          <ol>
+            <li>test</li>
+          </ol>
+        </div>
+    </div>
+
+    <div id="t2">
+        <p>test</p>
+        <p class="p" data-title="test two">test2</p>
+        <div>
+          <ol>
+            <li>test</li>
+            <li>test 2</li>
+          </ol>
+        </div>
+    </div>
+-->
 
     <div id="result"></div>
 
@@ -51,17 +70,18 @@
     <script>
       (function test() {
         // test tree 1 ("old")
-        var t1 = document.getElementById("t1");
+        var t1 = document.getElementById("t1");//.childNodes[5];//.childNodes[1];
 
         // test tree 2 ("new")
-        var t2 = document.getElementById("t2");
+        var t2 = document.getElementById("t2");//.childNodes[5];//.childNodes[1];
 
         var subtrees = markSubTrees(t1, t2);
+/*
         document.getElementById("result").innerHTML = "<h2>unchanged subtrees at top level:</h2>";
         subtrees.forEach(function(subtree) {
           document.getElementById("result").innerHTML += subtree.toString() + "<br>";
         });
-
+*/
         console.log(subtrees);
 
         findDiff(t1,t2);
