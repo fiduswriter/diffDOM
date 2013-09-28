@@ -7,6 +7,15 @@ var makeArray = function(n, v) {
 };
 
 /**
+ * HTML serialization
+ */
+var toHTML = function(element) {
+  var div = document.createElement("div");
+  div.appendChild(element.cloneNode(true));
+  return div.innerHTML;
+}
+
+/**
  * Simple mapping object - wrapped in a closure
  */
 var SubsetMapping = (function() {
@@ -292,7 +301,7 @@ var getFirstDiff = function(t1, t2, gapInformation) {
   console.log("groups are aligned");
 
   // if the groups are all in-sequence, do any insert/modify/removal checks
-  var  group1, group2;
+  var  group1, group2, c1 ,c2;
   for(var i=0; i<last; i++) {
     group1 = gaps1[i];
     group2 = gaps2[i];
@@ -300,11 +309,13 @@ var getFirstDiff = function(t1, t2, gapInformation) {
     // any gaps between t1 and t2?
     if (group1 === true) {
       if (group2 === true) {
-        console.log("node difference at " + i + " between ", t1.childNodes[i], " and" , t2.childNodes[i]);
 
-        // FIXME: we should at this point already know what that difference is.
-
+        // FIXME: shouldn't we already know what that difference is at this point?
+        c1 = t1.childNodes[i];
+        c2 = t2.childNodes[i];
+        console.log("node difference at " + i + " between ", c1, " and" , c2);
         return { action: "modified", nodeNumber: i };
+
       } else {
         console.log("node removed at " + i);
         return { action: "remove", nodeNumber: i };
@@ -459,22 +470,20 @@ var findDiff = function findDiff(t1, t2, route) {
   // find the stable subset
   var stable = markSubTrees(t1, t2);
 
-  // text nodes, no diff
   if (stable.length === 0) {
+    if(t1.childNodes.length > 0 || t2.childNodes.length > 0) {
+      console.log("something happened here");
+    }
     return;
   }
 
-  // non-textnode: find outer attribute differences
-  var outerdiff = findAttrDiff(t1, t2, route);
+  var subset = stable[0],
+      outerdiff = findAttrDiff(t1, t2, route);
 
-  // non-textnode: find inner difference
-  var subset = stable[0];
-
-  // special case: no direct child differences. enter node and check all children.
+  // special case: no direct child differences: check each child for differences.
   if (stable.length === 1 && subset["old"] === 0  && subset["new"] === 0 &&  subset.length === t1.childNodes.length) {
-    // there are no child differences at this depth, so check further downstream.
     for(var i=0, last=t1.childNodes.length; i<last; i++) {
-      console.log("checking "+i);
+      console.log("checking " + (route.length>0 ? route.join(",") + "," : '') + i);
       findDiff(t1.childNodes[i], t2.childNodes[i], grow(route, i));
     }
     return;
@@ -489,7 +498,6 @@ var findDiff = function findDiff(t1, t2, route) {
   }
 
   diff.route = route;
-
   var t1prime = resolveDiff(diff, t1, t2, stable);
   findDiff(t1prime, t2, route);
 }
