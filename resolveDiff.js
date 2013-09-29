@@ -67,9 +67,10 @@ define(function() {
       else {
         console.log(oldNode);
         console.log(newNode);
-        // FIXME: implement this.
+        // FIXME: implement the resolution rules here.
         throw new Error("modified is unhandled between non-text nodes at the moment");
       }
+
      }
 
     /**

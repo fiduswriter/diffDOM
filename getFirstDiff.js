@@ -62,11 +62,13 @@ define(function() {
       // any gaps between t1 and t2?
       if (group1 === true) {
         if (group2 === true) {
-
-          // FIXME: shouldn't we already know what that difference is at this point?
           c1 = t1.childNodes[i];
           c2 = t2.childNodes[i];
           console.log("node difference at " + i + " between ", c1, " and" , c2);
+
+          // FIXME: we should already know what that difference is at this point.
+          //        Find out where we can best put that in.
+
           return { action: "modified", nodeNumber: i };
 
         } else {
