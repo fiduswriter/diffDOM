@@ -9,7 +9,23 @@
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
   <script src="qunit-1.12.0.js"></script>
-  <script src="../domdiff.js"></script>
-  <script src="tests.js"></script>
+  <script src="../require.js"></script>
+  <script>
+  (function () {
+
+      // Defer Qunit so RequireJS can work its magic and resolve all modules.
+      QUnit.config.autostart = false;
+
+      // A list of all QUnit test Modules.  Make sure you include the `.js`
+      // extension so RequireJS resolves them as relative paths rather than using
+      // the `baseUrl` value supplied above.
+      var testModules = [
+        "tests.js",
+      ];
+
+      // Resolve all testModules and then start the Test Runner.
+      require(testModules, QUnit.start);
+  }());
+  </script>
 </body>
 </html>

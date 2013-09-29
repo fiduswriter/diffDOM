@@ -9,6 +9,7 @@
         margin-bottom: 1em;
       }
     </style>
+    <script src="require.js"></script>
   </head>
   <body>
 
@@ -60,13 +61,11 @@
 
     <div id="result"></div>
 
-    <script src="domdiff.js"></script>
-
     <!--
       Test this library
     -->
     <script>
-      (function test() {
+      require(["DOMdiff", "markSubTrees"], function(DOMdiff, markSubTrees) {
         // test tree 1 ("old")
         var t1 = document.getElementById("t1");//.childNodes[5];//.childNodes[1];
 
@@ -82,8 +81,10 @@
 */
         console.log(subtrees);
 
-        findDiff(t1,t2);
-      }());
+        DOMdiff.findDiff(t1,t2)
+        console.log(DOMdiff.diffTracker);
+
+      });
     </script>
   </body>
 </html>
