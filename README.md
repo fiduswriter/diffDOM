@@ -8,3 +8,5 @@ DOM nodes are preferred over remove-insert operations.
 
 **NOTE:** this library is current under revision, and the master branch
 is not in working state at the moment.
+
+QUnit tests: http://pomax.github.io/DOM-diff/tests/
