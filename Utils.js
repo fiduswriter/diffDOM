@@ -25,7 +25,12 @@ define(function() {
      */
     grow: function grow(array, element) {
       array = array.slice();
-      array.push(element);
+      if(!(element instanceof Array)) {
+        element = [element];
+      }
+      element.forEach(function(e) {
+        array.push(e);
+      });
       return array;
     },
 
@@ -54,8 +59,16 @@ define(function() {
       });
 
       return { gaps1: gaps1, gaps2: gaps2 };
-    }
+    },
 
+    /**
+     *
+     */
+    createChild: function(innerHTML) {
+      var div = document.createElement("div");
+      div.innerHTML = innerHTML;
+      return div.childNodes[0];
+    }
   };
 
   return Utils;

@@ -32,7 +32,12 @@ function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDi
 
     if (stable.length === 0) {
       if(t1.childNodes.length > 0 || t2.childNodes.length > 0) {
-        console.log("something happened here");
+//        console.log("something happened here, between " + t1.nodeName + " and " + t2.nodeName);
+//        console.log(t1);
+//        console.log(t2);
+        var diff = { action: "modified", nodeNumber: "unknown", route: route, unknown: true };
+        resolveDiff(diff, t1, t2, stable, diffTracker);
+        // presumably, this is a leaf node, but honestly i have no idea.
       }
       return;
     }
@@ -43,7 +48,7 @@ function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDi
     // special case: no direct child differences: check each child for differences.
     if (stable.length === 1 && subset["old"] === 0  && subset["new"] === 0 &&  subset.length === t1.childNodes.length) {
       for(var i=0, last=t1.childNodes.length; i<last; i++) {
-        console.log("checking " + (route.length>0 ? route.join(",") + "," : '') + i);
+        //console.log("checking " + (route.length>0 ? route.join(",") + "," : '') + i);
         findDiff(t1.childNodes[i], t2.childNodes[i], utils.grow(route, i));
       }
       return;

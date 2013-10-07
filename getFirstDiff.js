@@ -1,4 +1,4 @@
-define(function() {
+define(["markSubTrees", "Utils"], function(markSubTrees, utils) {
 
   /**
    * Find the first gap difference between the two trees,
@@ -31,12 +31,14 @@ define(function() {
         fgaps2 = gaps2.filter(filter),
         fgl2 = fgaps2.length;
 
+/*
     console.log("subtree mapping");
     console.log("1: " + gaps1.join(","));
     console.log("2: " + gaps2.join(","));
     console.log("group sequences");
     console.log("1: " + fgaps1.join(","));
     console.log("2: " + fgaps2.join(","));
+*/
 
     for(var i=0; i<fgl2; i++) {
       group = fgaps2[i];
@@ -51,7 +53,7 @@ define(function() {
       }
     }
 
-    console.log("groups are aligned");
+    //console.log("groups are aligned");
 
     // if the groups are all in-sequence, do any insert/modify/removal checks
     var  group1, group2, c1 ,c2;
@@ -64,13 +66,17 @@ define(function() {
         if (group2 === true) {
           c1 = t1.childNodes[i];
           c2 = t2.childNodes[i];
-          console.log("node difference at " + i + " between ", c1, " and" , c2);
+          // console.log("node difference at " + i + " between ", c1, " and" , c2);
+          var stable = markSubTrees(c1, c2);
+          var gapInformation = utils.getGapInformation(c1, c2, stable);
+          var diff = getFirstDiff(c1, c2, gapInformation);
 
-          // FIXME: we should already know what that difference is at this point.
-          //        Find out where we can best put that in.
+          // if we do not indicate the base nodeNumber, the
+          // 'nodeNumber' property is actually for the wrong
+          // depth level
+          diff.baseNodeNumber = i;
 
-          return { action: "modified", nodeNumber: i };
-
+          return diff;
         } else {
           console.log("node removed at " + i);
           return { action: "remove", nodeNumber: i };

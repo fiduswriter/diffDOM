@@ -5,8 +5,10 @@ define(function() {
   }
 
   DiffTracker.prototype = {
+    last: false,
     track: function(diff) {
       this.diffInformation.push(diff);
+      this.last = diff;
     },
     reset: function() {
       this.diffInformation = [];

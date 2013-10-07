@@ -25,7 +25,10 @@ define(function() {
         tracker.track({
           action: "removed attribute",
           route: route,
-          name: attr.name
+          attribute: {
+            name: attr.name,
+            value: attr.nodeValue
+          }
         });
         return;
       }

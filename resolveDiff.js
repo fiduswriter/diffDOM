@@ -1,4 +1,4 @@
-define(function() {
+define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirstDiff, utils) {
 
   /**
    * resolve a diff between t1 and t2 to t1,
@@ -7,18 +7,22 @@ define(function() {
    * the "one step closer" node as a result.
    */
   var resolveDiff = function(diff, t1, t2, groups, tracker) {
+    tracker = tracker || { track: function(){}, last: false };
+
     var applied = t1.cloneNode(true),
-        route = diff.route;
+        route = diff.route,
+        base = (typeof diff.baseNodeNumber === "number") ? applied.childNodes[diff.baseNodeNumber] : applied;
+        refbase = (typeof diff.baseNodeNumber === "number") ? t2.childNodes[diff.baseNodeNumber] : t2;
 
     /**
      * To go from t1 to t2, we first need to remove a node
      */
     if(diff.action === "remove") {
-      var child = applied.childNodes[diff.nodeNumber];
-      applied.removeChild(child);
+      var child = base.childNodes[diff.nodeNumber];
+      base.removeChild(child);
       tracker.track({
-        action: "removal",
-        routes: utils.grow(route, diff.nodeNumber)
+        action: "remove element",
+        route: utils.grow(route, (diff.baseNodeNumber ? [diff.baseNodeNumber, diff.nodeNumber] : diff.nodeNumber))
       });
     }
 
@@ -27,22 +31,22 @@ define(function() {
      */
     else if(diff.action === "insert") {
       var next = diff.nodeNumber+1,
-          newNode = t2.childNodes[diff.nodeNumber].cloneNode(true);
-      if (next > applied.childNodes.length) {
+          newNode = refbase.childNodes[diff.nodeNumber].cloneNode(true);
+      if (next >= base.childNodes.length) {
         tracker.track({
-          action: "append",
-          routes: utils.grow(route),
+          action: "append element",
+          route: utils.grow(route, (diff.baseNodeNumber ? [diff.baseNodeNumber, diff.nodeNumber] : diff.nodeNumber)),
           element: utils.toHTML(newNode)
         });
-        applied.appendChild(newNode);
+        base.appendChild(newNode);
       } else {
-        var reference = applied.childNodes[diff.nodeNumber];
+        var reference = base.childNodes[diff.nodeNumber];
         tracker.track({
-          action: "insert",
-          routes: utils.grow(route, diff.nodeNumber),
+          action: "insert element",
+          route: utils.grow(route, (diff.baseNodeNumber ? [diff.baseNodeNumber, diff.nodeNumber] : diff.nodeNumber)),
           element: utils.toHTML(newNode)
         });
-        applied.insertBefore(newNode, reference);
+        base.insertBefore(newNode, reference);
       }
     }
 
@@ -50,13 +54,27 @@ define(function() {
      * To go from t1 to t2, we first need to modify a node
      */
     else if(diff.action === "modified") {
-      var oldNode = applied.childNodes[diff.nodeNumber],
-          newNode = t2.childNodes[diff.nodeNumber];
+      var oldNode = base.childNodes[diff.nodeNumber],
+          newNode = refbase.childNodes[diff.nodeNumber];
 
-      if (oldNode.nodeType === 3 & newNode.nodeType === 3) {
+      /**
+       * This first clause is genuinely odd, and really shouldn't exist.
+       */
+      if(diff.unknown) {
+        // unknown diff between two nodes.
         tracker.track({
-          action: "text modified",
-          routes: utils.grow(route, diff.nodeNumber),
+          action: "inner modification",
+          oldData: base.innerHTML,
+          newData: refbase.innerHTML,
+          nodeNumber: route.slice(), //diff.nodeNumber,
+          route: diff.route
+        })
+      }
+
+      else if (oldNode.nodeType === 3 & newNode.nodeType === 3) {
+        tracker.track({
+          action: "text modification",
+          route: utils.grow(route, diff.nodeNumber),
           oldData: oldNode.data,
           newData: newNode.data
         });
@@ -67,7 +85,16 @@ define(function() {
       else {
         console.log(oldNode);
         console.log(newNode);
+
+        tracker.track({
+          action: "unknown modification",
+          oldNode: oldNode,
+          newNode: newNode,
+          route: utils.grow(route, diff.nodeNumber)
+        });
+
         // FIXME: implement the resolution rules here.
+
         throw new Error("modified is unhandled between non-text nodes at the moment");
       }
 
@@ -85,13 +112,12 @@ define(function() {
       // slide elements down
       if(from > to ) {
         for(var i=0; i<group.length; i++) {
-          //console.log(from, to, i);
           child = applied.childNodes[from + i];
           reference = applied.childNodes[to + i];
 
           tracker.track({
-            action: "insert",
-            routes: utils.grow(route, diff.nodeNumber),
+            action: "insert element",
+            route: utils.grow(route, diff.nodeNumber),
             element: utils.toHTML(child)
           });
 
@@ -102,13 +128,12 @@ define(function() {
       // slide elements up
       else {
         for(var i=group.length-1; i>=0; i--) {
-          //console.log(from, to, i);
           child = applied.childNodes[from + i];
           reference = applied.childNodes[to + 1 + i];
 
           tracker.track({
-            action: "insert",
-            routes: utils.grow(route, diff.nodeNumber),
+            action: "insert element",
+            route: utils.grow(route, diff.nodeNumber),
             element: utils.toHTML(child)
           });
 
