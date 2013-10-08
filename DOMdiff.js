@@ -1,8 +1,8 @@
 /**
  * DOM diff AMD module (Requirejs etc.)
  */
-define(["Utils", "markSubTrees", "DiffTracker", "findAttrDiff", "getFirstDiff", "resolveDiff"],
-function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDiff) {
+define(["Utils", "markSubTrees", "DiffTracker", "findAttrDiff", "getFirstDiff", "resolveDiff", "applyDiff"],
+function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDiff, applyDiff) {
 
   // safety valve for diffing.
   var debug = true,
@@ -72,5 +72,9 @@ function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDi
   }
 
   // object retun
-  return { findDiff: findDiff, diffTracker: diffTracker };
+  return {
+    findDiff: findDiff,
+    applyDiff: applyDiff,
+    diffTracker: diffTracker
+  };
 });
