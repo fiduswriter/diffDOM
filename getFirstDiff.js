@@ -4,11 +4,15 @@ define(["markSubTrees", "Utils"], function(markSubTrees, utils) {
    * Find the first gap difference between the two trees,
    * and tell us what needs to happen to resolve it.
    */
-  var getFirstDiff = function(t1, t2, gapInformation) {
+  var getFirstDiff = function(t1, t2, gapInformation, route) {
+    route = route || [];
+
+// console.log("getFirstDiff", route, t1, t2);
+
     // text nodes are a shortcut.
     if(t1.nodeType === 3 && t2.nodeType === 3) {
       if(t1.data !== t2.data) {
-        return { action: "replace", content: t2.data };
+        return { action: "replace", oldValue: t1.data, newValue: t2.data, route: route };
       }
       return false;
     }
@@ -31,29 +35,26 @@ define(["markSubTrees", "Utils"], function(markSubTrees, utils) {
         fgaps2 = gaps2.filter(filter),
         fgl2 = fgaps2.length;
 
-/*
-    console.log("subtree mapping");
+    /*
+    console.log("subtree mapping:");
     console.log("1: " + gaps1.join(","));
     console.log("2: " + gaps2.join(","));
-    console.log("group sequences");
+    console.log("group sequences:");
     console.log("1: " + fgaps1.join(","));
     console.log("2: " + fgaps2.join(","));
-*/
+    */
 
-    for(var i=0; i<fgl2; i++) {
-      group = fgaps2[i];
-      if (group !== sequence) {
-        // out of sequence jump: this group needs to be moved down in t1 to match t2
-        if (group !== sequence + 1) {
-          console.log("node group "+group+" moved");
-          return { action: "move", group: group };
-        }
-        // in sequence: keep checking
-        else { sequence = group; }
+    var shortest = fgl1<fgl2 ? fgaps1 : fgaps2;
+    // if the same, there will be no difference
+    for(var i=0, last = shortest.length; i<last; i++) {
+      if(fgaps1[i] != fgaps2[i]) {
+        var group = fgaps1[i];
+// console.log("node group " + group + " moved");
+        return { action: "move", route: route, group: group };
       }
     }
 
-    //console.log("groups are aligned");
+// console.log("groups are aligned");
 
     // if the groups are all in-sequence, do any insert/modify/removal checks
     var  group1, group2, c1 ,c2;
@@ -66,25 +67,34 @@ define(["markSubTrees", "Utils"], function(markSubTrees, utils) {
         if (group2 === true) {
           c1 = t1.childNodes[i];
           c2 = t2.childNodes[i];
-          // console.log("node difference at " + i + " between ", c1, " and" , c2);
-          var stable = markSubTrees(c1, c2);
-          var gapInformation = utils.getGapInformation(c1, c2, stable);
-          var diff = getFirstDiff(c1, c2, gapInformation);
+          console.log("node difference at " + i + " between ", c1, " and" , c2);
 
-          // if we do not indicate the base nodeNumber, the
-          // 'nodeNumber' property is actually for the wrong
-          // depth level
-          diff.baseNodeNumber = i;
+          if(c1.nodeType === 3 && c2.nodeType !== 3) {
+            return { action: "text to node", oldValue: c1.data, newValue: utils.toHTML(c2), route: route };
+          }
 
-          return diff;
+          if(c2.nodeType === 3 && c1.nodeType !== 3) {
+            return { action: "node to text", oldValue: utils.toHTML(c1), newValue: c2.data, route: route };
+          }
+
+          else {
+            var stable = markSubTrees(c1, c2);
+            var gapInformation = utils.getGapInformation(c1, c2, stable);
+            var diff = getFirstDiff(c1, c2, gapInformation, utils.grow(route, i));
+            // if we do not indicate the base nodeNumber, the
+            // 'nodeNumber' property is actually for the wrong
+            // depth level
+            diff.baseNodeNumber = i;
+            return diff;
+          }
         } else {
           console.log("node removed at " + i);
-          return { action: "remove", nodeNumber: i };
+          return { action: "remove", nodeNumber: i, route: [i] };
         }
       }
       else if (group2 === true) {
         console.log("node inserted at " + i);
-        return { action: "insert", nodeNumber: i };
+        return { action: "insert", nodeNumber: i, route: [i] };
       }
     }
 

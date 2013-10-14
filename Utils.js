@@ -5,9 +5,27 @@ define(function() {
      * This should really be a predefined function in Array...
      */
     makeArray: function(n, v) {
+      var deepcopy = function(v) {
+        v.slice();
+        for(var i=0,last=v.length; i<last; i++){
+          if(v[i] instanceof Array) {
+            v[i] = deepcopy(v[i]); }}};
+      if(v instanceof Array) { v = deepcopy(v); }
       var set = function() { return v; };
       return (new Array(n)).join('.').split('.').map(set);
     },
+
+    /**
+     * Render a (multidimensional) array
+     */
+    renderArray: function(arr) {
+      rendered = [];
+      arr.forEach(function(row) {
+        rendered.push(row.join(" "));
+      });
+      return rendered.join("\n");
+    },
+
 
     /**
      * HTML serialization
@@ -62,11 +80,11 @@ define(function() {
     },
 
     /**
-     *
+     * create an element
      */
-    createChild: function(innerHTML) {
+    createChild: function(childHTML) {
       var div = document.createElement("div");
-      div.innerHTML = innerHTML;
+      div.innerHTML = childHTML;
       return div.childNodes[0];
     }
   };

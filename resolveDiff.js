@@ -15,9 +15,45 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
         refbase = (typeof diff.baseNodeNumber === "number") ? t2.childNodes[diff.baseNodeNumber] : t2;
 
     /**
+     * To go from t1 to t2, we first need to do a text replacement
+     */
+    if(diff.action === "replace") {
+      var pos = diff.route[diff.route.length-1];
+      node = base.childNodes[pos];
+      node.data = diff.newValue;
+      console.log(node);
+      tracker.track({
+        action: "text modification",
+        route: utils.grow(route, pos),
+        oldData: diff.oldValue,
+        newData: diff.newValue
+      });
+    }
+
+    else if (diff.action === "node to text") {
+      tracker.track({
+        action: "node to text",
+        route: route,
+        oldData: diff.oldValue,
+        newData: diff.newValue
+      });
+      base.innerHTML = diff.newValue;
+    }
+
+    else if (diff.action === "text to node") {
+      tracker.track({
+        action: "text to node",
+        route: route,
+        oldData: diff.oldValue,
+        newData: diff.newValue
+      });
+      base.innerHTML = diff.newValue;
+    }
+
+    /**
      * To go from t1 to t2, we first need to remove a node
      */
-    if(diff.action === "remove") {
+    else if(diff.action === "remove") {
       var child = base.childNodes[diff.nodeNumber];
       base.removeChild(child);
       tracker.track({
@@ -32,6 +68,7 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
     else if(diff.action === "insert") {
       var next = diff.nodeNumber+1,
           newNode = refbase.childNodes[diff.nodeNumber].cloneNode(true);
+
       if (next >= base.childNodes.length) {
         tracker.track({
           action: "append element",
@@ -39,13 +76,17 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
           element: utils.toHTML(newNode)
         });
         base.appendChild(newNode);
-      } else {
+      }
+
+      else {
         var reference = base.childNodes[diff.nodeNumber];
-        tracker.track({
+        var diff = {
           action: "insert element",
           route: utils.grow(route, (diff.baseNodeNumber ? [diff.baseNodeNumber, diff.nodeNumber] : diff.nodeNumber)),
           element: utils.toHTML(newNode)
-        });
+        };
+        tracker.track(diff);
+        console.log(diff);
         base.insertBefore(newNode, reference);
       }
     }
@@ -109,18 +150,19 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
           to = group["new"],
           child, reference;
 
+      tracker.track({
+        action: "move elements",
+        route: route,
+        from: from,
+        to: to,
+        length: group.length
+      });
+
       // slide elements down
       if(from > to ) {
         for(var i=0; i<group.length; i++) {
           child = applied.childNodes[from + i];
           reference = applied.childNodes[to + i];
-
-          tracker.track({
-            action: "insert element",
-            route: utils.grow(route, diff.nodeNumber),
-            element: utils.toHTML(child)
-          });
-
           applied.insertBefore(child, reference);
         }
       }
@@ -130,13 +172,6 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
         for(var i=group.length-1; i>=0; i--) {
           child = applied.childNodes[from + i];
           reference = applied.childNodes[to + 1 + i];
-
-          tracker.track({
-            action: "insert element",
-            route: utils.grow(route, diff.nodeNumber),
-            element: utils.toHTML(child)
-          });
-
           applied.insertBefore(child, reference);
         }
       }

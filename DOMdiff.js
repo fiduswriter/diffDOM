@@ -1,13 +1,12 @@
 /**
  * DOM diff AMD module (Requirejs etc.)
  */
-define(["Utils", "markSubTrees", "DiffTracker", "findAttrDiff", "getFirstDiff", "resolveDiff", "applyDiff"],
-function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDiff, applyDiff) {
+define(["Utils", "markSubTrees", "DiffTracker", "findAttrDiff", "getFirstDiff", "resolveOuterDiff", "resolveDiff", "applyDiff"],
+function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveOuterDiff, resolveDiff, applyDiff) {
 
   // safety valve for diffing.
   var debug = true,
-      diffCount = 0,
-      diffCap = 1000,
+      diffCap = 10,
       diffTracker = new DiffTracker();
 
   /**
@@ -15,8 +14,7 @@ function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDi
    * between stable subtree mappings.
    */
   var findDiff = function findDiff(t1, t2, route) {
-
-    if(debug && diffCount++ > diffCap) {
+    if(debug && diffTracker.diffInformation.length > diffCap) {
       throw new Error("diff cap reached");
     }
 
@@ -27,54 +25,63 @@ function(utils, markSubTrees, DiffTracker, findAttrDiff, getFirstDiff, resolveDi
       diffTracker.reset();
     }
 
-    // find the stable subset
-    var stable = markSubTrees(t1, t2);
+    // step 1: find differences in the tag, rather than the element content
+    var outerdiff = findAttrDiff(t1, t2, route, diffTracker);
+    t1 = resolveOuterDiff(t1, outerdiff);
 
-    if (stable.length === 0) {
+    // step 2: find differences in the element content
+    var subtreeMappings = markSubTrees(t1, t2);
+
+    // If there is no correspondence at all between the two trees,
+    // we (for the moment) signal that we don't know what needs to
+    // happen here.
+    // FIXME: add this case
+    if (subtreeMappings.length === 0) {
       if(t1.childNodes.length > 0 || t2.childNodes.length > 0) {
-//        console.log("something happened here, between " + t1.nodeName + " and " + t2.nodeName);
-//        console.log(t1);
-//        console.log(t2);
         var diff = { action: "modified", nodeNumber: "unknown", route: route, unknown: true };
-        resolveDiff(diff, t1, t2, stable, diffTracker);
-        // presumably, this is a leaf node, but honestly i have no idea.
+        resolveDiff(diff, t1, t2, subtreeMappings, diffTracker);
+        // presumably, this is a leaf node, but honestly: I have no idea.
       }
       return;
     }
 
-    var subset = stable[0],
-        outerdiff = findAttrDiff(t1, t2, route, diffTracker);
+    // If there is only one correspondence mapping, check whether it covers
+    // all elements. If it does, there is no difference between the trees here.
+    var firstSubset = subtreeMappings[0],
+        isStartSet = firstSubset["old"] === 0  && firstSubset["new"] === 0,
+        isFullSubset = firstSubset.length === t1.childNodes.length;
 
-    // special case: no direct child differences: check each child for differences.
-    if (stable.length === 1 && subset["old"] === 0  && subset["new"] === 0 &&  subset.length === t1.childNodes.length) {
+    if (subtreeMappings.length === 1 && isStartSet && isFullSubset) {
       for(var i=0, last=t1.childNodes.length; i<last; i++) {
-        //console.log("checking " + (route.length>0 ? route.join(",") + "," : '') + i);
         findDiff(t1.childNodes[i], t2.childNodes[i], utils.grow(route, i));
       }
       return;
     }
 
-    // ...
-    var gapInformation = utils.getGapInformation(t1, t2, stable),
+    // If there are one or more correspondence mappings, then there are differences
+    // that need to be resolved. Find the ordering and gaps in the correspondence,
+    // and use that information to find the first difference; resolve that, and then
+    // perform another finddiff iteration
+    var gapInformation = utils.getGapInformation(t1, t2, subtreeMappings),
         diff = getFirstDiff(t1, t2, gapInformation);
 
-    // ...
     if(diff === false) {
-      throw new Error("more than 1 mapped subtree ("+stable.length+"), but no diff could be found...");
+      throw new Error("more than 1 mapped subtree ("+subtreeMappings.length+") found, but no diff could be found...");
     }
 
-    // determine what must be done to resolve this diff, adding that
-    // information to the diff tracker, and then moving on to the next
-    // difference between t1 and t2.
-    diff.route = route;
-    var t1prime = resolveDiff(diff, t1, t2, stable, diffTracker);
-    findDiff(t1prime, t2, route);
+    diff.route = route.concat(diff.route);
+    t1 = resolveDiff(diff, t1, t2, subtreeMappings, diffTracker);
+    findDiff(t1, t2, route);
   }
 
-  // object retun
+  // DOMdiff return object - this defines the public API for our users
   return {
     findDiff: findDiff,
     applyDiff: applyDiff,
+    // The following object represents
+    // the diff as found during the
+    // last-called findDiff() call:
     diffTracker: diffTracker
   };
+
 });
