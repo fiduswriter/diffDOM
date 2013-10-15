@@ -66,8 +66,8 @@ define(["Utils"], function(utils) {
       return;
     }
 
-    if (op === "inner modification") {
-      return node.childNodes[0].data = operation.newData;
+    if (op === "text modification") {
+      return node.data = operation.newData;
     }
 
     if (op === "text to node") {
