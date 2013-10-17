@@ -86,6 +86,17 @@ define(function() {
       var div = document.createElement("div");
       div.innerHTML = childHTML;
       return div.childNodes[0];
+    },
+
+    /**
+     * Get a downstream element
+     */
+    getFromRoute: function(base, route) {
+      var node = base;
+      while(route.length > 0) {
+        node = node.childNodes[route.splice(0,1)[0]];
+      }
+      return node;
     }
   };
 

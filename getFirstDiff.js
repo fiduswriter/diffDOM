@@ -5,14 +5,15 @@ define(["markSubTrees", "Utils"], function(markSubTrees, utils) {
    * and tell us what needs to happen to resolve it.
    */
   var getFirstDiff = function(t1, t2, gapInformation, route) {
-    route = route || [];
 
-// console.log("getFirstDiff", route, t1, t2);
+console.log(t1, t2);
+
+    route = route || [];
 
     // text nodes are a shortcut.
     if(t1.nodeType === 3 && t2.nodeType === 3) {
       if(t1.data !== t2.data) {
-        return { action: "replace", oldValue: t1.data, newValue: t2.data, route: route };
+        return { action: "replace", oldValue: t1.data, newValue: t2.data, route: [0] };
       }
       return false;
     }
@@ -46,7 +47,7 @@ define(["markSubTrees", "Utils"], function(markSubTrees, utils) {
 
     var shortest = fgl1<fgl2 ? fgaps1 : fgaps2;
     // if the same, there will be no difference
-    for(var i=0, last = shortest.length; i<last; i++) {
+    for(i=0, last = shortest.length; i<last; i++) {
       if(fgaps1[i] != fgaps2[i]) {
         var group = fgaps1[i];
 // console.log("node group " + group + " moved");
@@ -58,35 +59,42 @@ define(["markSubTrees", "Utils"], function(markSubTrees, utils) {
 
     // if the groups are all in-sequence, do any insert/modify/removal checks
     var  group1, group2, c1 ,c2;
-    for(var i=0; i<last; i++) {
+// console.log(last);
+    for(i=0, last=gl1 < gl2 ? gl1 : gl2; i<last; i++) {
       group1 = gaps1[i];
       group2 = gaps2[i];
+
+// console.log("gap information at "+i+":", group1, group2)
 
       // any gaps between t1 and t2?
       if (group1 === true) {
         if (group2 === true) {
+
+
           c1 = t1.childNodes[i];
           c2 = t2.childNodes[i];
-          console.log("node difference at " + i + " between ", c1, " and" , c2);
+//          console.log("node difference at " + i + " between ", c1, " and" , c2, "route: ", route);
+
+          if(c1.nodeType === 3 && c2.nodeType === 3) {
+            return { action: "replace", oldValue: c1.data, newValue: c2.data, route: [0] };
+          }
 
           if(c1.nodeType === 3 && c2.nodeType !== 3) {
             return { action: "text to node", oldValue: c1.data, newValue: utils.toHTML(c2), route: route };
           }
 
-          if(c2.nodeType === 3 && c1.nodeType !== 3) {
+          if(c1.nodeType !== 3 && c2.nodeType === 3) {
             return { action: "node to text", oldValue: utils.toHTML(c1), newValue: c2.data, route: route };
           }
 
-          else {
-            var stable = markSubTrees(c1, c2);
-            var gapInformation = utils.getGapInformation(c1, c2, stable);
-            var diff = getFirstDiff(c1, c2, gapInformation, utils.grow(route, i));
-            // if we do not indicate the base nodeNumber, the
-            // 'nodeNumber' property is actually for the wrong
-            // depth level
-            diff.baseNodeNumber = i;
-            return diff;
-          }
+          // difference somewhere inside this node.
+          var subtreeMappings = markSubTrees(c1, c2);
+          var gapInformation = utils.getGapInformation(c1, c2, subtreeMappings);
+          var diff = getFirstDiff(c1, c2, gapInformation, route);
+          diff.route = [i].concat(diff.route);
+//          console.log(c1, c2, diff, diff.route.join(","));
+          return diff;
+
         } else {
           console.log("node removed at " + i);
           return { action: "remove", nodeNumber: i, route: [i] };
