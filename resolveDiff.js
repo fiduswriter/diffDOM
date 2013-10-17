@@ -18,22 +18,22 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
      * To go from t1 to t2, we first need to do a text replacement
      */
     if(diff.action === "replace") {
-      var pos = diff.route[diff.route.length-1];
-      node = base.childNodes[pos];
-      node.data = diff.newValue;
-      console.log(node);
+      console.log("replacing...", route, t1);
       tracker.track({
         action: "text modification",
-        route: utils.grow(route, pos),
+        route: route.slice(),
         oldData: diff.oldValue,
         newData: diff.newValue
       });
+      var node = utils.getFromRoute(base, route);
+      console.log(node);
+      node.data = diff.newValue;
     }
 
     else if (diff.action === "node to text") {
       tracker.track({
         action: "node to text",
-        route: route,
+        route: route.slice(),
         oldData: diff.oldValue,
         newData: diff.newValue
       });
@@ -43,7 +43,7 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
     else if (diff.action === "text to node") {
       tracker.track({
         action: "text to node",
-        route: route,
+        route: route.slice(),
         oldData: diff.oldValue,
         newData: diff.newValue
       });
@@ -108,7 +108,7 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
           oldData: base.innerHTML,
           newData: refbase.innerHTML,
           nodeNumber: route.slice(), //diff.nodeNumber,
-          route: diff.route
+          route: diff.route.slice()
         })
       }
 
@@ -119,7 +119,6 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
           oldData: oldNode.data,
           newData: newNode.data
         });
-
         oldNode.data = newNode.data;
       }
 
@@ -152,7 +151,7 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
 
       tracker.track({
         action: "move elements",
-        route: route,
+        route: route.slice(),
         from: from,
         to: to,
         length: group.length
