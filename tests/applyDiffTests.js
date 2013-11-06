@@ -119,19 +119,4 @@ QUnit.test("applyDiff for element removal, appending, insertion, and movement", 
     equal(t1.innerHTML, "<li id=\"new\">this used to be a node</li><li>in between</li><li><ul><li>inside</li></ul></li>", "Combined modifications made successfully");
   });
 
-  QUnit.test("new test", function() {
-  var t1;
-
-    t1 = make("ul", "<li>test 2</li><li>test 2</li>");
-
-    var operation = 
-    [
-                    {action: "text modification", newData: "test 1", route:[0, 0]}
-    ];
-    applicator.applyDiff(operation, t1);
-
-    console.log(t1);
-    equal(t1.innerHTML, "<li>test 1</li><li>test 2</li>", "The text was modified successfully for the two list items");
-  });
-
 });
