@@ -17,7 +17,7 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
     /**
      * To go from t1 to t2, we first need to do a text replacement
      */
-    if(diff.action === "replace") {
+    if(diff.action === "replace text") {
       console.log("replacing...", route, t1);
       tracker.track({
         action: "text modification",
@@ -143,7 +143,7 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
     /**
      * To go from t1 to t2, we first need to move a group of nodes
      */
-    else if(diff.action === "move") {
+    else if(diff.action === "move group") {
       var group = groups[diff.group],
           from = group["old"],
           to = group["new"],
@@ -176,7 +176,22 @@ define(["markSubTrees", "getFirstDiff", "Utils"], function(markSubTrees, getFirs
       }
     }
 
-    // the "applied" tree is now t1, one step closer to being t2.
+    /**
+     * innerHTML replacement
+     */
+    else if(diff.action === "replace innerHTML") {
+      var oldHTML = base.innerHTML,
+          newHTML = refbase.innerHTML;
+      tracker.track({
+          action: "replace innerHTML",
+          oldHTML: oldHTML,
+          newHTML: newHTML,
+          route: route.slice()
+      });
+      applied.innerHTML = newHTML;
+    }
+
+    // the "applied" tree is now t1, modified to be one step closer to being t2.
     return applied;
   }
 

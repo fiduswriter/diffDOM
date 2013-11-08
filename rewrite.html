@@ -1,0 +1,364 @@
+<!doctype html>
+<html>
+<head>
+
+<script>
+
+  const ADD_ATTRIBUTE = "add attribute",
+        MODIFY_ATTRIBUTE = "modify attribute",
+        REMOVE_ATTRIBUTE = "remove attribute",
+        REPLACE_INNER_HTML = "replace innerHTML";
+
+</script>
+
+<script>
+  var SubsetMapping = function SubsetMapping(a, b) {
+    this["old"] = a;
+    this["new"] = b;
+  };
+
+  SubsetMapping.prototype = {
+    contains: function contains(subset) {
+      if(subset.length < this.length) {
+        return subset["new"] >= this["new"] && subset["new"] < this["new"] + this.length;
+      }
+      return false;
+    },
+    toString: function toString() {
+      return this.length + " element subset, first mapping: old " + this["old"] + " → new " + this["new"];
+    }
+  };
+</script>
+
+<script>
+  var roughlyEqual = function roughlyEqual(e1, e2, preventRecursion) {
+    if (!e1 || !e2) return false;
+    if (e1.nodeType !== e2.nodeType) return false;
+    if (e1.nodeType === 3) return e1.data === e2.data;
+    if (e1.nodeName !== e2.nodeName) return false;
+    if (e1.childNodes.length !== e2.childNodes.length) return false;
+    var thesame = true;
+    for (var i=e1.childNodes.length-1; i >= 0; i--) {
+      if (preventRecursion) {
+        thesame = thesame && (e1.childNodes[i].nodeName === e2.childNodes[i].nodeName);
+      } else {
+        // note: we only allow one level of recursion at any depth. If 'preventRecursion'
+        //       was not set, we explicitly set it for child iterations.
+        thesame = thesame && roughlyEqual(e1.childNodes[i], e2.childNodes[i], true);
+      }
+    }
+    return thesame;
+  };
+</script>
+
+<script>
+  /**
+   * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
+   */
+  var findCommonSubsets = function(c1, c2, marked1, marked2) {
+    var lcsSize = 0,
+        index = [],
+        len1 = c1.length,
+        len2 = c2.length;
+    // set up the matching table
+    var matches = [], a, i, j;
+    for (a = 0; a < len1+1; a++) { matches[a] = []; }
+    // fill the matches with distance values
+    for (i = 0; i < len1; i++) {
+      for (j = 0; j < len2; j++) {
+        if (!marked1[i] && !marked2[j] && roughlyEqual(c1[i], c2[j])) {
+          matches[i+1][j+1] = (matches[i][j] ? matches[i][j] + 1 : 1);
+          if (matches[i+1][j+1] > lcsSize) {
+            lcsSize = matches[i+1][j+1];
+            index = [i+1, j+1];
+          }
+        } else { matches[i+1][j+1] = 0; }
+      }
+    }
+    if(lcsSize === 0) { return false; }
+    var origin = [index[0] - lcsSize, index[1] - lcsSize];
+    var ret = new SubsetMapping(origin[0], origin[1]);
+    ret.length = lcsSize;
+    return ret;
+  };
+
+  /**
+   * This should really be a predefined function in Array...
+   */
+  var makeArray = function(n, v) {
+    var deepcopy = function(v) {
+      v.slice();
+      for(var i=0,last=v.length; i<last; i++){
+        if(v[i] instanceof Array) {
+          v[i] = deepcopy(v[i]); }}};
+    if(v instanceof Array) { v = deepcopy(v); }
+    var set = function() { return v; };
+    return (new Array(n)).join('.').split('.').map(set);
+  };
+
+  /**
+   * Find all matching subsets, based on immediate child differences only.
+   */
+  var markSubTrees = function markSubTrees(oldTree, newTree) {
+    oldTree = oldTree.cloneNode(true);
+    newTree = newTree.cloneNode(true);
+    // note: the child lists are views, and so update as we update old/newTree
+    var oldChildren = oldTree.childNodes,
+        newChildren = newTree.childNodes,
+        marked1 = makeArray(oldChildren.length, false),
+        marked2 = makeArray(newChildren.length, false),
+        subsets = [], subset = true, i;
+    while (subset) {
+      subset = findCommonSubsets(oldChildren, newChildren, marked1, marked2);
+      if(subset) {
+        subsets.push(subset);
+        for(i=0; i<subset.length; i++) { marked1[subset.old+i] = true; }
+        for(i=0; i<subset.length; i++) { marked2[subset.new+i] = true; }
+      }
+    }
+
+    return subsets;
+  };
+</script>
+
+<script>
+var findFirstInnerDiff = function(t1,t2,subtrees) {
+  return {
+    action: REPLACE_INNER_HTML,
+    oldValue: t1.innerHTML,
+    newValue: t2.innerHTML
+  };
+};
+</script>
+
+<script>
+(function() {
+
+
+
+  function swap(obj, p1, p2) {
+    (function(_) { obj[p1] = obj[p2]; obj[p2] = _; } (obj[p1]));
+  };
+
+
+
+  var TNode = function(payload4) {
+    this.payload = payload;
+  }
+  TNode.prototype = {
+    payload: false,
+    parent: false,
+    children: [],
+    add: function(tnode) {
+      this.children.push(tnode);
+      tnode.parent = this;
+    },
+    root: function() {
+      if (!this.parent) {
+        return this;
+      }
+      return this.parent.root();
+    },
+    getValue: function() {
+      return this.payload;
+    }
+  };
+
+
+
+  var DiffTracker = function() {
+    this.list = [];
+  };
+  DiffTracker.prototype = {
+    list: false,
+    add: function(difflist) {
+      var list = this.list;
+      difflist.forEach(function(diff) {
+        list.push(diff);
+      });
+    },
+    forEach: function(fn) {
+      this.list.forEach(fn);
+    }
+  };
+
+
+
+  var DOMdiff = function() {};
+  DOMdiff.prototype = {
+    tracker: false,
+    diff: function(t1, t2) {
+      t1 = t1.cloneNode(true);
+      this.tracker = new DiffTracker();
+      return this.findDiffs(t1, t2);
+    },
+    findDiffs: function(t1,t2) {
+      var diff;
+      do {
+        difflist = this.findFirstDiff(t1, t2);
+        if(difflist) {
+          if(!difflist.length) { difflist = [difflist]; }
+          this.tracker.add(difflist);
+          this.apply(t1, difflist);
+        }
+      } while (difflist);
+      return this.tracker.list;
+    },
+    findFirstDiff: function(t1, t2) {
+      // outer differences?
+      var difflist = this.findOuterDiff(t1, t2);
+      if(difflist.length > 0) { return difflist; }
+      // inner differences?
+      var diff = this.findInnerDiff(t1,t2);
+      if(diff) { return [diff]; }
+      // no differences
+      return false;
+    },
+    findOuterDiff: function(t1, t2) {
+      var slice = Array.prototype.slice,
+          byName = function(a,b) { return a.name > b.name; },
+          attr1 = slice.call(t1.attributes).sort(byName),
+          attr2 = slice.call(t2.attributes).sort(byName),
+          find = function(attr, list) {
+            for(var i=0, last=list.length; i<last; i++) {
+              if(list[i].name === attr.name)
+                return i;
+            }
+            return -1;
+          },
+          diffs = [];
+      attr1.forEach(function(attr) {
+        var pos = find(attr, attr2);
+        if(pos === -1) {
+          return diffs.push({
+            action: REMOVE_ATTRIBUTE,
+            attribute: {
+              name: attr.name,
+              value: attr.nodeValue
+            }
+          });
+        }
+        var a2 = attr2.splice(pos,1)[0];
+        if(attr.nodeValue !== a2.nodeValue) {
+          diffs.push({
+            action: MODIFY_ATTRIBUTE,
+            attribute: {
+              name: attr.name,
+              oldValue: attr.nodeValue,
+              newValue: a2.nodeValue
+            }
+          });
+        }
+      });
+      attr2.forEach(function(attr) {
+        diffs.push({
+          action: ADD_ATTRIBUTE,
+          attribute: {
+            name: attr.name,
+            value: attr.nodeValue
+          }
+        });
+      });
+      return diffs;
+    },
+    findInnerDiff: function(t1,t2) {
+      var subtrees = markSubTrees(t1, t2);
+      var mappings = subtrees.length;
+      // no correspondence whatsoever
+      if(mappings === 0) {
+        return {
+          action: REPLACE_INNER_HTML,
+          oldValue: t1.innerHTML,
+          newValue: t2.innerHTML
+        };
+      }
+      // identical content
+      if(mappings === 1) {
+        var len = subtrees[0].length;
+        if(len === t1.childNodes.length && len === t2.childNodes.length) {
+          return false;
+        }
+      }
+      // one or more differences: find first diff
+      return this.findFirstInnerDiff(t1, t2, subtrees);
+    },
+    findFirstInnerDiff: findFirstInnerDiff,
+    apply: function(tree, diffs) {
+      var dobj = this;
+      if(!diffs.length) { diffs = [diffs]; }
+      diffs.forEach(function(diff) {
+        dobj.applyDiff(tree, diff);
+      });
+    },
+    applyDiff: function(tree, diff) {
+      if(diff.action === ADD_ATTRIBUTE) {
+        tree.addAttribute(diff.attribute.name, diff.attribute.value);
+      }
+      else if(diff.action === MODIFY_ATTRIBUTE) {
+        tree.setAttribute(diff.attribute.name, diff.attribute.newValue);
+      }
+      else if(diff.action === REMOVE_ATTRIBUTE) {
+        tree.setAttribute(diff.attribute.name, diff.attribute.value);
+      }
+      else if(diff.action === REPLACE_INNER_HTML) {
+        tree.innerHTML = diff.newValue;
+      };
+    },
+    undo: function(tree, diffs) {
+      var dobj = this;
+      if(!diffs.length) { diffs = [diffs]; }
+      diffs.reverse();
+      diffs.forEach(function(diff) {
+        dobj.undoDiff(tree, diff);
+      });
+    },
+    undoDiff: function(tree, diff) {
+      if(diff.action === ADD_ATTRIBUTE) {
+        diff.action = REMOVE_ATTRIBUTE;
+        this.applyDiff(tree, diff);
+      }
+      else if(diff.action === MODIFY_ATTRIBUTE) {
+        swap(diff.attribute, "oldValue", "newValue");
+        this.applyDiff(tree, diff);
+      }
+      else if(diff.action === REMOVE_ATTRIBUTE) {
+        diff.action = ADD_ATTRIBUTE;
+        this.applyDiff(tree, diff);
+      }
+      else if(diff.action === REPLACE_INNER_HTML) {
+        swap(diff, "oldValue", "newValue");
+        this.applyDiff(tree, diff);
+      };
+    },
+  };
+
+
+
+  window.DOMdiff = DOMdiff;
+}());
+</script>
+
+</head>
+<body>
+
+  <div id="t1">lol<p>tuff</p></div>
+  <div id="t2">lol<p>huff</p></div>
+
+  <script>
+    var dd = new DOMdiff(),
+        t1 = document.getElementById("t1"),
+        t2 = document.getElementById("t2"),
+        diffs = dd.diff(t1, t2);
+    console.log(diffs);
+
+    t1 = t1.cloneNode(true);
+    dd.apply(t1, diffs);
+    console.log(t1);
+
+    t1 = t1.cloneNode(true);
+    dd.undo(t1, diffs);
+    console.log(t1);
+  </script>
+
+</body>
+</html>

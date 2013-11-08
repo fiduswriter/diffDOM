@@ -13,7 +13,7 @@ console.log(t1, t2);
     // text nodes are a shortcut.
     if(t1.nodeType === 3 && t2.nodeType === 3) {
       if(t1.data !== t2.data) {
-        return { action: "replace", oldValue: t1.data, newValue: t2.data, route: [0] };
+        return { action: "replace text", oldValue: t1.data, newValue: t2.data, route: [0] };
       }
       return false;
     }
@@ -37,12 +37,12 @@ console.log(t1, t2);
         fgl2 = fgaps2.length;
 
     /*
-    console.log("subtree mapping:");
-    console.log("1: " + gaps1.join(","));
-    console.log("2: " + gaps2.join(","));
-    console.log("group sequences:");
-    console.log("1: " + fgaps1.join(","));
-    console.log("2: " + fgaps2.join(","));
+      console.log("subtree mapping:");
+      console.log("1: " + gaps1.join(","));
+      console.log("2: " + gaps2.join(","));
+      console.log("group sequences:");
+      console.log("1: " + fgaps1.join(","));
+      console.log("2: " + fgaps2.join(","));
     */
 
     var shortest = fgl1<fgl2 ? fgaps1 : fgaps2;
@@ -50,21 +50,21 @@ console.log(t1, t2);
     for(i=0, last = shortest.length; i<last; i++) {
       if(fgaps1[i] != fgaps2[i]) {
         var group = fgaps1[i];
-// console.log("node group " + group + " moved");
-        return { action: "move", route: route, group: group };
+        // console.log("node group " + group + " moved");
+        return { action: "move group", route: route, group: group };
       }
     }
 
-// console.log("groups are aligned");
+    // console.log("groups are aligned");
 
     // if the groups are all in-sequence, do any insert/modify/removal checks
     var  group1, group2, c1 ,c2;
-// console.log(last);
+    // console.log(last);
     for(i=0, last=gl1 < gl2 ? gl1 : gl2; i<last; i++) {
       group1 = gaps1[i];
       group2 = gaps2[i];
 
-// console.log("gap information at "+i+":", group1, group2)
+      // console.log("gap information at "+i+":", group1, group2)
 
       // any gaps between t1 and t2?
       if (group1 === true) {
@@ -73,10 +73,10 @@ console.log(t1, t2);
 
           c1 = t1.childNodes[i];
           c2 = t2.childNodes[i];
-//          console.log("node difference at " + i + " between ", c1, " and" , c2, "route: ", route);
+          // console.log("node difference at " + i + " between ", c1, " and" , c2, "route: ", route);
 
           if(c1.nodeType === 3 && c2.nodeType === 3) {
-            return { action: "replace", oldValue: c1.data, newValue: c2.data, route: [0] };
+            return { action: "replace text", oldValue: c1.data, newValue: c2.data, route: [0] };
           }
 
           if(c1.nodeType === 3 && c2.nodeType !== 3) {
@@ -92,7 +92,7 @@ console.log(t1, t2);
           var gapInformation = utils.getGapInformation(c1, c2, subtreeMappings);
           var diff = getFirstDiff(c1, c2, gapInformation, route);
           diff.route = [i].concat(diff.route);
-//          console.log(c1, c2, diff, diff.route.join(","));
+          // console.log(c1, c2, diff, diff.route.join(","));
           return diff;
 
         } else {

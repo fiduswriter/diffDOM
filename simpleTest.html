@@ -35,21 +35,6 @@
     -->
     <script>
       require(["DOMdiff", "markSubTrees", "applyDiff"], function(DOMdiff, markSubTrees, applicator) {
-        /*
-        var t1 = document.getElementById("a1");
-        var t2 = document.getElementById("a2");
-
-        var subtrees = markSubTrees(t1, t2);
-
-        DOMdiff.findDiff(t1,t2)
-        var diffs = DOMdiff.diffTracker.diffInformation;
-        console.log(diffs);
-
-        var t3 = t1.cloneNode(true);
-        applicator.applyDiff(diffs, t3);
-        document.body.appendChild(t3);
-        console.log(t3);
-        */
 
         var a = document.createElement('div');
         a.innerHTML='hello<span>hull<i>a</i></span>';
