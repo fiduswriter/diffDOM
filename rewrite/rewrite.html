@@ -3,13 +3,28 @@
 <head>
 
 <script>
+  // fix Array
+  (function() {
+    var oldfn = Array.prototype.push;
+    Array.prototype.push = function(element) {
+      oldfn.apply(this, element);
+      return this;
+    };
+  }());
+</script>
 
+
+
+<script>
   const ADD_ATTRIBUTE = "add attribute",
         MODIFY_ATTRIBUTE = "modify attribute",
         REMOVE_ATTRIBUTE = "remove attribute",
-        REPLACE_INNER_HTML = "replace innerHTML";
-
+        REPLACE_INNER_HTML = "replace innerHTML",
+        RELOCATE_GROUP = "relocate group",
+        REMOVE_ELEMENT = "remove element",
+        ADD_ELEMENT = "add element";
 </script>
+
 
 <script>
   var SubsetMapping = function SubsetMapping(a, b) {
@@ -29,6 +44,7 @@
     }
   };
 </script>
+
 
 <script>
   var roughlyEqual = function roughlyEqual(e1, e2, preventRecursion) {
@@ -50,6 +66,7 @@
     return thesame;
   };
 </script>
+
 
 <script>
   /**
@@ -88,7 +105,7 @@
   var makeArray = function(n, v) {
     var deepcopy = function(v) {
       v.slice();
-      for(var i=0,last=v.length; i<last; i++){
+      for(var i=0, last=v.length; i<last; i++){
         if(v[i] instanceof Array) {
           v[i] = deepcopy(v[i]); }}};
     if(v instanceof Array) { v = deepcopy(v); }
@@ -97,9 +114,36 @@
   };
 
   /**
+   * Generate arrays that indicate which node belongs to which subset,
+   * or whether it's actually an orphan node, existing in only one
+   * of the two trees, rather than somewhere in both.
+   */
+  var getGapInformation = function(t1, t2, stable) {
+    // [true, true, ...] arrays
+    var set = function(v) { return function() { return v; }},
+        gaps1 = this.makeArray(t1.childNodes.length, true),
+        gaps2 = this.makeArray(t2.childNodes.length, true),
+        group = 0;
+
+    // give elements from the same subset the same group number
+    stable.forEach(function(subset) {
+      var i, end;
+      for(i = subset["old"], end = i + subset.length; i < end; i++) {
+        gaps1[i] = group;
+      }
+      for(i = subset["new"], end = i + subset.length; i < end; i++) {
+        gaps2[i] = group;
+      }
+      group++;
+    });
+
+    return { gaps1: gaps1, gaps2: gaps2 };
+  };
+
+  /**
    * Find all matching subsets, based on immediate child differences only.
    */
-  var markSubTrees = function markSubTrees(oldTree, newTree) {
+  var markSubTrees = function(oldTree, newTree) {
     oldTree = oldTree.cloneNode(true);
     newTree = newTree.cloneNode(true);
     // note: the child lists are views, and so update as we update old/newTree
@@ -121,15 +165,85 @@
   };
 </script>
 
+
 <script>
-var findFirstInnerDiff = function(t1,t2,subtrees) {
-  return {
-    action: REPLACE_INNER_HTML,
-    oldValue: t1.innerHTML,
-    newValue: t2.innerHTML
-  };
+var findGroupDiff = function(t1, t2, subtrees, route) {
+  var gapInformation = getGapInformation(t1, t2, subtrees);
+
+  var gaps1 = gapInformation.gaps1,
+      gl1 = gaps1.length,
+      gaps2 = gapInformation.gaps2,
+      gl2 = gaps1.length,
+      i,
+      last = gl1 < gl2 ? gl1 : gl2;
+
+  // Check for correct submap sequencing (irrespective of gaps) first:
+  var sequence = 0,
+      group,
+      filter = function(e) { return e!==true;},
+      // filter out the gaps, they don't matter for sequence correction
+      fgaps1 = gaps1.filter(filter),
+      fgl1 = fgaps1.length,
+      fgaps2 = gaps2.filter(filter),
+      fgl2 = fgaps2.length,
+      shortest = fgl1<fgl2 ? fgaps1 : fgaps2;
+
+  for(i=0, last = shortest.length; i<last; i++) {
+    if(fgaps1[i] != fgaps2[i]) {
+      var group = subtrees[fgaps1[i]];
+      return {
+        action: RELOCATE_GROUP,
+        group: group,
+        from: group["old"],
+        to: group["new"],
+        route: route
+      };
+    }
+  }
+
+  return false;
+};
+
+var findFirstInnerDiff = function(t1, t2, subtrees, route) {
+  // do we need to reorder groups?
+  var groupdiff = findGroupDiff(t1, t2, subtrees, route);
+  if (groupdiff) {
+    return groupdiff;
+  }
+  var c1 = t1.childNodes,
+      c2 = t2.childNodes,
+      len1 = c1.length,
+      len2 = c2.length,
+      longest = len1 > len ? len1 : len2;
+  for (var i=0; i<longest; i++) {
+    if(roughlyEqual(c1, c2)) continue;
+    if(c1[i] && !c2[i]) {
+      return {
+        action: REMOVE_ELEMENT,
+        route: route.slice().push(i),
+        element: c1[i].outerHTML
+      };
+    }
+    if(c2[i] && !c1[i]) {
+      return {
+        action: ADD_ELEMENT,
+        route: route.slice().push(i),
+        element: c1[i].outerHTML
+      };
+    }
+    // TODO: continue rewrite here.
+    return {
+      action: REPLACE_INNER_HTML,
+      oldValue: t1.innerHTML,
+      newValue: t2.innerHTML
+    };
+  }
+  // we should not be able to get here,
+  // so ... what?
+  throw new Error("incompleteness in findFirstInnerDiff");
 };
 </script>
+
 
 <script>
 (function() {
@@ -187,15 +301,18 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
   var DOMdiff = function() {};
   DOMdiff.prototype = {
     tracker: false,
+
+    // ===== Create a diff =====
+
     diff: function(t1, t2) {
       t1 = t1.cloneNode(true);
       this.tracker = new DiffTracker();
       return this.findDiffs(t1, t2);
     },
-    findDiffs: function(t1,t2) {
+    findDiffs: function(t1, t2) {
       var diff;
       do {
-        difflist = this.findFirstDiff(t1, t2);
+        difflist = this.findFirstDiff(t1, t2, []);
         if(difflist) {
           if(!difflist.length) { difflist = [difflist]; }
           this.tracker.add(difflist);
@@ -204,19 +321,20 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
       } while (difflist);
       return this.tracker.list;
     },
-    findFirstDiff: function(t1, t2) {
+    findFirstDiff: function(t1, t2, route) {
       // outer differences?
-      var difflist = this.findOuterDiff(t1, t2);
+      var difflist = this.findOuterDiff(t1, t2, route);
       if(difflist.length > 0) { return difflist; }
       // inner differences?
-      var diff = this.findInnerDiff(t1,t2);
+      var diff = this.findInnerDiff(t1, t2, route);
+      console.log("diff", diff);
       if(diff) { return [diff]; }
       // no differences
       return false;
     },
-    findOuterDiff: function(t1, t2) {
+    findOuterDiff: function(t1, t2, route) {
       var slice = Array.prototype.slice,
-          byName = function(a,b) { return a.name > b.name; },
+          byName = function(a, b) { return a.name > b.name; },
           attr1 = slice.call(t1.attributes).sort(byName),
           attr2 = slice.call(t2.attributes).sort(byName),
           find = function(attr, list) {
@@ -238,7 +356,7 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
             }
           });
         }
-        var a2 = attr2.splice(pos,1)[0];
+        var a2 = attr2.splice(pos, 1)[0];
         if(attr.nodeValue !== a2.nodeValue) {
           diffs.push({
             action: MODIFY_ATTRIBUTE,
@@ -261,7 +379,7 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
       });
       return diffs;
     },
-    findInnerDiff: function(t1,t2) {
+    findInnerDiff: function(t1, t2, route) {
       var subtrees = markSubTrees(t1, t2);
       var mappings = subtrees.length;
       // no correspondence whatsoever
@@ -280,9 +398,14 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
         }
       }
       // one or more differences: find first diff
-      return this.findFirstInnerDiff(t1, t2, subtrees);
+      return this.findFirstInnerDiff(t1, t2, subtrees, route);
     },
+
+    // imported
     findFirstInnerDiff: findFirstInnerDiff,
+
+    // ===== Apply a diff =====
+
     apply: function(tree, diffs) {
       var dobj = this;
       if(!diffs.length) { diffs = [diffs]; }
@@ -302,8 +425,34 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
       }
       else if(diff.action === REPLACE_INNER_HTML) {
         tree.innerHTML = diff.newValue;
-      };
+      }
+      else if(diff.action === RELOCATE_GROUP) {
+        var group = diff.group,
+            from = diff.from,
+            to = diff.to,
+            child, reference;
+
+        // slide elements down
+        if(from > to ) {
+          for(var i=0; i<group.length; i++) {
+            child = tree.childNodes[from + i];
+            reference = tree.childNodes[to + i];
+            tree.insertBefore(child, reference);
+          }
+          return;
+        }
+
+        // slide elements up
+        for(var i=group.length-1; i>=0; i--) {
+          child = tree.childNodes[from + i];
+          reference = tree.childNodes[to + 1 + i];
+          tree.insertBefore(child, reference);
+        }
+      }
     },
+
+    // ===== Undo a diff =====
+
     undo: function(tree, diffs) {
       var dobj = this;
       if(!diffs.length) { diffs = [diffs]; }
@@ -328,7 +477,11 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
       else if(diff.action === REPLACE_INNER_HTML) {
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
-      };
+      }
+      else if(diff.action === RELOCATE_GROUP) {
+        swap(diff, "from", "to");
+        this.applyDiff(tree, diff);
+      }
     },
   };
 
@@ -341,8 +494,8 @@ var findFirstInnerDiff = function(t1,t2,subtrees) {
 </head>
 <body>
 
-  <div id="t1">lol<p>tuff</p></div>
-  <div id="t2">lol<p>huff</p></div>
+  <div id="t1">lol<p>tuff</p><hr></div>
+  <div id="t2">lol<hr><p>huff</p></div>
 
   <script>
     var dd = new DOMdiff(),
