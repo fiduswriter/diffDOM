@@ -7,12 +7,11 @@
   (function() {
     var oldfn = Array.prototype.push;
     Array.prototype.push = function(element) {
-      oldfn.apply(this, element);
+      oldfn.call(this, element);
       return this;
     };
   }());
 </script>
-
 
 
 <script>
@@ -188,6 +187,7 @@ var findGroupDiff = function(t1, t2, subtrees, route) {
       fgl2 = fgaps2.length,
       shortest = fgl1<fgl2 ? fgaps1 : fgaps2;
 
+  // group relocation
   for(i=0, last = shortest.length; i<last; i++) {
     if(fgaps1[i] != fgaps2[i]) {
       var group = subtrees[fgaps1[i]];
@@ -197,6 +197,25 @@ var findGroupDiff = function(t1, t2, subtrees, route) {
         from: group["old"],
         to: group["new"],
         route: route
+      };
+    }
+  }
+
+  // remove/addition
+  var longest = gl1>gl2 ? gaps1 : gaps2;
+  for(i=0, last = longest.length; i<last; i++) {
+    if(i<gl1 && gaps1[i] === true) {
+      return {
+        action: REMOVE_ELEMENT,
+        route: route.slice().push(i),
+        element: t1.childNodes[i].outerHTML
+      };
+    }
+    if(i < gl2 && gaps2[i] === true) {
+      return {
+        action: ADD_ELEMENT,
+        route: route.slice().push(i),
+        element: t2.childNodes[i].outerHTML
       };
     }
   }
@@ -214,23 +233,30 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
       c2 = t2.childNodes,
       len1 = c1.length,
       len2 = c2.length,
-      longest = len1 > len ? len1 : len2;
+      longest = len1 > len2 ? len1 : len2,
+      e1, e2;
   for (var i=0; i<longest; i++) {
-    if(roughlyEqual(c1, c2)) continue;
-    if(c1[i] && !c2[i]) {
+    e1 = c1[i] ? c1[i] : true;
+    e2 = c2[i] ? c2[i] : true;
+    if(roughlyEqual(e1, e2)) continue;
+
+    if(e2 === true) {
       return {
         action: REMOVE_ELEMENT,
         route: route.slice().push(i),
         element: c1[i].outerHTML
       };
     }
-    if(c2[i] && !c1[i]) {
+
+    if(e1 === true) {
       return {
         action: ADD_ELEMENT,
         route: route.slice().push(i),
-        element: c1[i].outerHTML
+        element: c2[i].outerHTML
       };
     }
+
+    console.log("hmmmm", e1, e2);
     // TODO: continue rewrite here.
     return {
       action: REPLACE_INNER_HTML,
@@ -242,13 +268,12 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
   // so ... what?
   throw new Error("incompleteness in findFirstInnerDiff");
 };
+
 </script>
 
 
 <script>
 (function() {
-
-
 
   function swap(obj, p1, p2) {
     (function(_) { obj[p1] = obj[p2]; obj[p2] = _; } (obj[p1]));
@@ -297,6 +322,9 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
   };
 
 
+  var debug = true,
+      diffcap = 10,
+      diffcount;
 
   var DOMdiff = function() {};
   DOMdiff.prototype = {
@@ -305,6 +333,7 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
     // ===== Create a diff =====
 
     diff: function(t1, t2) {
+      diffcount = 0;
       t1 = t1.cloneNode(true);
       this.tracker = new DiffTracker();
       return this.findDiffs(t1, t2);
@@ -312,6 +341,12 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
     findDiffs: function(t1, t2) {
       var diff;
       do {
+        if(debug) {
+          diffcount++;
+          if(diffcount > diffcap) {
+            throw new Error("surpassed diffcap");
+          }
+        }
         difflist = this.findFirstDiff(t1, t2, []);
         if(difflist) {
           if(!difflist.length) { difflist = [difflist]; }
@@ -327,7 +362,6 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
       if(difflist.length > 0) { return difflist; }
       // inner differences?
       var diff = this.findInnerDiff(t1, t2, route);
-      console.log("diff", diff);
       if(diff) { return [diff]; }
       // no differences
       return false;
@@ -414,6 +448,7 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
       });
     },
     applyDiff: function(tree, diff) {
+      // TODO: add in routes for the attribute and group modifications
       if(diff.action === ADD_ATTRIBUTE) {
         tree.addAttribute(diff.attribute.name, diff.attribute.value);
       }
@@ -449,11 +484,36 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
           tree.insertBefore(child, reference);
         }
       }
+      else if(diff.action === REMOVE_ELEMENT) {
+        var route = diff.route.slice(), c, node = tree;
+        while(route.length > 0) {
+          c = route.splice(0,1)[0];
+          node = node.childNodes[c];
+        }
+        node.parentNode.removeChild(node);
+      }
+      else if(diff.action === ADD_ELEMENT) {
+        var route = diff.route.slice(), c, node = tree;
+        while(route.length > 1) {
+          c = route.splice(0,1)[0];
+          node = node.childNodes[c];
+        }
+        c = route[0];
+        var d = document.createElement("div");
+        d.innerHTML = diff.element;
+        if(c>=node.childNodes.length) {
+          node.appendChild(d.childNodes[0]);
+        } else {
+          var reference = node.childNodes[c];
+          node.insertBefore(d.childNodes[0], reference);
+        }
+      }
     },
 
     // ===== Undo a diff =====
 
     undo: function(tree, diffs) {
+      diffs = diffs.slice();
       var dobj = this;
       if(!diffs.length) { diffs = [diffs]; }
       diffs.reverse();
@@ -500,7 +560,7 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
   <script>
     var dd = new DOMdiff(),
         t1 = document.getElementById("t1"),
-        t2 = document.getElementById("t2"),
+        t2 = document.getElementById("t2");
         diffs = dd.diff(t1, t2);
     console.log(diffs);
 
