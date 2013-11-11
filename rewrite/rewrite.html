@@ -2,6 +2,7 @@
 <html>
 <head>
 
+
 <script>
   // fix Array
   (function() {
@@ -22,6 +23,88 @@
         RELOCATE_GROUP = "relocate group",
         REMOVE_ELEMENT = "remove element",
         ADD_ELEMENT = "add element";
+</script>
+
+
+<script>
+  var TraceLogger = function(obj) {
+    this.padding = "";
+    this.tick = 0;
+    this.messages = [];
+    var tl = this;
+    var wrapkey = function(obj, key) {
+      if(typeof obj[key] === "function") {
+        // trace this function
+        var oldfn = obj[key];
+        obj[key] = function() {
+          tl.fin(key);
+          var result = oldfn.apply(obj, arguments);
+          tl.fout(key, result);
+          return result;
+        };
+      }
+    };
+    // can't use Object.keys for prototype walking
+    for (key in obj) {
+      wrapkey(obj, key);
+    }
+  };
+  TraceLogger.prototype = {
+    pad: "| ",
+    fin: function(fn) {
+      this.padding += this.pad;
+      this.log("entering "+fn);
+    },
+    fout: function(fn, result) {
+      this.log("return value:", result);
+      this.log("exiting "+fn)
+      this.padding = this.padding.substring(0,this.padding.length-this.pad.length);
+    },
+    log: function() {
+      var s = Array.prototype.slice.call(arguments);
+      var stringCollapse = function(v) {
+        if(!v) {
+          return "<falsey>";
+        }
+        if(typeof v === "string") {
+          return v;
+        }
+        if(v instanceof HTMLElement) {
+          return v.outerHTML || "<empty>";
+        }
+        if(v instanceof Array) {
+          return "["+v.map(stringCollapse).join(",")+"]";
+        }
+        return v.toString() || v.valueOf() || "<unknown>";
+      };
+      s = s.map(stringCollapse).join(", ");
+      var nf = function(t) {
+        t = "" + t;
+        if(t.length<2) t = "0" + t;
+        if(t.length<3) t = "0" + t;
+        return t;
+      }
+      this.messages.push(nf(this.tick++) + ">" + this.padding + s);
+    },
+    toString: function() {
+      return this.messages.join("\n");
+    }
+  };
+</script>
+
+
+<script>
+  var Diff = function(options) {
+    var diff = this;
+    Object.keys(options).forEach(function(option) {
+      diff[option] = options[option];
+    });
+  }
+  Diff.prototype = {
+    toString: function() {
+      return JSON.stringify(this);
+    }
+  };
 </script>
 
 
@@ -49,7 +132,13 @@
   var roughlyEqual = function roughlyEqual(e1, e2, preventRecursion) {
     if (!e1 || !e2) return false;
     if (e1.nodeType !== e2.nodeType) return false;
-    if (e1.nodeType === 3) return e1.data === e2.data;
+    if (e1.nodeType === 3) {
+      if (e2.nodeType !==3) return false;
+      // Note that we initially don't care what the text content of a node is,
+      // the mere fact that it's the same tag and "has text" means it's roughly
+      // equal, and then we can find out the true text difference later.
+      return preventRecursion ? true : e1.data === e2.data;
+    }
     if (e1.nodeName !== e2.nodeName) return false;
     if (e1.childNodes.length !== e2.childNodes.length) return false;
     var thesame = true;
@@ -58,7 +147,7 @@
         thesame = thesame && (e1.childNodes[i].nodeName === e2.childNodes[i].nodeName);
       } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
-        //       was not set, we explicitly set it for child iterations.
+        //       was not set, we must explicitly force it to true for child iterations.
         thesame = thesame && roughlyEqual(e1.childNodes[i], e2.childNodes[i], true);
       }
     }
@@ -159,7 +248,6 @@
         for(i=0; i<subset.length; i++) { marked2[subset.new+i] = true; }
       }
     }
-
     return subsets;
   };
 </script>
@@ -191,35 +279,15 @@ var findGroupDiff = function(t1, t2, subtrees, route) {
   for(i=0, last = shortest.length; i<last; i++) {
     if(fgaps1[i] != fgaps2[i]) {
       var group = subtrees[fgaps1[i]];
-      return {
+      return new Diff({
         action: RELOCATE_GROUP,
         group: group,
         from: group["old"],
         to: group["new"],
         route: route
-      };
+      });
     }
   }
-
-  // remove/addition
-  var longest = gl1>gl2 ? gaps1 : gaps2;
-  for(i=0, last = longest.length; i<last; i++) {
-    if(i<gl1 && gaps1[i] === true) {
-      return {
-        action: REMOVE_ELEMENT,
-        route: route.slice().push(i),
-        element: t1.childNodes[i].outerHTML
-      };
-    }
-    if(i < gl2 && gaps2[i] === true) {
-      return {
-        action: ADD_ELEMENT,
-        route: route.slice().push(i),
-        element: t2.childNodes[i].outerHTML
-      };
-    }
-  }
-
   return false;
 };
 
@@ -229,46 +297,36 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
   if (groupdiff) {
     return groupdiff;
   }
+
   var c1 = t1.childNodes,
       c2 = t2.childNodes,
       len1 = c1.length,
       len2 = c2.length,
       longest = len1 > len2 ? len1 : len2,
       e1, e2;
+
   for (var i=0; i<longest; i++) {
     e1 = c1[i] ? c1[i] : true;
     e2 = c2[i] ? c2[i] : true;
     if(roughlyEqual(e1, e2)) continue;
-
     if(e2 === true) {
-      return {
+      return new Diff({
         action: REMOVE_ELEMENT,
         route: route.slice().push(i),
         element: c1[i].outerHTML
-      };
+      });
     }
-
     if(e1 === true) {
-      return {
+      return new Diff({
         action: ADD_ELEMENT,
         route: route.slice().push(i),
         element: c2[i].outerHTML
-      };
+      });
     }
-
-    console.log("hmmmm", e1, e2);
-    // TODO: continue rewrite here.
-    return {
-      action: REPLACE_INNER_HTML,
-      oldValue: t1.innerHTML,
-      newValue: t2.innerHTML
-    };
   }
-  // we should not be able to get here,
-  // so ... what?
-  throw new Error("incompleteness in findFirstInnerDiff");
-};
 
+  return false;
+};
 </script>
 
 
@@ -278,31 +336,6 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
   function swap(obj, p1, p2) {
     (function(_) { obj[p1] = obj[p2]; obj[p2] = _; } (obj[p1]));
   };
-
-
-
-  var TNode = function(payload4) {
-    this.payload = payload;
-  }
-  TNode.prototype = {
-    payload: false,
-    parent: false,
-    children: [],
-    add: function(tnode) {
-      this.children.push(tnode);
-      tnode.parent = this;
-    },
-    root: function() {
-      if (!this.parent) {
-        return this;
-      }
-      return this.parent.root();
-    },
-    getValue: function() {
-      return this.payload;
-    }
-  };
-
 
 
   var DiffTracker = function() {
@@ -322,13 +355,13 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
   };
 
 
+
   var debug = true,
       diffcap = 10,
       diffcount;
 
   var DOMdiff = function() {};
   DOMdiff.prototype = {
-    tracker: false,
 
     // ===== Create a diff =====
 
@@ -382,34 +415,37 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
       attr1.forEach(function(attr) {
         var pos = find(attr, attr2);
         if(pos === -1) {
-          return diffs.push({
+          return diffs.push(new Diff({
             action: REMOVE_ATTRIBUTE,
             attribute: {
               name: attr.name,
               value: attr.nodeValue
-            }
-          });
+            },
+            route: route
+          }));
         }
         var a2 = attr2.splice(pos, 1)[0];
         if(attr.nodeValue !== a2.nodeValue) {
-          diffs.push({
+          diffs.push(new Diff({
             action: MODIFY_ATTRIBUTE,
             attribute: {
               name: attr.name,
               oldValue: attr.nodeValue,
               newValue: a2.nodeValue
-            }
-          });
+            },
+            route: route
+          }));
         }
       });
       attr2.forEach(function(attr) {
-        diffs.push({
+        diffs.push(new Diff({
           action: ADD_ATTRIBUTE,
           attribute: {
             name: attr.name,
             value: attr.nodeValue
-          }
-        });
+          },
+          route: route
+        }));
       });
       return diffs;
     },
@@ -417,20 +453,38 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
       var subtrees = markSubTrees(t1, t2);
       var mappings = subtrees.length;
       // no correspondence whatsoever
-      if(mappings === 0) {
-        return {
+      if(mappings === 0 && (t1.childNodes.length > 0 || t2.childNodes.length > 0)) {
+        return new Diff({
           action: REPLACE_INNER_HTML,
           oldValue: t1.innerHTML,
-          newValue: t2.innerHTML
-        };
+          newValue: t2.innerHTML,
+          route: route
+        });
       }
-      // identical content
+
+      // possibly identical content: verify
       if(mappings === 1) {
-        var len = subtrees[0].length;
-        if(len === t1.childNodes.length && len === t2.childNodes.length) {
-          return false;
+        var diff, i, last, e1, e2;
+        for(i=0, last=t1.childNodes.length; i<last; i++) {
+          e1 = t1.childNodes[i];
+          e2 = t2.childNodes[i];
+          if(e1.nodeType === 3 && e2.nodeType === 3) {
+            if(e1.data !== e2.data) {
+              return new Diff({
+                action: MODIFY_TEXT,
+                oldValue: e1.data,
+                newValue: e2.data
+              });
+            }
+            continue;
+          }
+          diff = this.findInnerDiff(e1, e2, route.slice().push(i));
+          if(diff) {
+            return diff;
+          }
         }
       }
+
       // one or more differences: find first diff
       return this.findFirstInnerDiff(t1, t2, subtrees, route);
     },
@@ -447,19 +501,29 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
         dobj.applyDiff(tree, diff);
       });
     },
+    getFromRoute: function(tree, route) {
+      route = route.slice();
+      var c, node = tree;
+      while(route.length > 0) {
+        c = route.splice(0,1)[0];
+        node = node.childNodes[c];
+      }
+      return node;
+    },
     applyDiff: function(tree, diff) {
+      var node = this.getFromRoute(tree, diff.route);
       // TODO: add in routes for the attribute and group modifications
       if(diff.action === ADD_ATTRIBUTE) {
-        tree.addAttribute(diff.attribute.name, diff.attribute.value);
+        node.addAttribute(diff.attribute.name, diff.attribute.value);
       }
       else if(diff.action === MODIFY_ATTRIBUTE) {
-        tree.setAttribute(diff.attribute.name, diff.attribute.newValue);
+        node.setAttribute(diff.attribute.name, diff.attribute.newValue);
       }
       else if(diff.action === REMOVE_ATTRIBUTE) {
-        tree.setAttribute(diff.attribute.name, diff.attribute.value);
+        node.setAttribute(diff.attribute.name, diff.attribute.value);
       }
       else if(diff.action === REPLACE_INNER_HTML) {
-        tree.innerHTML = diff.newValue;
+        node.innerHTML = diff.newValue;
       }
       else if(diff.action === RELOCATE_GROUP) {
         var group = diff.group,
@@ -470,42 +534,36 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
         // slide elements down
         if(from > to ) {
           for(var i=0; i<group.length; i++) {
-            child = tree.childNodes[from + i];
-            reference = tree.childNodes[to + i];
-            tree.insertBefore(child, reference);
+            child = node.childNodes[from + i];
+            reference = node.childNodes[to + i];
+            node.insertBefore(child, reference);
           }
           return;
         }
 
         // slide elements up
         for(var i=group.length-1; i>=0; i--) {
-          child = tree.childNodes[from + i];
-          reference = tree.childNodes[to + 1 + i];
-          tree.insertBefore(child, reference);
+          child = node.childNodes[from + i];
+          reference = node.childNodes[to + 1 + i];
+          node.insertBefore(child, reference);
         }
       }
       else if(diff.action === REMOVE_ELEMENT) {
-        var route = diff.route.slice(), c, node = tree;
-        while(route.length > 0) {
-          c = route.splice(0,1)[0];
-          node = node.childNodes[c];
-        }
         node.parentNode.removeChild(node);
       }
       else if(diff.action === ADD_ELEMENT) {
-        var route = diff.route.slice(), c, node = tree;
-        while(route.length > 1) {
-          c = route.splice(0,1)[0];
-          node = node.childNodes[c];
-        }
-        c = route[0];
-        var d = document.createElement("div");
+        // we actually need a different node when adding:
+        var route =  diff.route.slice(),
+            c = route.splice(route.length-1,1)[0],
+            d = document.createElement("div");
+        node = this.getFromRoute(tree, route);
         d.innerHTML = diff.element;
+        var newNode = d.childNodes[0];
         if(c>=node.childNodes.length) {
-          node.appendChild(d.childNodes[0]);
+          node.appendChild(newNode);
         } else {
           var reference = node.childNodes[c];
-          node.insertBefore(d.childNodes[0], reference);
+          node.insertBefore(newNode, reference);
         }
       }
     },
@@ -554,23 +612,35 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
 </head>
 <body>
 
+<!--
   <div id="t1">lol<p>tuff</p><hr></div>
   <div id="t2">lol<hr><p>huff</p></div>
+-->
+
+  <div id="t1">lol<p><i>tuff</i></p><hr></div>
+  <div id="t2">lol<hr><p><i>huff</i></p></div>
 
   <script>
     var dd = new DOMdiff(),
+        tl = new TraceLogger(dd);
         t1 = document.getElementById("t1"),
         t2 = document.getElementById("t2");
         diffs = dd.diff(t1, t2);
-    console.log(diffs);
+    console.log("diff operations for t1 -> t2\n", diffs);
 
+    console.log("\n", "---diff log---");
+    console.log(tl.toString());
+
+    console.log("\n", "---apply---");
     t1 = t1.cloneNode(true);
     dd.apply(t1, diffs);
     console.log(t1);
 
+    console.log("\n", "---undo---");
     t1 = t1.cloneNode(true);
     dd.undo(t1, diffs);
     console.log(t1);
+
   </script>
 
 </body>
