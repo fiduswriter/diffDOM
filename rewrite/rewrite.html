@@ -600,6 +600,14 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
         swap(diff, "from", "to");
         this.applyDiff(tree, diff);
       }
+      else if(diff.action === REMOVE_ELEMENT) {
+        diff.action = ADD_ELEMENT;
+        this.applyDiff(tree, diff);;
+      }
+      else if(diff.action === ADD_ELEMENT) {
+        diff.action = REMOVE_ELEMENT;
+        this.applyDiff(tree, diff);;
+      }
     },
   };
 
