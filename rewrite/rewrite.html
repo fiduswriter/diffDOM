@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
 <head>
-
+<meta charset="utf-8">
+<title>DOMdiff</title>
 
 <script>
   // fix Array
@@ -26,70 +27,7 @@
 </script>
 
 
-<script>
-  var TraceLogger = function(obj) {
-    this.padding = "";
-    this.tick = 0;
-    this.messages = [];
-    var tl = this;
-    var wrapkey = function(obj, key) {
-      if(typeof obj[key] === "function") {
-        // trace this function
-        var oldfn = obj[key];
-        obj[key] = function() {
-          tl.fin(key);
-          var result = oldfn.apply(obj, arguments);
-          tl.fout(key, result);
-          return result;
-        };
-      }
-    };
-    // can't use Object.keys for prototype walking
-    for (key in obj) {
-      wrapkey(obj, key);
-    }
-  };
-  TraceLogger.prototype = {
-    pad: "| ",
-    fin: function(fn) {
-      this.padding += this.pad;
-      this.log("entering "+fn);
-    },
-    fout: function(fn, result) {
-      this.log("return value:", result);
-      this.log("exiting "+fn)
-      this.padding = this.padding.substring(0,this.padding.length-this.pad.length);
-    },
-    log: function() {
-      var s = Array.prototype.slice.call(arguments);
-      var stringCollapse = function(v) {
-        if(!v) {
-          return "<falsey>";
-        }
-        if(typeof v === "string") {
-          return v;
-        }
-        if(v instanceof HTMLElement) {
-          return v.outerHTML || "<empty>";
-        }
-        if(v instanceof Array) {
-          return "["+v.map(stringCollapse).join(",")+"]";
-        }
-        return v.toString() || v.valueOf() || "<unknown>";
-      };
-      s = s.map(stringCollapse).join(", ");
-      var nf = function(t) {
-        t = "" + t;
-        if(t.length<2) t = "0" + t;
-        if(t.length<3) t = "0" + t;
-        return t;
-      }
-      this.messages.push(nf(this.tick++) + ">" + this.padding + s);
-    },
-    toString: function() {
-      return this.messages.join("\n");
-    }
-  };
+<script src="TraceLogger.js">
 </script>
 
 
@@ -254,79 +192,51 @@
 
 
 <script>
-var findGroupDiff = function(t1, t2, subtrees, route) {
-  var gapInformation = getGapInformation(t1, t2, subtrees);
+  var findFirstInnerDiff = function(t1, t2, subtrees, route) {
+    if(subtrees.length === 0) return false;
 
-  var gaps1 = gapInformation.gaps1,
-      gl1 = gaps1.length,
-      gaps2 = gapInformation.gaps2,
-      gl2 = gaps1.length,
-      i,
-      last = gl1 < gl2 ? gl1 : gl2;
+    var gapInformation = getGapInformation(t1, t2, subtrees),
+        gaps1 = gapInformation.gaps1,
+        gl1 = gaps1.length,
+        gaps2 = gapInformation.gaps2,
+        gl2 = gaps1.length,
+        i,
+        last = gl1 < gl2 ? gl1 : gl2;
 
-  // Check for correct submap sequencing (irrespective of gaps) first:
-  var sequence = 0,
-      group,
-      filter = function(e) { return e!==true;},
-      // filter out the gaps, they don't matter for sequence correction
-      fgaps1 = gaps1.filter(filter),
-      fgl1 = fgaps1.length,
-      fgaps2 = gaps2.filter(filter),
-      fgl2 = fgaps2.length,
-      shortest = fgl1<fgl2 ? fgaps1 : fgaps2;
+    // Check for correct submap sequencing (irrespective of gaps) first:
+    var sequence = 0,
+        group,
+        shortest = gl1<gl2 ? gaps1 : gaps2;
 
-  // group relocation
-  for(i=0, last = shortest.length; i<last; i++) {
-    if(fgaps1[i] != fgaps2[i]) {
-      var group = subtrees[fgaps1[i]];
-      return new Diff({
-        action: RELOCATE_GROUP,
-        group: group,
-        from: group["old"],
-        to: group["new"],
-        route: route
-      });
+    // group relocation
+    for(i=0, last = shortest.length; i<last; i++) {
+      if(gaps1[i] === true) {
+        return new Diff({
+          action: REMOVE_ELEMENT,
+          route: route.slice().push(i),
+          element: t1.childNodes[i].outerHTML
+        });
+      }
+      if(gaps2[i] === true) {
+        return new Diff({
+          action: ADD_ELEMENT,
+          route: route.slice().push(i),
+          element: t2.childNodes[i].outerHTML
+        });
+      }
+      if(gaps1[i] != gaps2[i]) {
+        group = subtrees[gaps1[i]];
+        return new Diff({
+          action: RELOCATE_GROUP,
+          group: group,
+          from: i,
+          to: group["new"],
+          route: route
+        });
+      }
     }
-  }
-  return false;
-};
-
-var findFirstInnerDiff = function(t1, t2, subtrees, route) {
-  // do we need to reorder groups?
-  var groupdiff = findGroupDiff(t1, t2, subtrees, route);
-  if (groupdiff) {
-    return groupdiff;
-  }
-
-  var c1 = t1.childNodes,
-      c2 = t2.childNodes,
-      len1 = c1.length,
-      len2 = c2.length,
-      longest = len1 > len2 ? len1 : len2,
-      e1, e2;
-
-  for (var i=0; i<longest; i++) {
-    e1 = c1[i] ? c1[i] : true;
-    e2 = c2[i] ? c2[i] : true;
-    if(roughlyEqual(e1, e2)) continue;
-    if(e2 === true) {
-      return new Diff({
-        action: REMOVE_ELEMENT,
-        route: route.slice().push(i),
-        element: c1[i].outerHTML
-      });
-    }
-    if(e1 === true) {
-      return new Diff({
-        action: ADD_ELEMENT,
-        route: route.slice().push(i),
-        element: c2[i].outerHTML
-      });
-    }
-  }
-
-  return false;
-};
+    return false;
+  };
 </script>
 
 
@@ -452,6 +362,7 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
     findInnerDiff: function(t1, t2, route) {
       var subtrees = markSubTrees(t1, t2);
       var mappings = subtrees.length;
+
       // no correspondence whatsoever
       if(mappings === 0 && (t1.childNodes.length > 0 || t2.childNodes.length > 0)) {
         return new Diff({
@@ -512,7 +423,6 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
     },
     applyDiff: function(tree, diff) {
       var node = this.getFromRoute(tree, diff.route);
-      // TODO: add in routes for the attribute and group modifications
       if(diff.action === ADD_ATTRIBUTE) {
         node.addAttribute(diff.attribute.name, diff.attribute.value);
       }
@@ -625,7 +535,7 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
   <div id="t2">lol<hr><p>huff</p></div>
 -->
 
-  <div id="t1">lol<p><i>tuff</i></p><hr></div>
+  <div id="t1">lol<span>x</span><p><i>tuff</i></p><hr></div>
   <div id="t2">lol<hr><p><i>huff</i></p></div>
 
   <script>
@@ -633,21 +543,29 @@ var findFirstInnerDiff = function(t1, t2, subtrees, route) {
         tl = new TraceLogger(dd);
         t1 = document.getElementById("t1"),
         t2 = document.getElementById("t2");
-        diffs = dd.diff(t1, t2);
-    console.log("diff operations for t1 -> t2\n", diffs);
 
-    console.log("\n", "---diff log---");
-    console.log(tl.toString());
+    t1.setAttribute("id","t2");
 
-    console.log("\n", "---apply---");
-    t1 = t1.cloneNode(true);
-    dd.apply(t1, diffs);
-    console.log(t1);
+    try {
+      var diffs = dd.diff(t1, t2);
+      console.log("diff operations for t1 -> t2\n", diffs);
 
-    console.log("\n", "---undo---");
-    t1 = t1.cloneNode(true);
-    dd.undo(t1, diffs);
-    console.log(t1);
+      console.log("\n", "---diff log---");
+      console.log(tl.toString());
+
+      console.log("\n", "---apply---");
+      t1 = t1.cloneNode(true);
+      dd.apply(t1, diffs);
+      console.log(t1);
+
+      console.log("\n", "---undo---");
+      t1 = t1.cloneNode(true);
+      dd.undo(t1, diffs);
+      console.log(t1);
+    } catch (e) {
+      console.log("error occured\n", e.toString());
+      console.log(tl.toString());
+    }
 
   </script>
 
