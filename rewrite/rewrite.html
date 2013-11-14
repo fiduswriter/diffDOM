@@ -535,16 +535,14 @@
   <div id="t2">lol<hr><p>huff</p></div>
 -->
 
-  <div id="t1">lol<span>x</span><p><i>tuff</i></p><hr></div>
-  <div id="t2">lol<hr><p><i>huff</i></p></div>
+  <div id="t1">lol<span>y</span><ol><li>one</li><li>two</li></ol><p><i>tuff</i></p><span>l</span><hr></div>
+  <div id="t2">lol<span>x</span><hr><ol><li>two</li><li>one</li></ol><p><i>huff</i></p></div>
 
   <script>
     var dd = new DOMdiff(),
         tl = new TraceLogger(dd);
         t1 = document.getElementById("t1"),
         t2 = document.getElementById("t2");
-
-    t1.setAttribute("id","t2");
 
     try {
       var diffs = dd.diff(t1, t2);
