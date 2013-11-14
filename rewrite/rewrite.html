@@ -425,13 +425,13 @@
     applyDiff: function(tree, diff) {
       var node = this.getFromRoute(tree, diff.route);
       if(diff.action === ADD_ATTRIBUTE) {
-        node.addAttribute(diff.attribute.name, diff.attribute.value);
+        node.setAttribute(diff.attribute.name, diff.attribute.value);
       }
       else if(diff.action === MODIFY_ATTRIBUTE) {
         node.setAttribute(diff.attribute.name, diff.attribute.newValue);
       }
       else if(diff.action === REMOVE_ATTRIBUTE) {
-        node.setAttribute(diff.attribute.name, diff.attribute.value);
+        node.removeAttribute(diff.attribute.name);
       }
       else if(diff.action === REPLACE_INNER_HTML) {
         node.innerHTML = diff.newValue;
