@@ -23,7 +23,9 @@
         REPLACE_INNER_HTML = "replace innerHTML",
         RELOCATE_GROUP = "relocate group",
         REMOVE_ELEMENT = "remove element",
-        ADD_ELEMENT = "add element";
+        ADD_ELEMENT = "add element",
+        REMOVE_TEXT_ELEMENT = "remove text element",
+        ADD_TEXT_ELEMENT = "add text element";
 </script>
 
 
@@ -205,23 +207,40 @@
 
     // Check for correct submap sequencing (irrespective of gaps) first:
     var sequence = 0,
-        group,
+        group, node,
         shortest = gl1<gl2 ? gaps1 : gaps2;
 
     // group relocation
+
     for(i=0, last = shortest.length; i<last; i++) {
       if(gaps1[i] === true) {
+        node = t1.childNodes[i];
+        if(node.nodeType === 3) {
+          return new Diff({
+            action: REMOVE_TEXT_ELEMENT,
+            route: route.slice().push(i),
+            element: node.data
+          });
+        }
         return new Diff({
           action: REMOVE_ELEMENT,
           route: route.slice().push(i),
-          element: t1.childNodes[i].outerHTML
+          element: node.outerHTML
         });
       }
       if(gaps2[i] === true) {
+        node = t2.childNodes[i];
+        if(node.nodeType === 3) {
+          return new Diff({
+            action: ADD_TEXT_ELEMENT,
+            route: route.slice().push(i),
+            element: node.data
+          });
+        }
         return new Diff({
           action: ADD_ELEMENT,
           route: route.slice().push(i),
-          element: t2.childNodes[i].outerHTML
+          element: node.outerHTML
         });
       }
       if(gaps1[i] != gaps2[i]) {
@@ -379,15 +398,35 @@
         for(i=0, last=t1.childNodes.length; i<last; i++) {
           e1 = t1.childNodes[i];
           e2 = t2.childNodes[i];
-          if(e1.nodeType === 3 && e2.nodeType === 3) {
-            if(e1.data !== e2.data) {
+          // TODO: this is a similar code path to the one
+          //       in findFirstInnerDiff. Can we unify these?
+          if(e1 && !e2) {
+            if(e1.nodeType === 3) {
               return new Diff({
-                action: MODIFY_TEXT,
-                oldValue: e1.data,
-                newValue: e2.data
+                action: REMOVE_TEXT_ELEMENT,
+                route: route.slice().push(i),
+                element: e1.data
               });
             }
-            continue;
+            return new Diff({
+              action: REMOVE_ELEMENT,
+              route: route.slice().push(i),
+              element: e1.outerHTML
+            });
+          }
+          if(e2 && !e1) {
+            if(e2.nodeType === 3) {
+              return new Diff({
+                action: REMOVE_TEXT_ELEMENT,
+                route: route.slice().push(i),
+                element: e2.data
+              });
+            }
+            return new Diff({
+              action: ADD_ELEMENT,
+              route: route.slice().push(i),
+              element: e1.outerHTML
+            });
           }
           diff = this.findInnerDiff(e1, e2, route.slice().push(i));
           if(diff) {
@@ -462,14 +501,28 @@
       else if(diff.action === REMOVE_ELEMENT) {
         node.parentNode.removeChild(node);
       }
+      else if(diff.action === REMOVE_TEXT_ELEMENT) {
+        node.parentNode.removeChild(node);
+      }
       else if(diff.action === ADD_ELEMENT) {
-        // we actually need a different node when adding:
         var route =  diff.route.slice(),
             c = route.splice(route.length-1,1)[0],
             d = document.createElement("div");
         node = this.getFromRoute(tree, route);
         d.innerHTML = diff.element;
         var newNode = d.childNodes[0];
+        if(c>=node.childNodes.length) {
+          node.appendChild(newNode);
+        } else {
+          var reference = node.childNodes[c];
+          node.insertBefore(newNode, reference);
+        }
+      }
+      else if(diff.action === ADD_TEXT_ELEMENT) {
+        var route =  diff.route.slice(),
+            c = route.splice(route.length-1,1)[0],
+            newNode = document.createTextNode(diff.element);
+        node = this.getFromRoute(tree, route);
         if(c>=node.childNodes.length) {
           node.appendChild(newNode);
         } else {
@@ -519,6 +572,14 @@
         diff.action = REMOVE_ELEMENT;
         this.applyDiff(tree, diff);;
       }
+      else if(diff.action === REMOVE_TEXT_ELEMENT) {
+        diff.action = ADD_TEXT_ELEMENT;
+        this.applyDiff(tree, diff);;
+      }
+      else if(diff.action === ADD_TEXT_ELEMENT) {
+        diff.action = REMOVE_TEXT_ELEMENT;
+        this.applyDiff(tree, diff);;
+      }
     },
   };
 
@@ -538,6 +599,9 @@
 
   <div id="t1">lol<span>y</span><ol><li>one</li><li>two</li></ol><p><i>tuff</i></p><span>l</span><hr></div>
   <div id="t2">lol<span>x</span><hr><ol><li>two</li><li>one</li></ol><p><i>huff</i></p></div>
+
+  <div id="t4">hello <span>finger</span></div>
+  <div id="t3">hello <span>finger</span>.</div>
 
   <script>
     var dd = new DOMdiff(),
