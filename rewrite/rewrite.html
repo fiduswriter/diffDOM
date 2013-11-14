@@ -407,7 +407,8 @@
 
     apply: function(tree, diffs) {
       var dobj = this;
-      if(!diffs.length) { diffs = [diffs]; }
+      if(typeof diffs.length === "undefined") { diffs = [diffs]; }
+      if(diffs.length === 0) { return; }
       diffs.forEach(function(diff) {
         dobj.applyDiff(tree, diff);
       });
@@ -563,6 +564,7 @@
     } catch (e) {
       console.log("error occured\n", e.toString());
       console.log(tl.toString());
+      throw e;
     }
 
   </script>
