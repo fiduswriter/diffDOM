@@ -474,6 +474,10 @@
       }
       return node;
     },
+    // diffing text elements can be overwritten for use with diff_match_patch and alike
+    textDiff: function(currentValue, expectedValue, newValue) {
+      return newValue;
+    },
     applyDiff: function(tree, diff) {
       var node = this.getFromRoute(tree, diff.route);
       if(diff.action === ADD_ATTRIBUTE) {
@@ -486,7 +490,7 @@
         node.removeAttribute(diff.attribute.name);
       }
       else if(diff.action === MODIFY_TEXT_ELEMENT) {
-        node.data = diff.newValue;
+        node.data = this.textDiff(node.data, diff.oldValue, diff.newValue);
       }
       else if(diff.action === RELOCATE_GROUP) {
         var group = diff.group,
@@ -609,9 +613,11 @@
   <div id="t6">lol<p>tuff</p><hr></div>
   <div id="t7">lol<hr><p>huff</p></div>
 
+<div id="t1"><p>hello <span>finger</span></p></div>
+  <div id="t2"><p>hello <span>fingers</span>. Welcome!</p></div>
 
-  <div id="t1">lol<span>ydew<i>hey</i>de</span></div>
-  <div id="t2">lol<span>xdewde</span></div>
+  <div id="t7">lol<span>ydew<i>hey</i>de</span></div>
+  <div id="t8">lol<p>ydew<b>hey</b>de</p></div>
 
   <div id="t3">a </div>
   <div id="t4">a</div>
