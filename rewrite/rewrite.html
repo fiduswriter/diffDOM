@@ -20,7 +20,6 @@
   const ADD_ATTRIBUTE = "add attribute",
         MODIFY_ATTRIBUTE = "modify attribute",
         REMOVE_ATTRIBUTE = "remove attribute",
-        REPLACE_INNER_HTML = "replace innerHTML",
         MODIFY_TEXT_ELEMENT = "modify text element",
         RELOCATE_GROUP = "relocate group",
         REMOVE_ELEMENT = "remove element",
@@ -297,10 +296,7 @@
 
     diff: function(t1, t2) {
       diffcount = 0;
-      t1 = t1.cloneNode(true);
-      t1.normalize(); // join sibling text nodes
-      t2 = t2.cloneNode(true); // Cloning in order not mess with text sibling nodes in the original node
-      t2.normalize();  
+      t1 = t1.cloneNode(true); 
       this.tracker = new DiffTracker();
       return this.findDiffs(t1, t2);
     },
@@ -317,7 +313,6 @@
         if(difflist) {
           if(!difflist.length) { difflist = [difflist]; }
           this.tracker.add(difflist);
-          
           this.apply(t1, difflist);
         }
       } while (difflist);
@@ -392,22 +387,7 @@
       var subtrees = markSubTrees(t1, t2);
       var mappings = subtrees.length;
       // no correspondence whatsoever
-      if(mappings === 0 && (t1.childNodes.length > 0 || t2.childNodes.length > 0)) {
-        if (t1.childNodes.length === 1 && t2.childNodes.length === 1 && t1.childNodes[0].nodeType === 3 && t2.childNodes[0].nodeType === 3) {
-          return new Diff({
-            action: MODIFY_TEXT_ELEMENT,
-            oldValue: t1.innerHTML,
-            newValue: t2.innerHTML,
-            route: route.slice().push(0)
-          });
-        }
-        return new Diff({
-          action: REPLACE_INNER_HTML,
-          oldValue: t1.innerHTML,
-          newValue: t2.innerHTML,
-          route: route
-        });
-      }
+      // if t1 or t2 contain differences that are not text nodes, return a diff. 
 
       // two text nodes with differences
       if(mappings === 0 && t1.nodeType === 3 && t2.nodeType === 3 && t1.data != t2.data) {
@@ -420,8 +400,8 @@
       }
 
       // possibly identical content: verify
-      if(mappings === 1) {
-        var diff, i, last, e1, e2;
+      if(mappings < 2) {
+        var diff, difflist, i, last, e1, e2;
         for(i=0, last=t1.childNodes.length; i<last; i++) {
           e1 = t1.childNodes[i];
           e2 = t2.childNodes[i];
@@ -456,9 +436,9 @@
             });
           }
           if (e1.nodeType != 3 && e2.nodeType != 3) {
-             diff = this.findOuterDiff(e1, e2, route.slice().push(i));
-            if(diff) {
-              return diff;
+            difflist = this.findOuterDiff(e1, e2, route.slice().push(i));
+            if(difflist.length > 0) {
+              return difflist;
             }
           }
           diff = this.findInnerDiff(e1, e2, route.slice().push(i));
@@ -504,9 +484,6 @@
       }
       else if(diff.action === REMOVE_ATTRIBUTE) {
         node.removeAttribute(diff.attribute.name);
-      }
-      else if(diff.action === REPLACE_INNER_HTML) {
-        node.innerHTML = diff.newValue;
       }
       else if(diff.action === MODIFY_TEXT_ELEMENT) {
         node.data = diff.newValue;
@@ -592,10 +569,6 @@
         diff.action = ADD_ATTRIBUTE;
         this.applyDiff(tree, diff);
       }
-      else if(diff.action === REPLACE_INNER_HTML) {
-        swap(diff, "oldValue", "newValue");
-        this.applyDiff(tree, diff);
-      }
       else if(diff.action === MODIFY_TEXT_ELEMENT) {
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
@@ -632,16 +605,16 @@
 </head>
 <body>
 
-<!--
-  <div id="t1">lol<p>tuff</p><hr></div>
-  <div id="t2">lol<hr><p>huff</p></div>
--->
 
-  <div id="t3">lol<span>y</span><ol><li>one</li><li>two</li></ol><p><i>tuff</i></p><span>l</span><hr></div>
-  <div id="t4">lol<span>x</span><hr><ol><li>two</li><li>one</li></ol><p><i>huff</i></p></div>
+  <div id="t6">lol<p>tuff</p><hr></div>
+  <div id="t7">lol<hr><p>huff</p></div>
 
-  <div id="t1">hello <span data-id="5">friend</span></div>
-  <div id="t2">hello <span data-id="6">friend</span></div>
+
+  <div id="t1">lol<span>ydew<i>hey</i>de</span></div>
+  <div id="t2">lol<span>xdewde</span></div>
+
+  <div id="t3">a </div>
+  <div id="t4">a</div>
 
   <script>
     var dd = new DOMdiff(),
