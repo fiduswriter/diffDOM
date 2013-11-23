@@ -21,7 +21,7 @@
         MODIFY_ATTRIBUTE = "modify attribute",
         REMOVE_ATTRIBUTE = "remove attribute",
         REPLACE_INNER_HTML = "replace innerHTML",
-        REPLACE_TEXT = "replace text",
+        MODIFY_TEXT_ELEMENT = "modify text element",
         RELOCATE_GROUP = "relocate group",
         REMOVE_ELEMENT = "remove element",
         ADD_ELEMENT = "add element",
@@ -395,7 +395,7 @@
       if(mappings === 0 && (t1.childNodes.length > 0 || t2.childNodes.length > 0)) {
         if (t1.childNodes.length === 1 && t2.childNodes.length === 1 && t1.childNodes[0].nodeType === 3 && t2.childNodes[0].nodeType === 3) {
           return new Diff({
-            action: REPLACE_TEXT,
+            action: MODIFY_TEXT_ELEMENT,
             oldValue: t1.innerHTML,
             newValue: t2.innerHTML,
             route: route.slice().push(0)
@@ -412,7 +412,7 @@
       // two text nodes with differences
       if(mappings === 0 && t1.nodeType === 3 && t2.nodeType === 3 && t1.data != t2.data) {
         return new Diff({
-          action: REPLACE_TEXT,
+          action: MODIFY_TEXT_ELEMENT,
           oldValue: t1.data,
           newValue: t2.data,
           route: route
@@ -508,7 +508,7 @@
       else if(diff.action === REPLACE_INNER_HTML) {
         node.innerHTML = diff.newValue;
       }
-      else if(diff.action === REPLACE_TEXT) {
+      else if(diff.action === MODIFY_TEXT_ELEMENT) {
         node.data = diff.newValue;
       }
       else if(diff.action === RELOCATE_GROUP) {
@@ -596,6 +596,10 @@
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
       }
+      else if(diff.action === MODIFY_TEXT_ELEMENT) {
+        swap(diff, "oldValue", "newValue");
+        this.applyDiff(tree, diff);
+      }      
       else if(diff.action === RELOCATE_GROUP) {
         swap(diff, "from", "to");
         this.applyDiff(tree, diff);
