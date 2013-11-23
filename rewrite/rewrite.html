@@ -397,7 +397,6 @@
           //       in findFirstInnerDiff. Can we unify these?
           if(e1 && !e2) {
             if(e1.nodeType === 3) {
-console.log('removed here');
               return new Diff({
                 action: REMOVE_TEXT_ELEMENT,
                 route: route.concat(i),
@@ -599,44 +598,39 @@ console.log('removed here');
 <body>
 
 
-  <div id="t6">lol<p>tuff</p><hr></div>
-  <div id="t7">lol<hr><p>huff</p></div>
+  <div id="t1">lol<p>tuff</p><hr></div>
+  <div id="t2">lol<hr><p>huff</p></div>
 
   <div id="t10"><p>hello <span>finger</span></p></div>
   <div id="t02"><p>hello <span>fingers</span>. Welcome!</p></div>
-
-  <div id="t7"><br></div>
-  <div id="t8"><br> </div>
-0: "<div id="t1"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">Snowden</div><div id="document-metadata" class="user-contents"></div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>There was a time when I worried much less, because most things just worked. But that time wasn't long. Things<span class="comment" id="comment-0" data-id="0" data-user="1" data-user-name="johannes" data-user-avatar="/static/img/default_avatar.png" data-date="1385236835804" data-comment="Taht's why"> changed</span> </p></div></div>"
-1: "<div id="t2"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">Snowden</div><div id="document-metadata" class="user-contents">Snowden</div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>There was a time when I worried much less, because most things just worked. But that time wasn't long. Things<span class="comment" id="comment-0" data-id="0" data-user="1" data-user-name="johannes" data-user-avatar="/static/img/default_avatar.png" data-date="1385236835804" data-comment="That's why"> changed</span> </p></div></div>"
 
   <script>
 
 
     var dd = new DOMdiff(),
-      //  tl = new TraceLogger(dd);
+        tl = new TraceLogger(dd);
         t1 = document.getElementById("t1"),
         t2 = document.getElementById("t2");
-//t2.appendChild(document.createTextNode(' '));
+
     try {
       var diffs = dd.diff(t1, t2);
       console.log("diff operations for t1 -> t2\n", diffs);
 
-     // console.log("\n", "---diff log---");
-     // console.log(tl.toString());
+     console.log("\n", "---diff log---");
+      console.log(tl.toString());
 
       console.log("\n", "---apply---");
       t1 = t1.cloneNode(true);
       dd.apply(t1, diffs);
-      //console.log(t1);
+      console.log(t1);
 
-      //console.log("\n", "---undo---");
-      //t1 = t1.cloneNode(true);
-      //dd.undo(t1, diffs);
-      //console.log(t1);
+      console.log("\n", "---undo---");
+      t1 = t1.cloneNode(true);
+      dd.undo(t1, diffs);
+      console.log(t1);
     } catch (e) {
       console.log("error occured\n", e.toString());
-     // console.log(tl.toString());
+      console.log(tl.toString());
       throw e;
     }
 
