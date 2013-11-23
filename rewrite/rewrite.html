@@ -21,7 +21,7 @@
         MODIFY_ATTRIBUTE = "modify attribute",
         REMOVE_ATTRIBUTE = "remove attribute",
         REPLACE_INNER_HTML = "replace innerHTML",
-        REPLACE_TEXT = "replace text",
+        MODIFY_TEXT_ELEMENT = "modify text element",
         RELOCATE_GROUP = "relocate group",
         REMOVE_ELEMENT = "remove element",
         ADD_ELEMENT = "add element",
@@ -329,7 +329,12 @@
       if(difflist.length > 0) { return difflist; }
       // inner differences?
       var diff = this.findInnerDiff(t1, t2, route);
-      if(diff) { return [diff]; }
+      if(diff) { 
+        if(typeof diff.length === "undefined") { diff = [diff]; }
+        if (diff.length > 0) {
+          return diff;
+        } 
+      }
       // no differences
       return false;
     },
@@ -386,9 +391,16 @@
     findInnerDiff: function(t1, t2, route) {
       var subtrees = markSubTrees(t1, t2);
       var mappings = subtrees.length;
-
       // no correspondence whatsoever
       if(mappings === 0 && (t1.childNodes.length > 0 || t2.childNodes.length > 0)) {
+        if (t1.childNodes.length === 1 && t2.childNodes.length === 1 && t1.childNodes[0].nodeType === 3 && t2.childNodes[0].nodeType === 3) {
+          return new Diff({
+            action: MODIFY_TEXT_ELEMENT,
+            oldValue: t1.innerHTML,
+            newValue: t2.innerHTML,
+            route: route.slice().push(0)
+          });
+        }
         return new Diff({
           action: REPLACE_INNER_HTML,
           oldValue: t1.innerHTML,
@@ -400,7 +412,7 @@
       // two text nodes with differences
       if(mappings === 0 && t1.nodeType === 3 && t2.nodeType === 3 && t1.data != t2.data) {
         return new Diff({
-          action: REPLACE_TEXT,
+          action: MODIFY_TEXT_ELEMENT,
           oldValue: t1.data,
           newValue: t2.data,
           route: route
@@ -442,6 +454,12 @@
               route: route.slice().push(i),
               element: e1.outerHTML
             });
+          }
+          if (e1.nodeType != 3 && e2.nodeType != 3) {
+             diff = this.findOuterDiff(e1, e2, route.slice().push(i));
+            if(diff) {
+              return diff;
+            }
           }
           diff = this.findInnerDiff(e1, e2, route.slice().push(i));
           if(diff) {
@@ -490,7 +508,7 @@
       else if(diff.action === REPLACE_INNER_HTML) {
         node.innerHTML = diff.newValue;
       }
-      else if(diff.action === REPLACE_TEXT) {
+      else if(diff.action === MODIFY_TEXT_ELEMENT) {
         node.data = diff.newValue;
       }
       else if(diff.action === RELOCATE_GROUP) {
@@ -578,6 +596,10 @@
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
       }
+      else if(diff.action === MODIFY_TEXT_ELEMENT) {
+        swap(diff, "oldValue", "newValue");
+        this.applyDiff(tree, diff);
+      }      
       else if(diff.action === RELOCATE_GROUP) {
         swap(diff, "from", "to");
         this.applyDiff(tree, diff);
@@ -618,8 +640,8 @@
   <div id="t3">lol<span>y</span><ol><li>one</li><li>two</li></ol><p><i>tuff</i></p><span>l</span><hr></div>
   <div id="t4">lol<span>x</span><hr><ol><li>two</li><li>one</li></ol><p><i>huff</i></p></div>
 
-  <div id="t1">he<a>ll</a><i>o></i></div>
-  <div id="t2">fe<a>ll</a><i>o></i></div>
+  <div id="t1">hello <span data-id="5">friend</span></div>
+  <div id="t2">hello <span data-id="6">friend</span></div>
 
   <script>
     var dd = new DOMdiff(),
