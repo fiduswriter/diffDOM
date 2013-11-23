@@ -21,6 +21,7 @@
         MODIFY_ATTRIBUTE = "modify attribute",
         REMOVE_ATTRIBUTE = "remove attribute",
         REPLACE_INNER_HTML = "replace innerHTML",
+        REPLACE_TEXT = "replace text",
         RELOCATE_GROUP = "relocate group",
         REMOVE_ELEMENT = "remove element",
         ADD_ELEMENT = "add element",
@@ -297,6 +298,9 @@
     diff: function(t1, t2) {
       diffcount = 0;
       t1 = t1.cloneNode(true);
+      t1.normalize(); // join sibling text nodes
+      t2 = t2.cloneNode(true); // Cloning in order not mess with text sibling nodes in the original node
+      t2.normalize();  
       this.tracker = new DiffTracker();
       return this.findDiffs(t1, t2);
     },
@@ -313,6 +317,7 @@
         if(difflist) {
           if(!difflist.length) { difflist = [difflist]; }
           this.tracker.add(difflist);
+          
           this.apply(t1, difflist);
         }
       } while (difflist);
@@ -392,6 +397,16 @@
         });
       }
 
+      // two text nodes with differences
+      if(mappings === 0 && t1.nodeType === 3 && t2.nodeType === 3 && t1.data != t2.data) {
+        return new Diff({
+          action: REPLACE_TEXT,
+          oldValue: t1.data,
+          newValue: t2.data,
+          route: route
+        });
+      }
+
       // possibly identical content: verify
       if(mappings === 1) {
         var diff, i, last, e1, e2;
@@ -417,7 +432,7 @@
           if(e2 && !e1) {
             if(e2.nodeType === 3) {
               return new Diff({
-                action: REMOVE_TEXT_ELEMENT,
+                action: ADD_TEXT_ELEMENT,
                 route: route.slice().push(i),
                 element: e2.data
               });
@@ -474,6 +489,9 @@
       }
       else if(diff.action === REPLACE_INNER_HTML) {
         node.innerHTML = diff.newValue;
+      }
+      else if(diff.action === REPLACE_TEXT) {
+        node.data = diff.newValue;
       }
       else if(diff.action === RELOCATE_GROUP) {
         var group = diff.group,
@@ -597,11 +615,11 @@
   <div id="t2">lol<hr><p>huff</p></div>
 -->
 
-  <div id="t1">lol<span>y</span><ol><li>one</li><li>two</li></ol><p><i>tuff</i></p><span>l</span><hr></div>
-  <div id="t2">lol<span>x</span><hr><ol><li>two</li><li>one</li></ol><p><i>huff</i></p></div>
+  <div id="t3">lol<span>y</span><ol><li>one</li><li>two</li></ol><p><i>tuff</i></p><span>l</span><hr></div>
+  <div id="t4">lol<span>x</span><hr><ol><li>two</li><li>one</li></ol><p><i>huff</i></p></div>
 
-  <div id="t4">hello <span>finger</span></div>
-  <div id="t3">hello <span>finger</span>.</div>
+  <div id="t1">he<a>ll</a><i>o></i></div>
+  <div id="t2">fe<a>ll</a><i>o></i></div>
 
   <script>
     var dd = new DOMdiff(),
