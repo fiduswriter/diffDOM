@@ -211,20 +211,20 @@
         shortest = gl1<gl2 ? gaps1 : gaps2;
 
     // group relocation
-
     for(i=0, last = shortest.length; i<last; i++) {
       if(gaps1[i] === true) {
         node = t1.childNodes[i];
+        console.log('SPIEGEL');
         if(node.nodeType === 3) {
           return new Diff({
             action: REMOVE_TEXT_ELEMENT,
-            route: route.slice().push(i),
+            route: route.concat(i),
             element: node.data
           });
         }
         return new Diff({
           action: REMOVE_ELEMENT,
-          route: route.slice().push(i),
+          route: route.concat(i),
           element: node.outerHTML
         });
       }
@@ -233,13 +233,13 @@
         if(node.nodeType === 3) {
           return new Diff({
             action: ADD_TEXT_ELEMENT,
-            route: route.slice().push(i),
+            route: route.concat(i),
             element: node.data
           });
         }
         return new Diff({
           action: ADD_ELEMENT,
-          route: route.slice().push(i),
+          route: route.concat(i),
           element: node.outerHTML
         });
       }
@@ -409,15 +409,16 @@
           //       in findFirstInnerDiff. Can we unify these?
           if(e1 && !e2) {
             if(e1.nodeType === 3) {
+console.log('removed here');
               return new Diff({
                 action: REMOVE_TEXT_ELEMENT,
-                route: route.slice().push(i),
+                route: route.concat(i),
                 element: e1.data
               });
             }
             return new Diff({
               action: REMOVE_ELEMENT,
-              route: route.slice().push(i),
+              route: route.concat(i),
               element: e1.outerHTML
             });
           }
@@ -425,23 +426,23 @@
             if(e2.nodeType === 3) {
               return new Diff({
                 action: ADD_TEXT_ELEMENT,
-                route: route.slice().push(i),
+                route: route.concat(i),
                 element: e2.data
               });
             }
             return new Diff({
               action: ADD_ELEMENT,
-              route: route.slice().push(i),
+              route: route.concat(i),
               element: e1.outerHTML
             });
           }
           if (e1.nodeType != 3 && e2.nodeType != 3) {
-            difflist = this.findOuterDiff(e1, e2, route.slice().push(i));
+            difflist = this.findOuterDiff(e1, e2, route.concat(i));
             if(difflist.length > 0) {
               return difflist;
             }
           }
-          diff = this.findInnerDiff(e1, e2, route.slice().push(i));
+          diff = this.findInnerDiff(e1, e2, route.concat(i));
           if(diff) {
             return diff;
           }
@@ -613,40 +614,40 @@
   <div id="t6">lol<p>tuff</p><hr></div>
   <div id="t7">lol<hr><p>huff</p></div>
 
-<div id="t1"><p>hello <span>finger</span></p></div>
-  <div id="t2"><p>hello <span>fingers</span>. Welcome!</p></div>
+  <div id="t10"><p>hello <span>finger</span></p></div>
+  <div id="t02"><p>hello <span>fingers</span>. Welcome!</p></div>
 
-  <div id="t7">lol<span>ydew<i>hey</i>de</span></div>
-  <div id="t8">lol<p>ydew<b>hey</b>de</p></div>
+  <div id="t7"><br></div>
+  <div id="t8"><br> </div>
 
-  <div id="t3">a </div>
-  <div id="t4">a</div>
+  <div id="t1"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">Hdddddsldddd</div><div id="document-metadata" class="user-contents"></div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>What</p><p>deed n</p><p>de</p><p>de</p></div></div>
+  <div id="t2"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">lHdddddsldddd</div><div id="document-metadata" class="user-contents"></div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>What</p><p>deed n</p><p>de</p><p>de</p></div></div>
 
   <script>
     var dd = new DOMdiff(),
-        tl = new TraceLogger(dd);
+      //  tl = new TraceLogger(dd);
         t1 = document.getElementById("t1"),
         t2 = document.getElementById("t2");
-
+//t2.appendChild(document.createTextNode(' '));
     try {
       var diffs = dd.diff(t1, t2);
       console.log("diff operations for t1 -> t2\n", diffs);
 
-      console.log("\n", "---diff log---");
-      console.log(tl.toString());
+     // console.log("\n", "---diff log---");
+     // console.log(tl.toString());
 
       console.log("\n", "---apply---");
       t1 = t1.cloneNode(true);
       dd.apply(t1, diffs);
-      console.log(t1);
+      //console.log(t1);
 
-      console.log("\n", "---undo---");
-      t1 = t1.cloneNode(true);
-      dd.undo(t1, diffs);
-      console.log(t1);
+      //console.log("\n", "---undo---");
+      //t1 = t1.cloneNode(true);
+      //dd.undo(t1, diffs);
+      //console.log(t1);
     } catch (e) {
       console.log("error occured\n", e.toString());
-      console.log(tl.toString());
+     // console.log(tl.toString());
       throw e;
     }
 
