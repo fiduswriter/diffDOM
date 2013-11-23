@@ -5,18 +5,6 @@
 <title>DOMdiff</title>
 
 <script>
-  // fix Array
-  (function() {
-    var oldfn = Array.prototype.push;
-    Array.prototype.push = function(element) {
-      oldfn.call(this, element);
-      return this;
-    };
-  }());
-</script>
-
-
-<script>
   const ADD_ATTRIBUTE = "add attribute",
         MODIFY_ATTRIBUTE = "modify attribute",
         REMOVE_ATTRIBUTE = "remove attribute",
@@ -214,7 +202,6 @@
     for(i=0, last = shortest.length; i<last; i++) {
       if(gaps1[i] === true) {
         node = t1.childNodes[i];
-        console.log('SPIEGEL');
         if(node.nodeType === 3) {
           return new Diff({
             action: REMOVE_TEXT_ELEMENT,
@@ -286,7 +273,7 @@
 
 
   var debug = true,
-      diffcap = 10,
+      diffcap = 500,
       diffcount;
 
   var DOMdiff = function() {};
@@ -349,7 +336,7 @@
       attr1.forEach(function(attr) {
         var pos = find(attr, attr2);
         if(pos === -1) {
-          return diffs.push(new Diff({
+          diffs.push(new Diff({
             action: REMOVE_ATTRIBUTE,
             attribute: {
               name: attr.name,
@@ -357,6 +344,7 @@
             },
             route: route
           }));
+          return diffs;
         }
         var a2 = attr2.splice(pos, 1)[0];
         if(attr.nodeValue !== a2.nodeValue) {
@@ -619,11 +607,12 @@ console.log('removed here');
 
   <div id="t7"><br></div>
   <div id="t8"><br> </div>
-
-  <div id="t1"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">Hdddddsldddd</div><div id="document-metadata" class="user-contents"></div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>What</p><p>deed n</p><p>de</p><p>de</p></div></div>
-  <div id="t2"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">lHdddddsldddd</div><div id="document-metadata" class="user-contents"></div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>What</p><p>deed n</p><p>de</p><p>de</p></div></div>
+0: "<div id="t1"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">Snowden</div><div id="document-metadata" class="user-contents"></div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>There was a time when I worried much less, because most things just worked. But that time wasn't long. Things<span class="comment" id="comment-0" data-id="0" data-user="1" data-user-name="johannes" data-user-avatar="/static/img/default_avatar.png" data-date="1385236835804" data-comment="Taht's why"> changed</span> </p></div></div>"
+1: "<div id="t2"><div id="document-title" class="editable user-contents" title="The title of the document" contenteditable="true">Snowden</div><div id="document-metadata" class="user-contents">Snowden</div><div id="document-contents" class="editable user-contents" contenteditable="true"><p>There was a time when I worried much less, because most things just worked. But that time wasn't long. Things<span class="comment" id="comment-0" data-id="0" data-user="1" data-user-name="johannes" data-user-avatar="/static/img/default_avatar.png" data-date="1385236835804" data-comment="That's why"> changed</span> </p></div></div>"
 
   <script>
+
+
     var dd = new DOMdiff(),
       //  tl = new TraceLogger(dd);
         t1 = document.getElementById("t1"),
