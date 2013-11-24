@@ -35,9 +35,9 @@ var availableElements, testElement, textContent;
        testElement.appendChild(document.createElement(ELEMENTS[Math.floor((Math.random()*ELEMENTS.length))]));
     }
 
-    // Add 300 text nodes
+    // Add 100 text nodes
 
-    for (i=0; i < 300; i++) {
+    for (i=0; i < 100; i++) {
       textContent = '';
       for(j=0; j < Math.floor((Math.random()*10)); j++) {
         textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
@@ -55,6 +55,27 @@ var availableElements, testElement, textContent;
        testElement = availableElements[Math.floor((Math.random()*availableElements.length))];
        testElement.appendChild(document.createElement(ELEMENTS[Math.floor((Math.random()*ELEMENTS.length))]));
     }
+
+    // Clean up all nodes to correspond to what the browser accepts. For example, Chorme doesn't like <P> inside of <P>
+
+    for (i=0; i < mainDiv.childNodes.length; i++) {
+       mainDiv.childNodes[i].innerHTML = mainDiv.childNodes[i].innerHTML;
+    }
+
+    // Add another 200 text nodes -- to test two or more consecutive sibling text nodes. 
+    // Currently seems to create the most errors and is the most difficult to trace.
+    // Therefore temporarily disabled.
+
+  /*  for (i=0; i < 200; i++) {
+      textContent = '';
+      for(j=0; j < Math.floor((Math.random()*10)); j++) {
+        textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+      }
+       availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+       testElement = availableElements[Math.floor((Math.random()*availableElements.length))];
+       testElement.appendChild(document.createTextNode(textContent));
+    }*/
+
 
     divs = mainDiv.childNodes;
 

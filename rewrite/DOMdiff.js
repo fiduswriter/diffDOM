@@ -294,7 +294,7 @@
       return false;
     },
     findOuterDiff: function(t1, t2, route) {
-      console.log([t1,t2]);  
+   //   console.log([t1,t2]);  
       if (t1.nodeName != t2.nodeName) {
           return [new Diff({
               action: REPLACE_ELEMENT,
@@ -482,6 +482,7 @@
           for(var i=0; i<group.length; i++) {
             child = node.childNodes[from + i];
             reference = node.childNodes[to + i];
+            console.log([node, child, reference]);
             node.insertBefore(child, reference);
           }
           return;
@@ -508,7 +509,6 @@
         d.innerHTML = diff.element;
         var newNode = d.childNodes[0];
         if(c>=node.childNodes.length) {
-            console.log([node,newNode]);
           node.appendChild(newNode);
         } else {
           var reference = node.childNodes[c];
