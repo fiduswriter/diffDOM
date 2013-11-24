@@ -33,6 +33,12 @@
   <div><img><p></p></div> 
   <div><img><p></p><p></p></div> 
 
+  <div><b><p></p><b><img><p><span></span></p>XW</b><span>Jl</span><b></b></b>h5QnXX</b>
+  <div><span><span><b><i></i></b><img><i><span></span></i></span></span><b><p></p>z</b><span><b></b><img></span>2<img></div>
+
+  <div><i><p><span>j0zF<b></b></span><i><span></span></i>LS</p>scKvb</i><b>vO8</b>G</div> 
+  <div><img><span></span></div>
+
   <script>
 
 
@@ -45,7 +51,7 @@
     for (i = 0; i < divs.length; i=i+2) {
 
 
-      try {
+      //try {
         console.log("diff operations for div #"+i+" -> div #"+(i+1)+"\n");
         diffs = dd.diff(divs[i], divs[i+1]);
         console.log(diffs);
@@ -74,7 +80,7 @@
             console.log(divs[i].outerHTML);
             throw 'Outputs not matching';
         }
-
+try {
       } catch (e) {
         console.log("error occured\n", e.toString());
         console.log(tl.toString());

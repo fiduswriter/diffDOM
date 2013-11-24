@@ -294,6 +294,16 @@
       return false;
     },
     findOuterDiff: function(t1, t2, route) {
+      console.log([t1,t2]);  
+      if (t1.nodeName != t2.nodeName) {
+          return [new Diff({
+              action: REPLACE_ELEMENT,
+              oldValue: t1.outerHTML ? t1.outerHTML: t1.data,
+              newValue: t2.outerHTML ? t2.outerHTML: t2.data,
+              route: route
+        })];
+      }  
+        
       var slice = Array.prototype.slice,
           byName = function(a, b) { return a.name > b.name; },
           attr1 = slice.call(t1.attributes).sort(byName),
@@ -307,14 +317,6 @@
           },
           diffs = [];
           
-      if (t1.nodeName != t2.nodeName) {
-          return [new Diff({
-              action: REPLACE_ELEMENT,
-              oldValue: t1.outerHTML,
-              newValue: t2.outerHTML,
-              route: route
-        })];
-      }
       attr1.forEach(function(attr) {
         var pos = find(attr, attr2);
         if(pos === -1) {
@@ -406,7 +408,7 @@
               element: e2.outerHTML
             });
           }
-          if (e1.nodeType != 3 && e2.nodeType != 3) {
+          if (e1.nodeType != 3 || e2.nodeType != 3) {
             difflist = this.findOuterDiff(e1, e2, route.concat(i));
             if(difflist.length > 0) {
               return difflist;
@@ -506,6 +508,7 @@
         d.innerHTML = diff.element;
         var newNode = d.childNodes[0];
         if(c>=node.childNodes.length) {
+            console.log([node,newNode]);
           node.appendChild(newNode);
         } else {
           var reference = node.childNodes[c];
