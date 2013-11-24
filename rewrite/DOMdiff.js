@@ -349,19 +349,20 @@
       // if t1 or t2 contain differences that are not text nodes, return a diff. 
 
       // two text nodes with differences
-      if(mappings === 0 && t1.nodeType === 3 && t2.nodeType === 3 && t1.data != t2.data) {
-        return new Diff({
-          action: MODIFY_TEXT_ELEMENT,
-          oldValue: t1.data,
-          newValue: t2.data,
-          route: route
-        });
+      if(mappings === 0) {
+        if (t1.nodeType === 3 && t2.nodeType === 3 && t1.data != t2.data) {
+          return new Diff({
+            action: MODIFY_TEXT_ELEMENT,
+            oldValue: t1.data,
+            newValue: t2.data,
+            route: route
+          });
+        }
       }
-
       // possibly identical content: verify
       if(mappings < 2) {
         var diff, difflist, i, last, e1, e2;
-        for(i=0, last=t1.childNodes.length; i<last; i++) {
+        for(i=0, last=Math.max(t1.childNodes.length,t2.childNodes.length); i<last; i++) {
           e1 = t1.childNodes[i];
           e2 = t2.childNodes[i];
           // TODO: this is a similar code path to the one
@@ -391,7 +392,7 @@
             return new Diff({
               action: ADD_ELEMENT,
               route: route.concat(i),
-              element: e1.outerHTML
+              element: e2.outerHTML
             });
           }
           if (e1.nodeType != 3 && e2.nodeType != 3) {
