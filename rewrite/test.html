@@ -45,6 +45,7 @@
         if (t1.innerHTML===divs[i+1].innerHTML) {
             console.log('...success!');
         } else {
+            console.log(diffs);
             console.log(t1.outerHTML);
             console.log(divs[i+1].outerHTML);
             throw 'Outputs not matching';
@@ -56,6 +57,7 @@
         if (t1.innerHTML===divs[i].innerHTML) {
             console.log('...success!');
         } else {
+            console.log(diffs);
             console.log(t1.outerHTML);
             console.log(divs[i].outerHTML);
             throw 'Outputs not matching';
