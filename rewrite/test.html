@@ -21,9 +21,17 @@
   <div><span><p>tello</p><p></p></span></div>
   <div><span><p>fello</p><p></p></span></div>
 
-  <div><img></div> 
+  <div><img></div>
   <div><i><i><img><p></p></i><span><p><p></p></p></span></i><b></b></div>
 
+  <div><b></b></div>
+  <div><i><i><b></b><p></p></i><span><p><p></p></p></span></i><b></b></div>
+
+  <div><span>hello</span></div>
+  <div><p>hello</p></div>
+
+  <div><img><p></p></div> 
+  <div><img><p></p><p></p></div> 
 
   <script>
 
@@ -38,8 +46,9 @@
 
 
       try {
-        diffs = dd.diff(divs[i], divs[i+1]);
         console.log("diff operations for div #"+i+" -> div #"+(i+1)+"\n");
+        diffs = dd.diff(divs[i], divs[i+1]);
+        console.log(diffs);
 
         console.log("\n", "applying...");
         t1 = divs[i].cloneNode(true);

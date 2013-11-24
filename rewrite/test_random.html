@@ -62,9 +62,8 @@ var availableElements, testElement, textContent;
 
 
       try {
+        console.log("diff operations for "+divs[i].outerHTML+" -> "+divs[(i+1)].outerHTML+"\n");
         diffs = dd.diff(divs[i], divs[i+1]);
-        console.log("diff operations for "+divs[i].outerHTML+" -> div #"+divs[(i+1)].outerHTML+"\n");
-
         console.log("\n", "applying...");
         t1 = divs[i].cloneNode(true);
         dd.apply(t1, diffs);

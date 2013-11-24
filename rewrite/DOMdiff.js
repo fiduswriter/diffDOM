@@ -6,7 +6,8 @@
         REMOVE_ELEMENT = "remove element",
         ADD_ELEMENT = "add element",
         REMOVE_TEXT_ELEMENT = "remove text element",
-        ADD_TEXT_ELEMENT = "add text element";
+        ADD_TEXT_ELEMENT = "add text element",
+        REPLACE_ELEMENT = "replace element";
 
   var Diff = function(options) {
     var diff = this;
@@ -267,6 +268,7 @@
             throw new Error("surpassed diffcap");
           }
         }
+
         difflist = this.findFirstDiff(t1, t2, []);
         if(difflist) {
           if(!difflist.length) { difflist = [difflist]; }
@@ -304,6 +306,15 @@
             return -1;
           },
           diffs = [];
+          
+      if (t1.nodeName != t2.nodeName) {
+          return [new Diff({
+              action: REPLACE_ELEMENT,
+              oldValue: t1.outerHTML,
+              newValue: t2.outerHTML,
+              route: route
+        })];
+      }
       attr1.forEach(function(attr) {
         var pos = find(attr, attr2);
         if(pos === -1) {
@@ -452,6 +463,12 @@
       else if(diff.action === MODIFY_TEXT_ELEMENT) {
         node.data = this.textDiff(node.data, diff.oldValue, diff.newValue);
       }
+      else if(diff.action === REPLACE_ELEMENT) {
+        var outerNode = document.createElement('div');
+        outerNode.innerHTML = diff.newValue;
+        var newNode = outerNode.firstChild;
+        node.parentNode.replaceChild(newNode, node);
+      }
       else if(diff.action === RELOCATE_GROUP) {
         var group = diff.group,
             from = diff.from,
@@ -534,6 +551,10 @@
         this.applyDiff(tree, diff);
       }
       else if(diff.action === MODIFY_TEXT_ELEMENT) {
+        swap(diff, "oldValue", "newValue");
+        this.applyDiff(tree, diff);
+      }
+      else if(diff.action === REPLACE_ELEMENT) {
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
       }      
