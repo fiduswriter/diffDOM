@@ -41,23 +41,23 @@
         console.log("\n", "applying...");
         t1 = divs[i].cloneNode(true);
         dd.apply(t1, diffs);
+            console.log(t1.outerHTML);
+            console.log(divs[i+1].outerHTML);
 
         console.log("\n", "undoing...");
-        t1 = t1.cloneNode(true);
         dd.undo(t1, diffs);
+            console.log(t1.outerHTML);
+            console.log(divs[i+1].outerHTML);
 
         console.log("\n", "reapplying...");
-        t1 = t1.cloneNode(true);
         dd.apply(t1, diffs);
-
+            console.log(t1.outerHTML);
+            console.log(divs[i+1].outerHTML);
 
 
         if (t1.innerHTML===divs[i+1].innerHTML) {
-            console.log('success!');
+            console.log('...success!');
         } else {
-            console.log(t1.innerHTML);
-            console.log(divs[i+1].innerHTML);
-            
             throw 'Outputs not matching';
         }
       } catch (e) {
