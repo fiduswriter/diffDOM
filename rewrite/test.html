@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DOMdiff</title>
+<script src="TraceLogger.js">
+</script>
+<script src="DOMdiff.js">
+</script>
+</head>
+<body>
+<!-- Add all divs to be compared here two by two -->
+
+  <div>lol<span>ydew<i>hey</i>de</span></div>
+  <div>lol<p>ydew<b>hey</b>de</p></div>
+
+  <div><p>hello <span>finger</span></p></div>
+  <div><p>hello <span>fingers</span>. Welcome!</p></div>
+
+
+  <div><div><p>tello</p><p></p></div></div>
+  <div><div><p>fello</p><p></p></div></div>
+
+
+  <script>
+
+
+    var dd = new DOMdiff(),
+        tl = new TraceLogger(dd), 
+        divs, diffs, t1, i;
+
+    divs = document.querySelectorAll('div');
+
+    for (i = 0; i < divs.length; i=i+2) {
+
+
+      try {
+        diffs = dd.diff(divs[i], divs[i+1]);
+        console.log("diff operations for div #"+i+" -> div #"+(i+1)+"\n");
+
+        console.log("\n", "applying...");
+        t1 = divs[i].cloneNode(true);
+        dd.apply(t1, diffs);
+
+        console.log("\n", "undoing...");
+        t1 = t1.cloneNode(true);
+        dd.undo(t1, diffs);
+
+        console.log("\n", "reapplying...");
+        t1 = t1.cloneNode(true);
+        dd.apply(t1, diffs);
+
+
+
+        if (t1.innerHTML===divs[i+1].innerHTML) {
+            console.log('success!');
+        } else {
+            console.log(t1.innerHTML);
+            console.log(divs[i+1].innerHTML);
+            
+            throw 'Outputs not matching';
+        }
+      } catch (e) {
+        console.log("error occured\n", e.toString());
+        console.log(tl.toString());
+        throw e;
+      }
+    }
+  </script>
+
+</body>
+</html>
