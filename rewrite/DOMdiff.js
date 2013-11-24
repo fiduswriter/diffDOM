@@ -1,10 +1,3 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>DOMdiff</title>
-
-<script>
   const ADD_ATTRIBUTE = "add attribute",
         MODIFY_ATTRIBUTE = "modify attribute",
         REMOVE_ATTRIBUTE = "remove attribute",
@@ -14,14 +7,7 @@
         ADD_ELEMENT = "add element",
         REMOVE_TEXT_ELEMENT = "remove text element",
         ADD_TEXT_ELEMENT = "add text element";
-</script>
 
-
-<script src="TraceLogger.js">
-</script>
-
-
-<script>
   var Diff = function(options) {
     var diff = this;
     Object.keys(options).forEach(function(option) {
@@ -33,10 +19,7 @@
       return JSON.stringify(this);
     }
   };
-</script>
 
-
-<script>
   var SubsetMapping = function SubsetMapping(a, b) {
     this["old"] = a;
     this["new"] = b;
@@ -53,10 +36,7 @@
       return this.length + " element subset, first mapping: old " + this["old"] + " → new " + this["new"];
     }
   };
-</script>
 
-
-<script>
   var roughlyEqual = function roughlyEqual(e1, e2, preventRecursion) {
     if (!e1 || !e2) return false;
     if (e1.nodeType !== e2.nodeType) return false;
@@ -81,10 +61,7 @@
     }
     return thesame;
   };
-</script>
 
-
-<script>
   /**
    * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
    */
@@ -178,10 +155,7 @@
     }
     return subsets;
   };
-</script>
 
-
-<script>
   var findFirstInnerDiff = function(t1, t2, subtrees, route) {
     if(subtrees.length === 0) return false;
 
@@ -243,10 +217,7 @@
     }
     return false;
   };
-</script>
 
-
-<script>
 (function() {
 
   function swap(obj, p1, p2) {
@@ -592,49 +563,3 @@
 
   window.DOMdiff = DOMdiff;
 }());
-</script>
-
-</head>
-<body>
-
-
-  <div id="t1">lol<p>tuff</p><hr></div>
-  <div id="t2">lol<hr><p>huff</p></div>
-
-  <div id="t10"><p>hello <span>finger</span></p></div>
-  <div id="t02"><p>hello <span>fingers</span>. Welcome!</p></div>
-
-  <script>
-
-
-    var dd = new DOMdiff(),
-        tl = new TraceLogger(dd);
-        t1 = document.getElementById("t1"),
-        t2 = document.getElementById("t2");
-
-    try {
-      var diffs = dd.diff(t1, t2);
-      console.log("diff operations for t1 -> t2\n", diffs);
-
-     console.log("\n", "---diff log---");
-      console.log(tl.toString());
-
-      console.log("\n", "---apply---");
-      t1 = t1.cloneNode(true);
-      dd.apply(t1, diffs);
-      console.log(t1);
-
-      console.log("\n", "---undo---");
-      t1 = t1.cloneNode(true);
-      dd.undo(t1, diffs);
-      console.log(t1);
-    } catch (e) {
-      console.log("error occured\n", e.toString());
-      console.log(tl.toString());
-      throw e;
-    }
-
-  </script>
-
-</body>
-</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DOMdiff</title>
+
+<script src="TraceLogger.js">
+</script>
+
+<script src="DOMdiff.js">
+</script>
+
+</head>
+<body>
+
+
+  <div id="t1"><div><p>tello</p><p></p></div></div>
+  <div id="t2"><div><p>fello</p><p></p></div></div>
+
+  <div id="t3">lol<span>ydew<i>hey</i>de</span></div>
+  <div id="t4">lol<p>ydew<b>hey</b>de</p></div>
+
+  <div id="t10"><p>hello <span>finger</span></p></div>
+  <div id="t02"><p>hello <span>fingers</span>. Welcome!</p></div>
+
+  <script>
+
+
+    var dd = new DOMdiff(),
+        tl = new TraceLogger(dd);
+        t1 = document.getElementById("t1"),
+        t2 = document.getElementById("t2");
+
+    try {
+      var diffs = dd.diff(t1, t2);
+      console.log("diff operations for t1 -> t2\n", diffs);
+
+     console.log("\n", "---diff log---");
+      console.log(tl.toString());
+
+      console.log("\n", "---apply---");
+      t1 = t1.cloneNode(true);
+      dd.apply(t1, diffs);
+      console.log(t1);
+
+      console.log("\n", "---undo---");
+      t1 = t1.cloneNode(true);
+      dd.undo(t1, diffs);
+      console.log(t1);
+    } catch (e) {
+      console.log("error occured\n", e.toString());
+      console.log(tl.toString());
+      throw e;
+    }
+
+  </script>
+
+</body>
+</html>
