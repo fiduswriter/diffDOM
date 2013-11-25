@@ -211,7 +211,7 @@
           action: RELOCATE_GROUP,
           group: group,
           from: i,
-          to: group["new"],
+          to: Math.min(group["new"],(t1.childNodes.length-group.length)),
           route: route
         });
       }
@@ -294,7 +294,7 @@
       return false;
     },
     findOuterDiff: function(t1, t2, route) {
-   //   console.log([t1,t2]);  
+      console.log([t1,t2]);  
       if (t1.nodeName != t2.nodeName) {
           return [new Diff({
               action: REPLACE_ELEMENT,
@@ -303,7 +303,7 @@
               route: route
         })];
       }  
-        
+      
       var slice = Array.prototype.slice,
           byName = function(a, b) { return a.name > b.name; },
           attr1 = slice.call(t1.attributes).sort(byName),
@@ -476,11 +476,10 @@
             from = diff.from,
             to = diff.to,
             child, reference;
-
+        reference = node.childNodes[to+group.length];
         // slide elements up
         if(from < to ) {
-          reference = node.childNodes[to+1];
-          for(var i=0; i<group.length; i++) {
+          for(var i=0; i<group.length; i++) {   
             child = node.childNodes[from];
             console.log(['up',child,reference,node.outerHTML, from, to, group.length])
             node.insertBefore(child, reference);
@@ -489,7 +488,7 @@
           // slide elements down
           reference = node.childNodes[to];
           for(var i=0; i< group.length; i++) {
-            child = node.childNodes[from-group.length+i+1];     
+            child = node.childNodes[from+i];     
             console.log(['down',child,reference,node.outerHTML, from, to, i, group.length])
             node.insertBefore(child, reference);
           }
