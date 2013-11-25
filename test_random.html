@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DOMdiff</title>
+<script src="TraceLogger.js">
+</script>
+<script src="DOMdiff.js">
+</script>
+<script>
+
+
+const ELEMENTS = ['p','span','i','b','img'],
+     CONTAINER_ELEMENT_SELECTOR = 'div, p, span, i, b',
+     CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    var dd = new DOMdiff(),
+        tl = new TraceLogger(dd), 
+        divs, diffs, t1, i, j;
+var availableElements, testElement, textContent;
+    var mainDiv = document.createElement('div');
+
+    // create 100 divs to compare
+
+    for (i=0; i < 100; i++) {
+      mainDiv.appendChild(document.createElement('div'));
+    }
+
+
+    // Add 500 elements somewhere within the 100 divs
+
+    for (i=0; i < 500; i++) {
+       availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+       testElement = availableElements[Math.floor((Math.random()*availableElements.length))];
+       testElement.appendChild(document.createElement(ELEMENTS[Math.floor((Math.random()*ELEMENTS.length))]));
+    }
+
+    // Add 100 text nodes
+
+    for (i=0; i < 100; i++) {
+      textContent = '';
+      for(j=0; j < Math.floor((Math.random()*10)); j++) {
+        textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+      }
+       availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+       testElement = availableElements[Math.floor((Math.random()*availableElements.length))];
+       testElement.appendChild(document.createTextNode(textContent));
+    }
+
+    // Add another 250 elements
+
+
+    for (i=0; i < 250; i++) {
+       availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+       testElement = availableElements[Math.floor((Math.random()*availableElements.length))];
+       testElement.appendChild(document.createElement(ELEMENTS[Math.floor((Math.random()*ELEMENTS.length))]));
+    }
+
+    // Add another 200 text nodes -- to test two or more consecutive sibling text nodes. 
+
+    for (i=0; i < 200; i++) {
+      textContent = '';
+      for(j=0; j < Math.floor((Math.random()*10)); j++) {
+        textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+      }
+       availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+       testElement = availableElements[Math.floor((Math.random()*availableElements.length))];
+       testElement.appendChild(document.createTextNode(textContent));
+    }
+
+
+    divs = mainDiv.childNodes;
+
+    for (i = 0; i < divs.length; i=i+2) {
+
+
+      try {
+        console.log("diff operations for "+divs[i].outerHTML+" -> "+divs[(i+1)].outerHTML+"\n");
+        diffs = dd.diff(divs[i], divs[i+1]);
+
+        console.log("\n", "applying...");
+        var t1 = divs[i].cloneNode(true);
+
+        dd.apply(t1, diffs);
+
+        if (t1.innerHTML===divs[i+1].innerHTML) {
+            console.log('...success!');
+        } else {
+            console.log(diffs);
+            console.log(t1.outerHTML);
+            console.log(divs[i+1].outerHTML);
+            throw 'Outputs not matching';
+        }
+
+        console.log("\n", "undoing...");
+        dd.undo(t1, diffs);
+
+        if (t1.innerHTML===divs[i].innerHTML) {
+            console.log('...success!');
+        } else {
+            console.log(diffs);
+            console.log(t1.outerHTML);
+            console.log(divs[i].outerHTML);
+            throw 'Outputs not matching';
+        }
+//try{
+      } catch (e) {
+        console.log("error occured\n", e.toString());
+        console.log(tl.toString());
+        throw e;
+      }
+    }
+  </script>
+</head>
+<body>
+</body>
+</html>

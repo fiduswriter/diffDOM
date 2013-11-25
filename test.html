@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DOMdiff</title>
+<script src="TraceLogger.js">
+</script>
+<script src="DOMdiff.js">
+</script>
+</head>
+<body>
+<!-- Add all divs to be compared here two by two -->
+
+  <div>lol<span>ydew<i>hey</i>de</span></div>
+  <div>lol<p>ydew<b>hey</b>de</p></div>
+
+  <div><p>hello <span>finger</span></p></div>
+  <div><p>hello <span>fingers</span>. Welcome!</p></div>
+
+
+  <div><span><p>tello</p><p></p></span></div>
+  <div><span><p>fello</p><p></p></span></div>
+
+  <div><img></div>
+  <div><i><i><img><p></p></i><span><p><p></p></p></span></i><b></b></div>
+
+  <div><b></b></div>
+  <div><i><i><b></b><p></p></i><span><p><p></p></p></span></i><b></b></div>
+
+  <div><span>hello</span></div>
+  <div><p>hello</p></div>
+
+  <div><img><p></p></div> 
+  <div><img><p></p><p></p></div> 
+
+  <div><b><p></p><b><img><p><span></span></p>XW</b><span>Jl</span><b></b></b>h5QnXX</b></div>
+  <div><span><span><b><i></i></b><img><i><span></span></i></span></span><b><p></p>z</b><span><b></b><img></span>2<img></div>
+
+  <div><i><p><span>j0zF<b></b></span><i><span></span></i>LS</p>scKvb</i><b>vO8</b>G</div> 
+  <div><img><span></span></div>
+
+  <div>sSp<span></span></div> 
+  <div><p><p><span><i>eq</i>okfHoePCoqFZ4<img></span><p></p>YT</p><p>bdMa</p>R</p><img>gv<img></div>
+
+
+  <div><p></p><p><span>j</span><span>Ukoy</span><b>x4KwW</b><img>hWQ</p><b><img><b></b></b>d2HPWS4</div>
+  <div><p><p></p></p><p><span>j</span><span>Ukoy</span><b>x4KwW</b><img>hWQ</p><b><img><b></b></b>d2HPWS4</div>
+
+  <div><i><img></i>iXMXSe4nqp</div>
+  <div><i><b></b><b><b></b><i><i>Lrjl1pP</i>Y0B</i>xN</b><i></i><span>gwcD4Bj</span><i>A</i>QW6awpo</i><img><p>Z</p>b<p></p>7f9</div>
+ 
+<div><p></p><p><i></i></p><p></p><i><img><span><b></b></span><img></i><p></p><i><img><span></span></i><p><i></i></p><p></p><img><span><span></span></span><img></div>
+<div><img><i></i><p><span><span><b></b></span></span></p><p></p><b><img><span></span></b><p><b></b></p><p></p><p></p><p>wg</p><i><p></p></i>2nJ<i><img></i><p></p><i><img></i>zV87J1UU3Ex</div>
+
+<div><span><b><p></p></b>pGy<p></p></span><span><span><span></span></span><i></i><i></i></span><span></span><img></div>
+<div><i></i><img><img><i><i><b></b></i><p></p></i><b></b><p></p><p></p><span></span></div>
+
+
+<div><img><i></i><b></b><i></i><font></font><p></p><p></p><span></span></div>
+<div><p></p><p></p><span></span><img><i></i><b></b><i></i><font></font></div>
+
+ 
+  <div><img><i></i><p><span><span><b></b></span></span></p><p></p><b><img><span></span></b><p><b></b></p><p></p><p></p><p>wg</p><i><p></p></i>2nJ<i><img></i><p></p><i><img></i></div>
+  <div><img><i></i><p><span><span><b></b></span></span></p><p></p><b><img><span></span></b><p><b></b></p><p></p><p></p><p>wg</p><i><p></p></i>2nJ<i><img></i><p></p><i><img></i>zV87J1UU3Ex</div>
+
+<div id="t1">lol<span>ydew<i>hey</i>de</span></div>
+<div id="t2">lol<p>ydew<b>hey</b>de</p></div>
+
+
+<div><p><b><i><b><i>ya</i></b><i>f</i></i><span><i></i></span></b></p><p></p><p></p><p></p><span><p><i></i></p>w7U0Ah4<i></i></span><b><p><span></span><img></p></b><p></p><img><i></i><span></span></div>
+<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div>
+
+<div><p></p><img><p></p><p></p><p></p><i></i><span></span></div>
+<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div>
+
+<div><img><p></p><p></p><p></p><p></p><i></i><span></span></div>
+<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div>
+
+<div><img><span><i></i><span></span></span><img><p></p><p></p><p></p><p></p><i></i><span></span></div>
+<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div>
+
+
+<div><p></p><i></i><span></span></div>
+<div><span></span><i></i><p></p></div>
+
+<div><span></span><i></i><p></p></div>
+<div><i></i><p></p><span></span></div>
+
+<div><i></i><p></p><span></span></div>
+<div><span></span><i></i><p></p></div>
+
+
+<div><i></i><span></span><p></p></div>
+<div><span></span><i></i><p></p></div>
+
+
+<div><b><span><p></p><p><img><b></b></p><b><p></p></b><i></i><p></p><p><b></b><i>YgXxj0</i></p><p><i><span></span></i></p><i><b><span><img></span><p></p><img></b><b>11w</b>ymd</i><p></p><p><span></span><span></span></p><p></p><p></p><p></p><p>gU</p><span></span></span>Jbrr7</b></div>
+<div><span><span><p>UPG</p><img><img></span><span></span><span></span></span><p>vZR6</p><p><b><span><img></span>JvrBR</b></p><p></p><p></p><p>WB6Y</p><img><img><i></i><p></p><p><img><img><b></b></p><p><b>dh62z</b></p><p></p><p></p><b><img></b>YD<p></p></div>
+
+<div>7</div> 
+<div><i><img><i><p></p><span></span></i><span>uW<span class="dd-sep"></span>Dc</span><img><img><p><img><i></i><i></i></p><p></p><i></i><span>SC<span class="dd-sep"></span>vEq<span class="dd-sep"></span>M1VRx<span class="dd-sep"></span>c81B</span>T<p></p><span><p><img><b></b>FW</p></span>taV</i><i><p></p>6k<span class="dd-sep"></span>Mycc</i><img><img>9JI</div>
+
+<div><span><img><b><p></p><span class="dd-sep"></span>b</b>82</span><b><b><p><b></b></p><p></p><p></p><b>XO<i></i></b></b>2</b></div>
+<div><span><p><b></b><b></b><i></i></p><b></b><i></i>dsL</span><span><span></span>2z</span><img><p>J</p><p><b></b>Hmr<span class="dd-sep"></span>p4</p><span></span><p><img>I</p><span></span><p></p><img><img></div>
+
+  <script>
+
+
+    var dd = new DOMdiff(),
+        tl = new TraceLogger(dd), 
+        divs, diffs, t1, i;
+
+    divs = document.querySelectorAll('div');
+
+    for (i = 0; i < divs.length; i=i+2) {
+
+
+      try {
+        console.log("diff operations for div #"+i+" -> div #"+(i+1)+"\n");
+        diffs = dd.diff(divs[i], divs[i+1]);
+        console.log(diffs);
+
+        console.log("\n", "applying...");
+        t1 = divs[i].cloneNode(true);
+        dd.apply(t1, diffs);
+
+        if (t1.innerHTML===divs[i+1].innerHTML) {
+            console.log('...success!');
+        } else {
+            console.log(diffs);
+            console.log(t1.outerHTML);
+            console.log(divs[i+1].outerHTML);
+            throw 'Outputs not matching';
+        }
+
+        console.log("\n", "undoing...");
+        dd.undo(t1, diffs);
+
+        if (t1.innerHTML===divs[i].innerHTML) {
+            console.log('...success!');
+        } else {
+            console.log(diffs);
+            console.log(t1.outerHTML);
+            console.log(divs[i].outerHTML);
+            throw 'Outputs not matching';
+        }
+//try {
+      } catch (e) {
+        console.log("error occured\n", e.toString());
+        console.log(tl.toString());
+        throw e;
+      }
+    }
+  </script>
+
+</body>
+</html>
