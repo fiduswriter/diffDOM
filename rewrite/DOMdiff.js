@@ -245,7 +245,7 @@
 
 
   var debug = true,
-      diffcap = 500,
+      diffcap = 5000,
       diffcount;
 
   var DOMdiff = function() {};
@@ -477,22 +477,20 @@
             to = diff.to,
             child, reference;
 
-        // slide elements down
-        if(from > to ) {
+        // slide elements up
+        if(from < to ) {
           for(var i=0; i<group.length; i++) {
-            child = node.childNodes[from + i];
-            reference = node.childNodes[to + i];
-            console.log([node, child, reference]);
+            child = node.childNodes[from];
+            reference = node.childNodes[to];
             node.insertBefore(child, reference);
           }
-          return;
-        }
-
-        // slide elements up
-        for(var i=group.length-1; i>=0; i--) {
-          child = node.childNodes[from + i];
-          reference = node.childNodes[to + 1 + i];
-          node.insertBefore(child, reference);
+        } else {
+          // slide elements down
+          for(var i=group.length-1; i>=0; i--) {
+            child = node.childNodes[from + group.length - 1];
+            reference = node.childNodes[to];
+            node.insertBefore(child, reference);
+          }
         }
       }
       else if(diff.action === REMOVE_ELEMENT) {
@@ -562,7 +560,21 @@
         this.applyDiff(tree, diff);
       }      
       else if(diff.action === RELOCATE_GROUP) {
-        swap(diff, "from", "to");
+          if (diff.from < diff.to) {
+              var tempValue = diff.from;
+              diff.from = diff.to - diff.group.length;
+              diff.to = tempValue; 
+          } else {
+              var tempValue = diff.from;
+              diff.from = diff.to;
+              diff.to = tempValue + diff.group.length; 
+          }//DDD
+
+           //   var tempValue = diff.group.new;
+           //   diff.group.new = diff.group.old;
+           //   diff.group.old = tempValue; 
+
+        //swap(diff, "from", "to");
         this.applyDiff(tree, diff);
       }
       else if(diff.action === REMOVE_ELEMENT) {
