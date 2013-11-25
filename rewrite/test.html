@@ -33,7 +33,7 @@
   <div><img><p></p></div> 
   <div><img><p></p><p></p></div> 
 
-  <div><b><p></p><b><img><p><span></span></p>XW</b><span>Jl</span><b></b></b>h5QnXX</b>
+  <div><b><p></p><b><img><p><span></span></p>XW</b><span>Jl</span><b></b></b>h5QnXX</b></div>
   <div><span><span><b><i></i></b><img><i><span></span></i></span></span><b><p></p>z</b><span><b></b><img></span>2<img></div>
 
   <div><i><p><span>j0zF<b></b></span><i><span></span></i>LS</p>scKvb</i><b>vO8</b>G</div> 
@@ -94,7 +94,14 @@
 <div><span></span><i></i><p></p></div>
 
 
+<div><b><span><p></p><p><img><b></b></p><b><p></p></b><i></i><p></p><p><b></b><i>YgXxj0</i></p><p><i><span></span></i></p><i><b><span><img></span><p></p><img></b><b>11w</b>ymd</i><p></p><p><span></span><span></span></p><p></p><p></p><p></p><p>gU</p><span></span></span>Jbrr7</b></div>
+<div><span><span><p>UPG</p><img><img></span><span></span><span></span></span><p>vZR6</p><p><b><span><img></span>JvrBR</b></p><p></p><p></p><p>WB6Y</p><img><img><i></i><p></p><p><img><img><b></b></p><p><b>dh62z</b></p><p></p><p></p><b><img></b>YD<p></p></div>
 
+<div>7</div> 
+<div><i><img><i><p></p><span></span></i><span>uW<span class="dd-sep"></span>Dc</span><img><img><p><img><i></i><i></i></p><p></p><i></i><span>SC<span class="dd-sep"></span>vEq<span class="dd-sep"></span>M1VRx<span class="dd-sep"></span>c81B</span>T<p></p><span><p><img><b></b>FW</p></span>taV</i><i><p></p>6k<span class="dd-sep"></span>Mycc</i><img><img>9JI</div>
+
+<div><span><img><b><p></p><span class="dd-sep"></span>b</b>82</span><b><b><p><b></b></p><p></p><p></p><b>XO<i></i></b></b>2</b></div>
+<div><span><p><b></b><b></b><i></i></p><b></b><i></i>dsL</span><span><span></span>2z</span><img><p>J</p><p><b></b>Hmr<span class="dd-sep"></span>p4</p><span></span><p><img>I</p><span></span><p></p><img><img></div>
 
   <script>
 
@@ -117,7 +124,7 @@
         t1 = divs[i].cloneNode(true);
         dd.apply(t1, diffs);
 
-        if (t1.innerHTML===divs[i+1].innerHTML) {
+        if (t1.innerHTML===unpreserveHTML(divs[i+1].cloneNode(true)).innerHTML) {
             console.log('...success!');
         } else {
             console.log(diffs);
@@ -129,7 +136,7 @@
         console.log("\n", "undoing...");
         dd.undo(t1, diffs);
 
-        if (t1.innerHTML===divs[i].innerHTML) {
+        if (t1.innerHTML===unpreserveHTML(divs[i].cloneNode(true)).innerHTML) {
             console.log('...success!');
         } else {
             console.log(diffs);

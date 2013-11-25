@@ -63,6 +63,43 @@
     return thesame;
   };
 
+  
+  var preserveHTML = function(node) {
+    //  node = node.cloneNode(true);
+      
+    var walker = document.createTreeWalker(
+        node, 
+        NodeFilter.SHOW_TEXT, 
+        null, 
+        false
+    ),
+    separator = document.createElement('span');
+    separator.classList.add('dd-sep');
+    separator.innerHTML=' ';
+    //var node;
+    //var textNodes = [];
+
+    while(textnode = walker.nextNode()) {
+        //console.log('here');
+        if (textnode.nextSibling && textnode.nextSibling.nodeType===3) {
+          //console.log('there');
+          textnode.parentElement.insertBefore(separator.cloneNode(),textnode.nextSibling);
+          //console.log(textnode.parentElement);
+        }
+    }
+//    console.log(node.outerHTML);
+    return node;
+  };
+  
+  var unpreserveHTML = function(node) {
+      var separators = node.querySelectorAll('.dd-sep'), i;
+      
+      for (i=0; i < separators.length; i++) {
+          separators[i].parentElement.removeChild(separators[i]);
+      }
+      return node;
+  }
+  
   /**
    * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
    */
@@ -268,9 +305,14 @@
 
     diff: function(t1, t2) {
       diffcount = 0;
-      t1 = t1.cloneNode(true); 
+      //t1 = t1.cloneNode(true)
+      //t1.normalize();
+      //t2 = t2.cloneNode(true)
+      //t2.normalize();
+      t3 = preserveHTML(t1.cloneNode(true));
+      t4 = preserveHTML(t2.cloneNode(true));
       this.tracker = new DiffTracker();
-      return this.findDiffs(t1, t2);
+      return this.findDiffs(t3, t4);
     },
     findDiffs: function(t1, t2) {
       var diff;
@@ -278,6 +320,7 @@
         if(debug) {
           diffcount++;
           if(diffcount > diffcap) {
+             // console.log(difflist);
             throw new Error("surpassed diffcap");
           }
         }
@@ -285,8 +328,9 @@
         difflist = this.findFirstDiff(t1, t2, []);
         if(difflist) {
           if(!difflist.length) { difflist = [difflist]; }
+//          console.log(difflist);
           this.tracker.add(difflist);
-          this.apply(t1, difflist);
+          this.intApply(t1, difflist);
         }
       } while (difflist);
       return this.tracker.list;
@@ -307,8 +351,9 @@
       return false;
     },
     findOuterDiff: function(t1, t2, route) {
-     // console.log([t1,t2]);  
+     
       if (t1.nodeName != t2.nodeName) {
+       //    console.log([t1,t2]);  
           return [new Diff({
               action: REPLACE_ELEMENT,
               oldValue: t1.outerHTML ? t1.outerHTML: t1.data,
@@ -443,13 +488,18 @@
 
     // ===== Apply a diff =====
 
-    apply: function(tree, diffs) {
+    intApply: function(tree, diffs) {
       var dobj = this;
       if(typeof diffs.length === "undefined") { diffs = [diffs]; }
       if(diffs.length === 0) { return; }
       diffs.forEach(function(diff) {
         dobj.applyDiff(tree, diff);
       });
+    },
+    apply: function(tree, diffs) {
+      preserveHTML(tree);
+      this.intApply(tree,diffs);
+      unpreserveHTML(tree);
     },
     getFromRoute: function(tree, route) {
       route = route.slice();
@@ -544,6 +594,7 @@
     // ===== Undo a diff =====
 
     undo: function(tree, diffs) {
+      preserveHTML(tree);
       diffs = diffs.slice();
       var dobj = this;
       if(!diffs.length) { diffs = [diffs]; }
@@ -551,6 +602,7 @@
       diffs.forEach(function(diff) {
         dobj.undoDiff(tree, diff);
       });
+      unpreserveHTML(tree);
     },
     undoDiff: function(tree, diff) {
       if(diff.action === ADD_ATTRIBUTE) {

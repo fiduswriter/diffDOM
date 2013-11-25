@@ -66,7 +66,7 @@ var availableElements, testElement, textContent;
     // Currently seems to create the most errors and is the most difficult to trace.
     // Therefore temporarily disabled.
 
-  /*  for (i=0; i < 200; i++) {
+    for (i=0; i < 200; i++) {
       textContent = '';
       for(j=0; j < Math.floor((Math.random()*10)); j++) {
         textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
@@ -74,7 +74,7 @@ var availableElements, testElement, textContent;
        availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
        testElement = availableElements[Math.floor((Math.random()*availableElements.length))];
        testElement.appendChild(document.createTextNode(textContent));
-    }*/
+    }
 
 
     divs = mainDiv.childNodes;
@@ -82,11 +82,13 @@ var availableElements, testElement, textContent;
     for (i = 0; i < divs.length; i=i+2) {
 
 
-      try {
-        console.log("diff operations for "+divs[i].outerHTML+" -> "+divs[(i+1)].outerHTML+"\n");
+//      try {
+        console.log("diff operations for "+preserveHTML(divs[i].cloneNode(true)).outerHTML+" -> "+preserveHTML(divs[(i+1)].cloneNode(true)).outerHTML+"\n");
         diffs = dd.diff(divs[i], divs[i+1]);
+console.log(diffs);
         console.log("\n", "applying...");
-        t1 = divs[i].cloneNode(true);
+        var t1 = divs[i].cloneNode(true);
+        t1 = preserveHTML(t1);
         dd.apply(t1, diffs);
 
         if (t1.innerHTML===divs[i+1].innerHTML) {
@@ -109,7 +111,7 @@ var availableElements, testElement, textContent;
             console.log(divs[i].outerHTML);
             throw 'Outputs not matching';
         }
-
+try{
       } catch (e) {
         console.log("error occured\n", e.toString());
         console.log(tl.toString());
