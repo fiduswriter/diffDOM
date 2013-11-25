@@ -165,7 +165,7 @@
         gl1 = gaps1.length,
         gaps2 = gapInformation.gaps2,
         gl2 = gaps1.length,
-        i,
+        i, j,
         last = gl1 < gl2 ? gl1 : gl2;
 
     // Check for correct submap sequencing (irrespective of gaps) first:
@@ -207,13 +207,26 @@
       }
       if(gaps1[i] != gaps2[i]) {
         group = subtrees[gaps1[i]];
-        return new Diff({
-          action: RELOCATE_GROUP,
-          group: group,
-          from: i,
-          to: Math.min(group["new"],(t1.childNodes.length-group.length)),
-          route: route
-        });
+        var toGroup = Math.min(group["new"],(t1.childNodes.length-group.length));
+        if (toGroup != i) {
+          //Check wehther destination nodes are different than originating ones.
+          var destinationDifferent = false;
+          for (j=0; j < group.length; j++) {
+              if (!t1.childNodes[toGroup+j].isEqualNode(t1.childNodes[i+j])) {
+                  destinationDifferent = true;
+              }
+          
+          }
+          if (destinationDifferent) {
+            return new Diff({
+              action: RELOCATE_GROUP,
+              group: group,
+              from: i,
+              to: toGroup,
+              route: route
+            });
+          }
+        }
       }
     }
     return false;
@@ -294,7 +307,7 @@
       return false;
     },
     findOuterDiff: function(t1, t2, route) {
-      console.log([t1,t2]);  
+     // console.log([t1,t2]);  
       if (t1.nodeName != t2.nodeName) {
           return [new Diff({
               action: REPLACE_ELEMENT,
@@ -481,7 +494,7 @@
         if(from < to ) {
           for(var i=0; i<group.length; i++) {   
             child = node.childNodes[from];
-            console.log(['up',child,reference,node.outerHTML, from, to, group.length])
+           // console.log(['up',child,reference,node.outerHTML, from, to, group.length])
             node.insertBefore(child, reference);
           }
         } else {
@@ -489,7 +502,7 @@
           reference = node.childNodes[to];
           for(var i=0; i< group.length; i++) {
             child = node.childNodes[from+i];     
-            console.log(['down',child,reference,node.outerHTML, from, to, i, group.length])
+           // console.log(['down',child,reference,node.outerHTML, from, to, i, group.length])
             node.insertBefore(child, reference);
           }
         }
