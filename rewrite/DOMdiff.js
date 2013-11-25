@@ -245,7 +245,7 @@
 
 
   var debug = true,
-      diffcap = 5000,
+      diffcap = 500,
       diffcount;
 
   var DOMdiff = function() {};
@@ -479,16 +479,18 @@
 
         // slide elements up
         if(from < to ) {
+          reference = node.childNodes[to+1];
           for(var i=0; i<group.length; i++) {
             child = node.childNodes[from];
-            reference = node.childNodes[to];
+            console.log(['up',child,reference,node.outerHTML, from, to, group.length])
             node.insertBefore(child, reference);
           }
         } else {
           // slide elements down
-          for(var i=group.length-1; i>=0; i--) {
-            child = node.childNodes[from + group.length - 1];
-            reference = node.childNodes[to];
+          reference = node.childNodes[to];
+          for(var i=0; i< group.length; i++) {
+            child = node.childNodes[from-group.length+i+1];     
+            console.log(['down',child,reference,node.outerHTML, from, to, i, group.length])
             node.insertBefore(child, reference);
           }
         }
@@ -560,21 +562,8 @@
         this.applyDiff(tree, diff);
       }      
       else if(diff.action === RELOCATE_GROUP) {
-          if (diff.from < diff.to) {
-              var tempValue = diff.from;
-              diff.from = diff.to - diff.group.length;
-              diff.to = tempValue; 
-          } else {
-              var tempValue = diff.from;
-              diff.from = diff.to;
-              diff.to = tempValue + diff.group.length; 
-          }//DDD
-
-           //   var tempValue = diff.group.new;
-           //   diff.group.new = diff.group.old;
-           //   diff.group.old = tempValue; 
-
-        //swap(diff, "from", "to");
+        swap(diff, "from", "to");
+        //diff.from = diff.from - diff.group.length +1;
         this.applyDiff(tree, diff);
       }
       else if(diff.action === REMOVE_ELEMENT) {

@@ -11,7 +11,7 @@
 <body>
 <!-- Add all divs to be compared here two by two -->
 
-  <div>lol<span>ydew<i>hey</i>de</span></div>
+  <!--div>lol<span>ydew<i>hey</i>de</span></div>
   <div>lol<p>ydew<b>hey</b>de</p></div>
 
   <div><p>hello <span>finger</span></p></div>
@@ -47,17 +47,48 @@
   <div><p><p></p></p><p><span>j</span><span>Ukoy</span><b>x4KwW</b><img>hWQ</p><b><img><b></b></b>d2HPWS4</div>
 
   <div><i><img></i>iXMXSe4nqp</div>
-  <div><i><b></b><b><b></b><i><i>Lrjl1pP</i>Y0B</i>xN</b><i></i><span>gwcD4Bj</span><i>A</i>QW6awpo</i><img><p>Z</p>b<p></p>7f9</div>
+  <div><i><b></b><b><b></b><i><i>Lrjl1pP</i>Y0B</i>xN</b><i></i><span>gwcD4Bj</span><i>A</i>QW6awpo</i><img><p>Z</p>b<p></p>7f9</div-->
+ 
+<div><p></p><p><i></i></p><p></p><i><img><span><b></b></span><img></i><p></p><i><img><span></span></i><p><i></i></p><p></p><img><span><span></span></span><img></div>
+ 
+<div><img><i></i><p><span><span><b></b></span></span></p><p></p><b><img><span></span></b><p><b></b></p><p></p><p></p><p>wg</p><i><p></p></i>2nJ<i><img></i><p></p><i><img></i>zV87J1UU3Ex</div>
 
-  <div><p></p><p><i></i></p><p></p><i><img><span><b></b></span><img></i><p></p><i><img><span></span></i><p><i></i></p><p></p><img><span><span></span></span><img></div>
-  <div><img><i></i><p><span><span><b></b></span></span></p><p></p><b><img><span></span></b><p><b></b></p><p></p><p></p><p>wg</p><i><p></p></i>2nJ<i><img></i><p></p><i><img></i>zV87J1UU3Ex</div>
 
-<div id="t1">lol<span>ydew<i>hey</i>de</span></div>
+<div><img><i></i><b></b><i></i><font></font><p></p><p></p><span></span></div>
+<div><p></p><p></p><span></span><img><i></i><b></b><i></i><font></font></div>
+
+ 
+  <!--div><img><i></i><p><span><span><b></b></span></span></p><p></p><b><img><span></span></b><p><b></b></p><p></p><p></p><p>wg</p><i><p></p></i>2nJ<i><img></i><p></p><i><img></i></div>
+  <div><img><i></i><p><span><span><b></b></span></span></p><p></p><b><img><span></span></b><p><b></b></p><p></p><p></p><p>wg</p><i><p></p></i>2nJ<i><img></i><p></p><i><img></i>zV87J1UU3Ex</div-->
+
+<!--div id="t1">lol<span>ydew<i>hey</i>de</span></div>
 <div id="t2">lol<p>ydew<b>hey</b>de</p></div>
 
 
-<!--div><p><b><i><b><i>ya</i></b><i>f</i></i><span><i></i></span></b></p><p></p><p></p><p></p><span><p><i></i></p>w7U0Ah4<i></i></span><b><p><span></span><img></p></b><p></p><img><i></i><span></span></div>
-<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div-->
+<div><p><b><i><b><i>ya</i></b><i>f</i></i><span><i></i></span></b></p><p></p><p></p><p></p><span><p><i></i></p>w7U0Ah4<i></i></span><b><p><span></span><img></p></b><p></p><img><i></i><span></span></div>
+<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div>
+
+<div><p></p><img><p></p><p></p><p></p><i></i><span></span></div>
+<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div>
+
+<div><img><p></p><p></p><p></p><p></p><i></i><span></span></div>
+<div><img><span><i></i><span></span></span><img><span></span><i></i><p></p></div>
+
+<div><p></p><i></i><span></span></div>
+<div><span></span><i></i><p></p></div>
+
+<div><span></span><i></i><p></p></div>
+<div><i></i><p></p><span></span></div>
+
+<div><i></i><p></p><span></span></div>
+<div><span></span><i></i><p></p></div>
+
+
+<div><i></i><span></span><p></p></div>
+<div><span></span><i></i><p></p></div-->
+
+
+
 
   <script>
 
@@ -71,7 +102,7 @@
     for (i = 0; i < divs.length; i=i+2) {
 
 
-      //try {
+      try {
         console.log("diff operations for div #"+i+" -> div #"+(i+1)+"\n");
         diffs = dd.diff(divs[i], divs[i+1]);
         console.log(diffs);
@@ -100,7 +131,7 @@
             console.log(divs[i].outerHTML);
             throw 'Outputs not matching';
         }
-try {
+//try {
       } catch (e) {
         console.log("error occured\n", e.toString());
         console.log(tl.toString());
