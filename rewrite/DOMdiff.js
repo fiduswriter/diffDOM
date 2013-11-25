@@ -63,42 +63,55 @@
     return thesame;
   };
 
-  
-  var preserveHTML = function(node) {
-    //  node = node.cloneNode(true);
+ 
+  var htmlToJson = function(node) {
+      var jsonNode = {}, i;
       
-    var walker = document.createTreeWalker(
-        node, 
-        NodeFilter.SHOW_TEXT, 
-        null, 
-        false
-    ),
-    separator = document.createElement('span');
-    separator.classList.add('dd-sep');
-    separator.innerHTML=' ';
-    //var node;
-    //var textNodes = [];
-
-    while(textnode = walker.nextNode()) {
-        //console.log('here');
-        if (textnode.nextSibling && textnode.nextSibling.nodeType===3) {
-          //console.log('there');
-          textnode.parentElement.insertBefore(separator.cloneNode(),textnode.nextSibling);
-          //console.log(textnode.parentElement);
-        }
-    }
-//    console.log(node.outerHTML);
-    return node;
+      if (node.nodeType===3) {
+          jsonNode.t = node.data;
+      } else if (node.nodeType===8) {
+          jsonNode.co = node.data;
+      } else {
+          jsonNode.nn = node.nodeName;
+          if (node.attributes && node.attributes.length > 0) {
+            jsonNode.a = [];  
+            for (i=0;i<node.attributes.length;i++) {
+              jsonNode.a.push([node.attributes[i].name,node.attributes[i].value]);
+            }
+          }
+          if (node.childNodes && node.childNodes.length > 0) {
+            jsonNode.c = [];
+            for (i=0;i<node.childNodes.length;i++) {
+              jsonNode.c.push(htmlToJson(node.childNodes[i]));
+            }
+          }
+      }
+      return jsonNode;
   };
   
-  var unpreserveHTML = function(node) {
-      var separators = node.querySelectorAll('.dd-sep'), i;
-      
-      for (i=0; i < separators.length; i++) {
-          separators[i].parentElement.removeChild(separators[i]);
+    var jsonToHtml = function(jsonNode) {
+      var node, i;
+      if (jsonNode.hasOwnProperty('t')) {
+          node = document.createTextNode(jsonNode.t);
+      } else if (jsonNode.hasOwnProperty('co')) {
+          node = document.createComment(jsonNode.co);
+      } else {
+          node = document.createElement(jsonNode.nn);
+          if (jsonNode.a) {
+            for (i=0;i<jsonNode.a.length;i++) {
+              node.setAttribute(jsonNode.a[i][0],jsonNode.a[i][1]);
+            }
+          }
+          if (jsonNode.c) {
+              for (i=0;i<jsonNode.c.length;i++) {
+                node.appendChild(jsonToHtml(jsonNode.c[i]))
+              }
+          }
       }
       return node;
-  }
+    };  
+  
+
   
   /**
    * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
@@ -224,7 +237,7 @@
         return new Diff({
           action: REMOVE_ELEMENT,
           route: route.concat(i),
-          element: node.outerHTML
+          element: htmlToJson(node)
         });
       }
       if(gaps2[i] === true) {
@@ -239,7 +252,7 @@
         return new Diff({
           action: ADD_ELEMENT,
           route: route.concat(i),
-          element: node.outerHTML
+          element: htmlToJson(node)
         });
       }
       if(gaps1[i] != gaps2[i]) {
@@ -305,14 +318,10 @@
 
     diff: function(t1, t2) {
       diffcount = 0;
-      //t1 = t1.cloneNode(true)
-      //t1.normalize();
-      //t2 = t2.cloneNode(true)
-      //t2.normalize();
-      t3 = preserveHTML(t1.cloneNode(true));
-      t4 = preserveHTML(t2.cloneNode(true));
+      t1 = t1.cloneNode(true)
+      t2 = t2.cloneNode(true)
       this.tracker = new DiffTracker();
-      return this.findDiffs(t3, t4);
+      return this.findDiffs(t1, t2);
     },
     findDiffs: function(t1, t2) {
       var diff;
@@ -320,7 +329,6 @@
         if(debug) {
           diffcount++;
           if(diffcount > diffcap) {
-             // console.log(difflist);
             throw new Error("surpassed diffcap");
           }
         }
@@ -328,9 +336,8 @@
         difflist = this.findFirstDiff(t1, t2, []);
         if(difflist) {
           if(!difflist.length) { difflist = [difflist]; }
-//          console.log(difflist);
           this.tracker.add(difflist);
-          this.intApply(t1, difflist);
+          this.apply(t1, difflist);
         }
       } while (difflist);
       return this.tracker.list;
@@ -353,11 +360,10 @@
     findOuterDiff: function(t1, t2, route) {
      
       if (t1.nodeName != t2.nodeName) {
-       //    console.log([t1,t2]);  
           return [new Diff({
               action: REPLACE_ELEMENT,
-              oldValue: t1.outerHTML ? t1.outerHTML: t1.data,
-              newValue: t2.outerHTML ? t2.outerHTML: t2.data,
+              oldValue: htmlToJson(t1),
+              newValue: htmlToJson(t2),
               route: route
         })];
       }  
@@ -449,7 +455,7 @@
             return new Diff({
               action: REMOVE_ELEMENT,
               route: route.concat(i),
-              element: e1.outerHTML
+              element: htmlToJson(e1)
             });
           }
           if(e2 && !e1) {
@@ -463,7 +469,7 @@
             return new Diff({
               action: ADD_ELEMENT,
               route: route.concat(i),
-              element: e2.outerHTML
+              element: htmlToJson(e2)
             });
           }
           if (e1.nodeType != 3 || e2.nodeType != 3) {
@@ -488,18 +494,13 @@
 
     // ===== Apply a diff =====
 
-    intApply: function(tree, diffs) {
+    apply: function(tree, diffs) {
       var dobj = this;
       if(typeof diffs.length === "undefined") { diffs = [diffs]; }
       if(diffs.length === 0) { return; }
       diffs.forEach(function(diff) {
         dobj.applyDiff(tree, diff);
       });
-    },
-    apply: function(tree, diffs) {
-      preserveHTML(tree);
-      this.intApply(tree,diffs);
-      unpreserveHTML(tree);
     },
     getFromRoute: function(tree, route) {
       route = route.slice();
@@ -529,9 +530,10 @@
         node.data = this.textDiff(node.data, diff.oldValue, diff.newValue);
       }
       else if(diff.action === REPLACE_ELEMENT) {
-        var outerNode = document.createElement('div');
-        outerNode.innerHTML = diff.newValue;
-        var newNode = outerNode.firstChild;
+        //var outerNode = document.createElement('div');
+        //outerNode.innerHTML = diff.newValue;
+        //var newNode = outerNode.firstChild;
+          var newNode = jsonToHtml(diff.newValue);
         node.parentNode.replaceChild(newNode, node);
       }
       else if(diff.action === RELOCATE_GROUP) {
@@ -544,7 +546,6 @@
         if(from < to ) {
           for(var i=0; i<group.length; i++) {   
             child = node.childNodes[from];
-           // console.log(['up',child,reference,node.outerHTML, from, to, group.length])
             node.insertBefore(child, reference);
           }
         } else {
@@ -552,7 +553,6 @@
           reference = node.childNodes[to];
           for(var i=0; i< group.length; i++) {
             child = node.childNodes[from+i];     
-           // console.log(['down',child,reference,node.outerHTML, from, to, i, group.length])
             node.insertBefore(child, reference);
           }
         }
@@ -565,11 +565,12 @@
       }
       else if(diff.action === ADD_ELEMENT) {
         var route =  diff.route.slice(),
-            c = route.splice(route.length-1,1)[0],
-            d = document.createElement("div");
+            c = route.splice(route.length-1,1)[0];
+            //d = document.createElement("div");
         node = this.getFromRoute(tree, route);
-        d.innerHTML = diff.element;
-        var newNode = d.childNodes[0];
+        //d.innerHTML = diff.element;
+        //var newNode = d.childNodes[0];
+        var newNode = jsonToHtml(diff.element);
         if(c>=node.childNodes.length) {
           node.appendChild(newNode);
         } else {
@@ -594,7 +595,6 @@
     // ===== Undo a diff =====
 
     undo: function(tree, diffs) {
-      preserveHTML(tree);
       diffs = diffs.slice();
       var dobj = this;
       if(!diffs.length) { diffs = [diffs]; }
@@ -602,7 +602,6 @@
       diffs.forEach(function(diff) {
         dobj.undoDiff(tree, diff);
       });
-      unpreserveHTML(tree);
     },
     undoDiff: function(tree, diff) {
       if(diff.action === ADD_ATTRIBUTE) {

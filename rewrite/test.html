@@ -124,7 +124,7 @@
         t1 = divs[i].cloneNode(true);
         dd.apply(t1, diffs);
 
-        if (t1.innerHTML===unpreserveHTML(divs[i+1].cloneNode(true)).innerHTML) {
+        if (t1.innerHTML===divs[i+1].innerHTML) {
             console.log('...success!');
         } else {
             console.log(diffs);
@@ -136,7 +136,7 @@
         console.log("\n", "undoing...");
         dd.undo(t1, diffs);
 
-        if (t1.innerHTML===unpreserveHTML(divs[i].cloneNode(true)).innerHTML) {
+        if (t1.innerHTML===divs[i].innerHTML) {
             console.log('...success!');
         } else {
             console.log(diffs);
