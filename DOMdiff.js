@@ -191,8 +191,8 @@
         return v;
       }
     },
-      gaps1 = this.makeArray(t1.childNodes.length, true),
-      gaps2 = this.makeArray(t2.childNodes.length, true),
+      gaps1 = makeArray(t1.childNodes.length, true),
+      gaps2 = makeArray(t2.childNodes.length, true),
       group = 0;
 
     // give elements from the same subset the same group number
