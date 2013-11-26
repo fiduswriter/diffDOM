@@ -1,8 +1,6 @@
 (function () {
 
-  var debug = true,
-    diffcap = 500,
-    diffcount;
+  var diffcount;
 
   const ADD_ATTRIBUTE = "add attribute",
   MODIFY_ATTRIBUTE = "modify attribute",
@@ -347,7 +345,14 @@
 
 
 
-  var DOMdiff = function () {};
+  var DOMdiff = function (debug, diffcap) {
+      if (typeof debug === 'undefined')
+          debug = false;
+      if (typeof diffcap === 'undefined')
+          diffcap = 10;
+      this.debug = debug;
+      this.diffcap = diffcap;
+  };
   DOMdiff.prototype = {
 
     // ===== Create a diff =====
@@ -362,9 +367,9 @@
     findDiffs: function (t1, t2) {
       var diff;
       do {
-        if (debug) {
+        if (this.debug) {
           diffcount++;
-          if (diffcount > diffcap) {
+          if (diffcount > this.diffcap) {
             throw new Error("surpassed diffcap");
           }
         }

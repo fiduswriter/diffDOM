@@ -1,59 +1,143 @@
 <!doctype html>
 <html>
+
 <head>
-<meta charset="utf-8">
-<title>DOMdiff</title>
-
-<script src="TraceLogger.js">
-</script>
-
-<script src="DOMdiff.js">
-</script>
-
-</head>
-<body>
-
-
-  <div id="t1"><div><p>tello</p><p></p></div></div>
-  <div id="t2"><div><p>fello</p><p></p></div></div>
-
-  <div id="t3">lol<span>ydew<i>hey</i>de</span></div>
-  <div id="t4">lol<p>ydew<b>hey</b>de</p></div>
-
-  <div id="t10"><p>hello <span>finger</span></p></div>
-  <div id="t02"><p>hello <span>fingers</span>. Welcome!</p></div>
-
-  <script>
-
-
-    var dd = new DOMdiff(),
-        tl = new TraceLogger(dd);
-        t1 = document.getElementById("t1"),
-        t2 = document.getElementById("t2");
-
-    try {
-      var diffs = dd.diff(t1, t2);
-      console.log("diff operations for t1 -> t2\n", diffs);
-
-     console.log("\n", "---diff log---");
-      console.log(tl.toString());
-
-      console.log("\n", "---apply---");
-      t1 = t1.cloneNode(true);
-      dd.apply(t1, diffs);
-      console.log(t1);
-
-      console.log("\n", "---undo---");
-      t1 = t1.cloneNode(true);
-      dd.undo(t1, diffs);
-      console.log(t1);
-    } catch (e) {
-      console.log("error occured\n", e.toString());
-      console.log(tl.toString());
-      throw e;
+  <meta charset="utf-8">
+  <title>DOMdiff</title>
+  <style>
+    .success {
+      background-color: green;
     }
-
+    .failure {
+      background-color: red;
+    }
+  </style>
+  <script src="TraceLogger.js">
   </script>
+  <script src="DOMdiff.js">
+  </script>
+  <script>
+    window.onload = function () {
 
+      const ELEMENTS = ['p', 'span', 'i', 'b', 'img'],
+      CONTAINER_ELEMENT_SELECTOR = 'div, p, span, i, b',
+      CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+      ATTRIBUTES = ['data-test','class','data-fisher','data-id'];
+
+      var dd = new DOMdiff(),
+        tl = new TraceLogger(dd),
+        divs, diffs, t1, i, j, availableElements, testElement, textContent, mainDiv = document.createElement('div');
+
+      function reportDiv() {
+        document.body.appendChild(document.createElement('div'));
+      }
+
+      function testSuccess() {
+        document.body.lastChild.classList.add('success');
+      }
+
+      function testFailure() {
+        document.body.lastChild.classList.add('failure');
+      }
+
+      function print(text) {
+        var par = document.createElement('p');
+        par.innerText = text;
+        document.body.lastChild.appendChild(par);
+      }
+
+      // create 100 divs to compare
+
+      for (i = 0; i < 100; i++) {
+        mainDiv.appendChild(document.createElement('div'));
+      }
+
+
+      // Add 750 elements somewhere within the 100 divs
+
+      for (i = 0; i < 750; i++) {
+        availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+        testElement = availableElements[Math.floor((Math.random() * availableElements.length))];
+        testElement.appendChild(document.createElement(ELEMENTS[Math.floor((Math.random() * ELEMENTS.length))]));
+      }
+
+      // Add 1500 attributes
+
+      for (i = 0; i < 1500; i++) {
+        availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+        testElement = availableElements[Math.floor((Math.random() * availableElements.length))];
+        textContent = '';
+        for (j = -1; j < Math.floor((Math.random() * 10)); j++) {
+          textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+        }    
+        testElement.setAttribute(ATTRIBUTES[Math.floor((Math.random() * ATTRIBUTES.length))], textContent);
+      }
+
+      // Add 300 text nodes
+
+      for (i = 0; i < 300; i++) {
+        textContent = '';
+        for (j = 0; j < Math.floor((Math.random() * 10)); j++) {
+          textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
+        }
+        availableElements = mainDiv.querySelectorAll(CONTAINER_ELEMENT_SELECTOR);
+        testElement = availableElements[Math.floor((Math.random() * availableElements.length))];
+        testElement.appendChild(document.createTextNode(textContent));
+      }
+
+
+      divs = mainDiv.childNodes;
+
+      for (i = 0; i < divs.length; i = i + 2) {
+
+
+        try {
+          reportDiv();
+          print("diff operations for " + divs[i].outerHTML + " -> " + divs[(i + 1)].outerHTML,'div');
+          diffs = dd.diff(divs[i], divs[i + 1]);
+
+          print("applying...");
+          var t1 = divs[i].cloneNode(true);
+
+          dd.apply(t1, diffs);
+
+          if (t1.isEqualNode(divs[i + 1])) {
+            print('...success!');
+          } else {
+            testFailure();
+            print(diffs);
+            print(t1.outerHTML);
+            print(divs[i + 1].outerHTML);
+            throw 'Outputs not matching';
+          }
+
+          print('undoing...');
+          dd.undo(t1, diffs);
+
+          if (t1.isEqualNode(divs[i])) {
+            print('...success!');
+            testSuccess();
+          } else {
+            testFailure();
+            print(diffs);
+            print(t1.outerHTML);
+            print(divs[i].outerHTML);
+            throw 'Outputs not matching';
+          }
+          //try{
+        } catch (e) {
+          testFailure();
+          print("error occured: " + e.toString());
+          print(tl.toString());
+          throw e;
+        }
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Testing DOMdiff</h1>
 </body>
+
 </html>
