@@ -1,10 +1,8 @@
 (function () {
 
-
   var debug = true,
     diffcap = 500,
     diffcount;
-
 
   const ADD_ATTRIBUTE = "add attribute",
   MODIFY_ATTRIBUTE = "modify attribute",
@@ -104,7 +102,11 @@
     } else if (jsonNode.hasOwnProperty('co')) {
       node = document.createComment(jsonNode.co);
     } else {
-      node = document.createElement(jsonNode.nn);
+      if (jsonNode.nn==='SVG') {
+        node = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      } else {
+        node = document.createElement(jsonNode.nn);
+      }
       if (jsonNode.a) {
         for (i = 0; i < jsonNode.a.length; i++) {
           node.setAttribute(jsonNode.a[i][0], jsonNode.a[i][1]);
