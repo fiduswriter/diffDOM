@@ -565,11 +565,13 @@
       return node;
     },
     // diffing text elements can be overwritten for use with diff_match_patch and alike
-    textDiff: function (currentValue, expectedValue, newValue) {
-      return newValue;
+    textDiff: function (node, currentValue, expectedValue, newValue) {
+      node.data = newValue;
+      return;
     },
     applyDiff: function (tree, diff) {
       var node = this.getFromRoute(tree, diff.route);
+
       if (diff.action === ADD_ATTRIBUTE) {
         node.setAttribute(diff.attribute.name, diff.attribute.value);
       } else if (diff.action === MODIFY_ATTRIBUTE) {
@@ -577,7 +579,7 @@
       } else if (diff.action === REMOVE_ATTRIBUTE) {
         node.removeAttribute(diff.attribute.name);
       } else if (diff.action === MODIFY_TEXT_ELEMENT) {
-        node.data = this.textDiff(node.data, diff.oldValue, diff.newValue);
+        this.textDiff(node, node.data, diff.oldValue, diff.newValue);
       } else if (diff.action === REPLACE_ELEMENT) {
         var newNode = jsonToHtml(diff.newValue);
         node.parentNode.replaceChild(newNode, node);
