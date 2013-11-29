@@ -93,15 +93,16 @@
     return jsonNode;
   };
 
-  var jsonToHtml = function (jsonNode) {
+  var jsonToHtml = function (jsonNode, insideSvg) {
     var node, i;
     if (jsonNode.hasOwnProperty('t')) {
       node = document.createTextNode(jsonNode.t);
     } else if (jsonNode.hasOwnProperty('co')) {
       node = document.createComment(jsonNode.co);
     } else {
-      if (jsonNode.nn==='SVG') {
-        node = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      if (jsonNode.nn==='svg' || insideSvg) {
+        node = document.createElementNS('http://www.w3.org/2000/svg',jsonNode.nn);
+        insideSvg = true;
       } else {
         node = document.createElement(jsonNode.nn);
       }
@@ -112,7 +113,7 @@
       }
       if (jsonNode.c) {
         for (i = 0; i < jsonNode.c.length; i++) {
-          node.appendChild(jsonToHtml(jsonNode.c[i]))
+          node.appendChild(jsonToHtml(jsonNode.c[i], insideSvg));
         }
       }
     }
@@ -683,4 +684,6 @@
 
 
   window.DOMdiff = DOMdiff;
+  window.htmlToJson = htmlToJson;
+  window.jsonToHtml = jsonToHtml;
 }());
