@@ -288,7 +288,6 @@
       if (gaps2[i] === true) {
         node = t2.childNodes[i];
         if (node.nodeType === 3) {
-            console.log("adding")
           return new Diff({
             action: ADD_TEXT_ELEMENT,
             route: route.concat(i),
