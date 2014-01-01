@@ -256,7 +256,7 @@
 
     // Check for correct submap sequencing (irrespective of gaps) first:
     var sequence = 0,
-      group, node,
+      group, node, similarNode, testNode,
       shortest = gl1 < gl2 ? gaps1 : gaps2;
 
     // group relocation
@@ -264,15 +264,24 @@
       if (gaps1[i] === true) {
         node = t1.childNodes[i];
         if (node.nodeType === 3) {
-
-          if (t2.childNodes[i].nodeType === 3) {
-            return new Diff({
-              action: MODIFY_TEXT_ELEMENT,
-              route: route.concat(i),
-              oldValue: node.data,
-              newValue: t2.childNodes[i].data
-            });
-          }            
+          if (t2.childNodes[i].nodeType === 3 && node.data != t2.childNodes[i].data) {
+            testNode = node;
+            while(testNode.nextSibling && testNode.nextSibling.nodeType === 3) {
+              testNode = testNode.nextSibling;
+              if (t2.childNodes[i].data === testNode.data) {
+                similarNode = true;
+                break;
+              }
+            }
+            if (!similarNode) {  
+              return new Diff({
+                action: MODIFY_TEXT_ELEMENT,
+                route: route.concat(i),
+                oldValue: node.data,
+                newValue: t2.childNodes[i].data
+              });
+            }
+          } 
           return new Diff({
             action: REMOVE_TEXT_ELEMENT,
             route: route.concat(i),
@@ -386,7 +395,6 @@
           diffcount++;
           if (diffcount > this.diffcap) {
             window.diffError = [this.t1Orig, this.t2Orig];
-            console.log(diffError);
             throw new Error("surpassed diffcap:" + JSON.stringify(this.t1Orig) + " -> " + JSON.stringify(this.t2Orig));
           }
         }
