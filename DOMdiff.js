@@ -264,6 +264,15 @@
       if (gaps1[i] === true) {
         node = t1.childNodes[i];
         if (node.nodeType === 3) {
+
+          if (t2.childNodes[i].nodeType === 3) {
+            return new Diff({
+              action: MODIFY_TEXT_ELEMENT,
+              route: route.concat(i),
+              oldValue: node.data,
+              newValue: t2.childNodes[i].data
+            });
+          }            
           return new Diff({
             action: REMOVE_TEXT_ELEMENT,
             route: route.concat(i),
@@ -360,8 +369,13 @@
 
     diff: function (t1, t2) {
       diffcount = 0;
-      t1 = t1.cloneNode(true)
-      t2 = t2.cloneNode(true)
+      t1 = t1.cloneNode(true);
+      t2 = t2.cloneNode(true);
+      if (this.debug) {
+          this.t1Orig = htmlToJson(t1);
+          this.t2Orig = htmlToJson(t2);
+      }
+      
       this.tracker = new DiffTracker();
       return this.findDiffs(t1, t2);
     },
@@ -371,7 +385,9 @@
         if (this.debug) {
           diffcount++;
           if (diffcount > this.diffcap) {
-            throw new Error("surpassed diffcap");
+            window.diffError = [this.t1Orig, this.t2Orig];
+            console.log(diffError);
+            throw new Error("surpassed diffcap:" + JSON.stringify(this.t1Orig) + " -> " + JSON.stringify(this.t2Orig));
           }
         }
 
@@ -438,20 +454,20 @@
             action: REMOVE_ATTRIBUTE,
             attribute: {
               name: attr.name,
-              value: attr.nodeValue
+              value: attr.value
             },
             route: route
           }));
           return diffs;
         }
         var a2 = attr2.splice(pos, 1)[0];
-        if (attr.nodeValue !== a2.nodeValue) {
+        if (attr.value !== a2.value) {
           diffs.push(new Diff({
             action: MODIFY_ATTRIBUTE,
             attribute: {
               name: attr.name,
-              oldValue: attr.nodeValue,
-              newValue: a2.nodeValue
+              oldValue: attr.value,
+              newValue: a2.value
             },
             route: route
           }));
@@ -462,7 +478,7 @@
           action: ADD_ATTRIBUTE,
           attribute: {
             name: attr.name,
-            value: attr.nodeValue
+            value: attr.value
           },
           route: route
         }));
@@ -550,16 +566,21 @@
         diffs = [diffs];
       }
       if (diffs.length === 0) {
-        return;
+        return true;
       }
       diffs.forEach(function (diff) {
-        dobj.applyDiff(tree, diff);
+        if (!dobj.applyDiff(tree, diff))
+          return false;
       });
+      return true;
     },
     getFromRoute: function (tree, route) {
       route = route.slice();
       var c, node = tree;
       while (route.length > 0) {
+        if (!node.childNodes) {
+            return false;
+        }
         c = route.splice(0, 1)[0];
         node = node.childNodes[c];
       }
@@ -574,12 +595,20 @@
       var node = this.getFromRoute(tree, diff.route);
 
       if (diff.action === ADD_ATTRIBUTE) {
+        if (!node || !node.setAttribute)
+          return false;
         node.setAttribute(diff.attribute.name, diff.attribute.value);
       } else if (diff.action === MODIFY_ATTRIBUTE) {
+        if (!node || !node.setAttribute)
+          return false;          
         node.setAttribute(diff.attribute.name, diff.attribute.newValue);
       } else if (diff.action === REMOVE_ATTRIBUTE) {
+        if (!node || !node.removeAttribute)
+          return false;          
         node.removeAttribute(diff.attribute.name);
       } else if (diff.action === MODIFY_TEXT_ELEMENT) {
+          if (!node || node.nodeType!=3)
+            return false;
         this.textDiff(node, node.data, diff.oldValue, diff.newValue);
       } else if (diff.action === REPLACE_ELEMENT) {
         var newNode = jsonToHtml(diff.newValue);
@@ -607,6 +636,8 @@
       } else if (diff.action === REMOVE_ELEMENT) {
         node.parentNode.removeChild(node);
       } else if (diff.action === REMOVE_TEXT_ELEMENT) {
+          if (!node || node.nodeType!=3)
+            return false;
         node.parentNode.removeChild(node);
       } else if (diff.action === ADD_ELEMENT) {
         var route = diff.route.slice(),
@@ -624,6 +655,8 @@
           c = route.splice(route.length - 1, 1)[0],
           newNode = document.createTextNode(diff.element);
         node = this.getFromRoute(tree, route);
+        if (!node || !node.childNodes)
+          return false;
         if (c >= node.childNodes.length) {
           node.appendChild(newNode);
         } else {
@@ -631,6 +664,7 @@
           node.insertBefore(newNode, reference);
         }
       }
+      return true;
     },
 
     // ===== Undo a diff =====
