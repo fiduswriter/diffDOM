@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>DOMdiff</title>
+  <title>diffDOM</title>
   <style>
     .success {
       background-color: green;
@@ -14,7 +14,7 @@
   </style>
   <script src="TraceLogger.js">
   </script>
-  <script src="DOMdiff.js">
+  <script src="diffDOM.js">
   </script>
   <script>
     window.onload = function () {
@@ -24,7 +24,7 @@
       CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
       ATTRIBUTES = ['data-test','class','data-fisher','data-id'];
 
-      var dd = new DOMdiff(),
+      var dd = new diffDOM(),
         tl = new TraceLogger(dd),
         divs, diffs, t1, i, j, availableElements, testElement, textContent, mainDiv = document.createElement('div');
 
@@ -137,7 +137,7 @@
 </head>
 
 <body>
-  <h1>Testing DOMdiff</h1>
+  <h1>Testing diffDOM</h1>
 </body>
 
 </html>

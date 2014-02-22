@@ -68,52 +68,52 @@
   };
 
 
-  var htmlToJson = function (node) {
-    var jsonNode = {}, i;
+  var nodeToObj = function (node) {
+    var objNode = {}, i;
 
     if (node.nodeType === 3) {
-      jsonNode.t = node.data;
+      objNode.t = node.data;
     } else if (node.nodeType === 8) {
-      jsonNode.co = node.data;
+      objNode.co = node.data;
     } else {
-      jsonNode.nn = node.nodeName;
+      objNode.nn = node.nodeName;
       if (node.attributes && node.attributes.length > 0) {
-        jsonNode.a = [];
+        objNode.a = [];
         for (i = 0; i < node.attributes.length; i++) {
-          jsonNode.a.push([node.attributes[i].name, node.attributes[i].value]);
+          objNode.a.push([node.attributes[i].name, node.attributes[i].value]);
         }
       }
       if (node.childNodes && node.childNodes.length > 0) {
-        jsonNode.c = [];
+        objNode.c = [];
         for (i = 0; i < node.childNodes.length; i++) {
-          jsonNode.c.push(htmlToJson(node.childNodes[i]));
+          objNode.c.push(nodeToObj(node.childNodes[i]));
         }
       }
     }
-    return jsonNode;
+    return objNode;
   };
 
-  var jsonToHtml = function (jsonNode, insideSvg) {
+  var objToNode = function (objNode, insideSvg) {
     var node, i;
-    if (jsonNode.hasOwnProperty('t')) {
-      node = document.createTextNode(jsonNode.t);
-    } else if (jsonNode.hasOwnProperty('co')) {
-      node = document.createComment(jsonNode.co);
+    if (objNode.hasOwnProperty('t')) {
+      node = document.createTextNode(objNode.t);
+    } else if (objNode.hasOwnProperty('co')) {
+      node = document.createComment(objNode.co);
     } else {
-      if (jsonNode.nn==='svg' || insideSvg) {
-        node = document.createElementNS('http://www.w3.org/2000/svg',jsonNode.nn);
+      if (objNode.nn==='svg' || insideSvg) {
+        node = document.createElementNS('http://www.w3.org/2000/svg',objNode.nn);
         insideSvg = true;
       } else {
-        node = document.createElement(jsonNode.nn);
+        node = document.createElement(objNode.nn);
       }
-      if (jsonNode.a) {
-        for (i = 0; i < jsonNode.a.length; i++) {
-          node.setAttribute(jsonNode.a[i][0], jsonNode.a[i][1]);
+      if (objNode.a) {
+        for (i = 0; i < objNode.a.length; i++) {
+          node.setAttribute(objNode.a[i][0], objNode.a[i][1]);
         }
       }
-      if (jsonNode.c) {
-        for (i = 0; i < jsonNode.c.length; i++) {
-          node.appendChild(jsonToHtml(jsonNode.c[i], insideSvg));
+      if (objNode.c) {
+        for (i = 0; i < objNode.c.length; i++) {
+          node.appendChild(objToNode(objNode.c[i], insideSvg));
         }
       }
     }
@@ -291,7 +291,7 @@
         return new Diff({
           action: REMOVE_ELEMENT,
           route: route.concat(i),
-          element: htmlToJson(node)
+          element: nodeToObj(node)
         });
       }
       if (gaps2[i] === true) {
@@ -306,7 +306,7 @@
         return new Diff({
           action: ADD_ELEMENT,
           route: route.concat(i),
-          element: htmlToJson(node)
+          element: nodeToObj(node)
         });
       }
       if (gaps1[i] != gaps2[i]) {
@@ -364,7 +364,7 @@
 
 
 
-  var DOMdiff = function (debug, diffcap) {
+  var diffDOM = function (debug, diffcap) {
       if (typeof debug === 'undefined')
           debug = false;
       if (typeof diffcap === 'undefined')
@@ -372,7 +372,7 @@
       this.debug = debug;
       this.diffcap = diffcap;
   };
-  DOMdiff.prototype = {
+  diffDOM.prototype = {
 
     // ===== Create a diff =====
 
@@ -381,8 +381,8 @@
       t1 = t1.cloneNode(true);
       t2 = t2.cloneNode(true);
       if (this.debug) {
-          this.t1Orig = htmlToJson(t1);
-          this.t2Orig = htmlToJson(t2);
+          this.t1Orig = nodeToObj(t1);
+          this.t2Orig = nodeToObj(t2);
       }
       
       this.tracker = new DiffTracker();
@@ -434,8 +434,8 @@
       if (t1.nodeName != t2.nodeName) {
         return [new Diff({
           action: REPLACE_ELEMENT,
-          oldValue: htmlToJson(t1),
-          newValue: htmlToJson(t2),
+          oldValue: nodeToObj(t1),
+          newValue: nodeToObj(t2),
           route: route
         })];
       }
@@ -529,7 +529,7 @@
             return new Diff({
               action: REMOVE_ELEMENT,
               route: route.concat(i),
-              element: htmlToJson(e1)
+              element: nodeToObj(e1)
             });
           }
           if (e2 && !e1) {
@@ -543,7 +543,7 @@
             return new Diff({
               action: ADD_ELEMENT,
               route: route.concat(i),
-              element: htmlToJson(e2)
+              element: nodeToObj(e2)
             });
           }
           if (e1.nodeType != 3 || e2.nodeType != 3) {
@@ -619,7 +619,7 @@
             return false;
         this.textDiff(node, node.data, diff.oldValue, diff.newValue);
       } else if (diff.action === REPLACE_ELEMENT) {
-        var newNode = jsonToHtml(diff.newValue);
+        var newNode = objToNode(diff.newValue);
         node.parentNode.replaceChild(newNode, node);
       } else if (diff.action === RELOCATE_GROUP) {
         var group = diff.group,
@@ -651,7 +651,7 @@
         var route = diff.route.slice(),
           c = route.splice(route.length - 1, 1)[0];
         node = this.getFromRoute(tree, route);
-        var newNode = jsonToHtml(diff.element);
+        var newNode = objToNode(diff.element);
         if (c >= node.childNodes.length) {
           node.appendChild(newNode);
         } else {
@@ -725,7 +725,7 @@
 
 
 
-  window.DOMdiff = DOMdiff;
-  window.htmlToJson = htmlToJson;
-  window.jsonToHtml = jsonToHtml;
+  window.diffDOM = diffDOM;
+  window.nodeToObj = nodeToObj;
+  window.objToNode = objToNode;
 }());
