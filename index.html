@@ -22,7 +22,7 @@
       const ELEMENTS = ['p', 'span', 'i', 'b', 'img'],
       CONTAINER_ELEMENT_SELECTOR = 'div, p, span, i, b',
       CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-      ATTRIBUTES = ['data-test','class','data-fisher','data-id'];
+      ATTRIBUTES = ['data-test', 'class', 'data-fisher', 'data-id'];
 
       var dd = new diffDOM(),
         tl = new TraceLogger(dd),
@@ -69,7 +69,7 @@
         textContent = '';
         for (j = -1; j < Math.floor((Math.random() * 10)); j++) {
           textContent += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length));
-        }    
+        }
         testElement.setAttribute(ATTRIBUTES[Math.floor((Math.random() * ATTRIBUTES.length))], textContent);
       }
 
@@ -93,7 +93,7 @@
 
         try {
           reportDiv();
-          print("diff operations for " + divs[i].outerHTML + " -> " + divs[(i + 1)].outerHTML,'div');
+          print("diff operations for " + divs[i].outerHTML + " -> " + divs[(i + 1)].outerHTML, 'div');
           diffs = dd.diff(divs[i], divs[i + 1]);
 
           print("applying...");
@@ -137,7 +137,7 @@
 </head>
 
 <body>
-  <h1>Testing diffDOM</h1>
+  <h1>Random test for diffDOM</h1>
 </body>
 
 </html>
