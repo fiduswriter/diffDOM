@@ -1,4 +1,4 @@
-# DOM-diff - A JavaScript diffing algorith for DOM elements
+# diffDOM - A JavaScript diffing algorithm for DOM elements
 
 This library allows the abstraction of differences between DOM
 elements as a "diff" object, representing the sequence of modifications
