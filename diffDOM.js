@@ -601,7 +601,6 @@
     },
     applyDiff: function (tree, diff) {
       var node = this.getFromRoute(tree, diff.route);
-
       if (diff.action === ADD_ATTRIBUTE) {
         if (!node || !node.setAttribute)
           return false;

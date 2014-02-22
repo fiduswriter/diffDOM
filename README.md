@@ -8,4 +8,4 @@ DOM nodes are preferred over remove-insert operations.
 
 This project is licensed under the LGPL v. 3. For details see LICENSE.txt.
 
-Check http://johanneswilm.github.io/diffDOM for tests.
+Check http://johanneswilm.github.io/diffDOM for demo and tests.
