@@ -23,7 +23,8 @@
   GROUP = "group",
   FROM = "from",
   TO = "to",
-  NAME = "name";
+  NAME = "name",
+  VALUE = "value";
   
 
   
@@ -515,10 +516,8 @@
           k = {};
           k[ACTION] = REMOVE_ATTRIBUTE;
           k[ROUTE] = route;
-          k['attribute'] = {
-              name: attr.name,
-              value: attr.value
-            };
+          k[NAME] = attr.name;
+          k[VALUE] = attr.value;
             
           diffs.push(new Diff(k));
           return diffs;
@@ -528,11 +527,9 @@
           k = {};
           k[ACTION] = MODIFY_ATTRIBUTE;
           k[ROUTE] = route;
-          k['attribute'] = {
-              name: attr.name,
-              oldValue: attr.value,
-              newValue: a2.value
-            };
+          k[NAME] = attr.name;
+          k[OLD_VALUE] = attr.value;
+          k[NEW_VALUE] = a2.value;
             
           diffs.push(new Diff(k));
         }
@@ -542,10 +539,8 @@
         k = {};
         k[ACTION] = ADD_ATTRIBUTE;
         k[ROUTE] = route;
-        k['attribute'] = {
-            name: attr.name,
-            value: attr.value
-          };
+        k[NAME] = attr.name;
+        k[VALUE] = attr.value;
         diffs.push(new Diff(k));
       });
 
@@ -686,15 +681,15 @@
       if (diff[ACTION] === ADD_ATTRIBUTE) {
         if (!node || !node.setAttribute)
           return false;
-        node.setAttribute(diff.attribute.name, diff.attribute.value);
+        node.setAttribute(diff[NAME], diff[VALUE]);
       } else if (diff[ACTION] === MODIFY_ATTRIBUTE) {
         if (!node || !node.setAttribute)
           return false;          
-        node.setAttribute(diff.attribute.name, diff.attribute.newValue);
+        node.setAttribute(diff[NAME], diff[NEW_VALUE]);
       } else if (diff[ACTION] === REMOVE_ATTRIBUTE) {
         if (!node || !node.removeAttribute)
           return false;          
-        node.removeAttribute(diff.attribute.name);
+        node.removeAttribute(diff[NAME]);
       } else if (diff[ACTION] === MODIFY_VALUE) {
         if (!node || typeof node.value === 'undefined')
           return false;          
@@ -782,44 +777,44 @@
       });
     },
     undoDiff: function (tree, diff) {
-      if (diff.action === ADD_ATTRIBUTE) {
-        diff.action = REMOVE_ATTRIBUTE;
+      if (diff[ACTION] === ADD_ATTRIBUTE) {
+        diff[ACTION] = REMOVE_ATTRIBUTE;
         this.applyDiff(tree, diff);
-      } else if (diff.action === MODIFY_ATTRIBUTE) {
-        swap(diff.attribute, OLD_VALUE, NEW_VALUE);
-        this.applyDiff(tree, diff);
-      } else if (diff.action === REMOVE_ATTRIBUTE) {
-        diff.action = ADD_ATTRIBUTE;
-        this.applyDiff(tree, diff);
-      } else if (diff.action === MODIFY_TEXT_ELEMENT) {
+      } else if (diff[ACTION] === MODIFY_ATTRIBUTE) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
-      } else if (diff.action === MODIFY_VALUE) {
+      } else if (diff[ACTION] === REMOVE_ATTRIBUTE) {
+        diff[ACTION] = ADD_ATTRIBUTE;
+        this.applyDiff(tree, diff);
+      } else if (diff[ACTION] === MODIFY_TEXT_ELEMENT) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
-      } else if (diff.action === MODIFY_CHECKED) {
+      } else if (diff[ACTION] === MODIFY_VALUE) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
-      } else if (diff.action === MODIFY_SELECTED) {
+      } else if (diff[ACTION] === MODIFY_CHECKED) {
+        swap(diff, OLD_VALUE, NEW_VALUE);
+        this.applyDiff(tree, diff);
+      } else if (diff[ACTION] === MODIFY_SELECTED) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);         
-      } else if (diff.action === REPLACE_ELEMENT) {
+      } else if (diff[ACTION] === REPLACE_ELEMENT) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
-      } else if (diff.action === RELOCATE_GROUP) {
+      } else if (diff[ACTION] === RELOCATE_GROUP) {
         swap(diff, FROM, TO);
         this.applyDiff(tree, diff);
-      } else if (diff.action === REMOVE_ELEMENT) {
-        diff.action = ADD_ELEMENT;
+      } else if (diff[ACTION] === REMOVE_ELEMENT) {
+        diff[ACTION] = ADD_ELEMENT;
         this.applyDiff(tree, diff);;
-      } else if (diff.action === ADD_ELEMENT) {
-        diff.action = REMOVE_ELEMENT;
+      } else if (diff[ACTION] === ADD_ELEMENT) {
+        diff[ACTION] = REMOVE_ELEMENT;
         this.applyDiff(tree, diff);;
-      } else if (diff.action === REMOVE_TEXT_ELEMENT) {
-        diff.action = ADD_TEXT_ELEMENT;
+      } else if (diff[ACTION] === REMOVE_TEXT_ELEMENT) {
+        diff[ACTION] = ADD_TEXT_ELEMENT;
         this.applyDiff(tree, diff);;
-      } else if (diff.action === ADD_TEXT_ELEMENT) {
-        diff.action = REMOVE_TEXT_ELEMENT;
+      } else if (diff[ACTION] === ADD_TEXT_ELEMENT) {
+        diff[ACTION] = REMOVE_TEXT_ELEMENT;
         this.applyDiff(tree, diff);;
       }
     },
