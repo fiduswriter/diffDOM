@@ -11,8 +11,10 @@
   ADD_ELEMENT = "add element",
   REMOVE_TEXT_ELEMENT = "remove text element",
   ADD_TEXT_ELEMENT = "add text element",
-  REPLACE_ELEMENT = "replace element";
+  REPLACE_ELEMENT = "replace element",
+  MODIFY_VALUE = "modify value";
 
+  
   var Diff = function (options) {
     var diff = this;
     Object.keys(options).forEach(function (option) {
@@ -67,6 +69,27 @@
     return thesame;
   };
 
+  
+  var cleanCloneNode = function (node) {
+    // Clone a node with contents and add values manually,
+    // to avoid https://bugzilla.mozilla.org/show_bug.cgi?id=230307
+    var clonedNode = node.cloneNode(true), textareas, clonedTextareas, i;
+
+    if (node.nodeType != 8 && node.nodeType != 3) {
+    
+      textareas = node.querySelectorAll('textarea');
+      clonedTextareas = clonedNode.querySelectorAll('textarea');
+      for (i=0; i < textareas.length;i++) {
+        if (clonedTextareas[i].value !== textareas[i].value) {
+          clonedTextareas[i].value = textareas[i].value;
+        }
+      }
+      if (node.value && (node.value !== clonedNode.value)) {
+          clonedNode.value = node.value;
+      }
+    }
+    return clonedNode;  
+  };
 
   var nodeToObj = function (node) {
     var objNode = {}, i;
@@ -88,6 +111,9 @@
         for (i = 0; i < node.childNodes.length; i++) {
           objNode.c.push(nodeToObj(node.childNodes[i]));
         }
+      }
+      if (node.value) {
+        objNode.v = node.value;
       }
     }
     return objNode;
@@ -115,6 +141,9 @@
         for (i = 0; i < objNode.c.length; i++) {
           node.appendChild(objToNode(objNode.c[i], insideSvg));
         }
+      }
+      if (objNode.v) {
+        node.value = objNode.v;
       }
     }
     return node;
@@ -218,8 +247,8 @@
    * Find all matching subsets, based on immediate child differences only.
    */
   var markSubTrees = function (oldTree, newTree) {
-    oldTree = oldTree.cloneNode(true);
-    newTree = newTree.cloneNode(true);
+    oldTree = cleanCloneNode(oldTree);
+    newTree = cleanCloneNode(newTree);
     // note: the child lists are views, and so update as we update old/newTree
     var oldChildren = oldTree.childNodes,
       newChildren = newTree.childNodes,
@@ -378,8 +407,8 @@
 
     diff: function (t1, t2) {
       diffcount = 0;
-      t1 = t1.cloneNode(true);
-      t2 = t2.cloneNode(true);
+      t1 = cleanCloneNode(t1);
+      t2 = cleanCloneNode(t2);
       if (this.debug) {
           this.t1Orig = nodeToObj(t1);
           this.t2Orig = nodeToObj(t2);
@@ -491,6 +520,15 @@
           route: route
         }));
       });
+
+      if ((t1.value || t2.value) && t1.value !== t2.value) {
+        diffs.push(new Diff({
+          action: MODIFY_VALUE,
+          oldValue: t1.value,
+          newValue: t2.value,
+          route: route
+        }));          
+      }
       return diffs;
     },
     findInnerDiff: function (t1, t2, route) {
@@ -501,7 +539,7 @@
 
       // two text nodes with differences
       if (mappings === 0) {
-        if (t1.nodeType === 3 && t2.nodeType === 3 && t1.data != t2.data) {
+        if (t1.nodeType === 3 && t2.nodeType === 3 && t1.data !== t2.data) {
           return new Diff({
             action: MODIFY_TEXT_ELEMENT,
             oldValue: t1.data,
@@ -613,6 +651,10 @@
         if (!node || !node.removeAttribute)
           return false;          
         node.removeAttribute(diff.attribute.name);
+      } else if (diff.action === MODIFY_VALUE) {
+        if (!node || !node.value)
+          return false;          
+        node.value = diff.newValue;        
       } else if (diff.action === MODIFY_TEXT_ELEMENT) {
           if (!node || node.nodeType!=3)
             return false;
