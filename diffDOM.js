@@ -14,7 +14,17 @@
   REPLACE_ELEMENT = "replace element",
   MODIFY_VALUE = "modify value",
   MODIFY_CHECKED = "modify checked",
-  MODIFY_SELECTED = "modify selected";
+  MODIFY_SELECTED = "modify selected",
+  ACTION = "action",
+  ROUTE = "route",
+  OLD_VALUE = "oldValue",
+  NEW_VALUE = "newValue",
+  ELEMENT = "element",
+  GROUP = "group",
+  FROM = "from",
+  TO = "to",
+  NAME = "name";
+  
 
   
   var Diff = function (options) {
@@ -294,7 +304,7 @@
       gl1 = gaps1.length,
       gaps2 = gapInformation.gaps2,
       gl2 = gaps1.length,
-      i, j,
+      i, j, k,
       last = gl1 < gl2 ? gl1 : gl2;
 
     // Check for correct submap sequencing (irrespective of gaps) first:
@@ -316,41 +326,41 @@
                 break;
               }
             }
-            if (!similarNode) {  
-              return new Diff({
-                action: MODIFY_TEXT_ELEMENT,
-                route: route.concat(i),
-                oldValue: node.data,
-                newValue: t2.childNodes[i].data
-              });
+            if (!similarNode) {
+              k = {};
+              k[ACTION] = MODIFY_TEXT_ELEMENT;
+              k[ROUTE] = route.concat(i);
+              k[OLD_VALUE] = node.data;
+              k[NEW_VALUE] = t2.childNodes[i].data;
+              return new Diff(k);
             }
           } 
-          return new Diff({
-            action: REMOVE_TEXT_ELEMENT,
-            route: route.concat(i),
-            element: node.data
-          });
+          k = {};
+          k[ACTION] = REMOVE_TEXT_ELEMENT;
+          k[ROUTE] = route.concat(i);
+          k[ELEMENT] = node.data;
+          return new Diff(k);
         }
-        return new Diff({
-          action: REMOVE_ELEMENT,
-          route: route.concat(i),
-          element: nodeToObj(node)
-        });
+        k = {};
+        k[ACTION] = REMOVE_ELEMENT;
+        k[ROUTE] = route.concat(i);
+        k[ELEMENT] = nodeToObj(node);
+        return new Diff(k);
       }
       if (gaps2[i] === true) {
         node = t2.childNodes[i];
         if (node.nodeType === 3) {
-          return new Diff({
-            action: ADD_TEXT_ELEMENT,
-            route: route.concat(i),
-            element: node.data
-          });
+          k = {};
+          k[ACTION] = ADD_TEXT_ELEMENT;
+          k[ROUTE] = route.concat(i);
+          k[ELEMENT] = node.data;
+          return new Diff(k);
         }
-        return new Diff({
-          action: ADD_ELEMENT,
-          route: route.concat(i),
-          element: nodeToObj(node)
-        });
+        k = {};
+        k[ACTION] = ADD_ELEMENT;
+        k[ROUTE] = route.concat(i);
+        k[ELEMENT] = nodeToObj(node);
+        return new Diff(k);
       }
       if (gaps1[i] != gaps2[i]) {
         group = subtrees[gaps1[i]];
@@ -365,13 +375,13 @@
 
           }
           if (destinationDifferent) {
-            return new Diff({
-              action: RELOCATE_GROUP,
-              group: group,
-              from: i,
-              to: toGroup,
-              route: route
-            });
+            k = {};
+            k[ACTION] = RELOCATE_GROUP;
+            k[GROUP] = group;
+            k[FROM] = i;
+            k[TO] = toGroup;
+            k[ROUTE] = route;
+            return new Diff(k);
           }
         }
       }
@@ -473,14 +483,15 @@
       return false;
     },
     findOuterDiff: function (t1, t2, route) {
-
+      var k;
+      
       if (t1.nodeName != t2.nodeName) {
-        return [new Diff({
-          action: REPLACE_ELEMENT,
-          oldValue: nodeToObj(t1),
-          newValue: nodeToObj(t2),
-          route: route
-        })];
+        k = {};
+        k[ACTION] = REPLACE_ELEMENT;
+        k[OLD_VALUE] = nodeToObj(t1);
+        k[NEW_VALUE] = nodeToObj(t2);
+        k[ROUTE] = route;
+        return [new Diff(k)];
       }
 
       var slice = Array.prototype.slice,
@@ -499,83 +510,86 @@
         diffs = [];
 
       attr1.forEach(function (attr) {
-        var pos = find(attr, attr2);
+        var pos = find(attr, attr2), k;
         if (pos === -1) {
-          diffs.push(new Diff({
-            action: REMOVE_ATTRIBUTE,
-            attribute: {
+          k = {};
+          k[ACTION] = REMOVE_ATTRIBUTE;
+          k[ROUTE] = route;
+          k['attribute'] = {
               name: attr.name,
               value: attr.value
-            },
-            route: route
-          }));
+            };
+            
+          diffs.push(new Diff(k));
           return diffs;
         }
         var a2 = attr2.splice(pos, 1)[0];
         if (attr.value !== a2.value) {
-          diffs.push(new Diff({
-            action: MODIFY_ATTRIBUTE,
-            attribute: {
+          k = {};
+          k[ACTION] = MODIFY_ATTRIBUTE;
+          k[ROUTE] = route;
+          k['attribute'] = {
               name: attr.name,
               oldValue: attr.value,
               newValue: a2.value
-            },
-            route: route
-          }));
+            };
+            
+          diffs.push(new Diff(k));
         }
       });
       attr2.forEach(function (attr) {
-        diffs.push(new Diff({
-          action: ADD_ATTRIBUTE,
-          attribute: {
+        var k;
+        k = {};
+        k[ACTION] = ADD_ATTRIBUTE;
+        k[ROUTE] = route;
+        k['attribute'] = {
             name: attr.name,
             value: attr.value
-          },
-          route: route
-        }));
+          };
+        diffs.push(new Diff(k));
       });
 
       if ((t1.value || t2.value) && t1.value !== t2.value) {
-        diffs.push(new Diff({
-          action: MODIFY_VALUE,
-          oldValue: t1.value,
-          newValue: t2.value,
-          route: route
-        }));          
+        k = {};
+        k[ACTION] = MODIFY_VALUE;
+        k[OLD_VALUE] = t1.value;
+        k[NEW_VALUE] = t2.value;
+        k[ROUTE] = route;
+        diffs.push(new Diff(k));          
       }
       if ((t1.checked || t2.checked) && t1.checked !== t2.checked) {
-        diffs.push(new Diff({
-          action: MODIFY_CHECKED,
-          oldValue: t1.checked,
-          newValue: t2.checked,
-          route: route
-        }));          
+        k = {};
+        k[ACTION] = MODIFY_CHECKED;
+        k[OLD_VALUE] = t1.checked;
+        k[NEW_VALUE] = t2.checked;
+        k[ROUTE] = route;
+        diffs.push(new Diff(k));          
       }
       if ((t1.selected || t2.selected) && t1.selected !== t2.selected) {
-        diffs.push(new Diff({
-          action: MODIFY_SELECTED,
-          oldValue: t1.selected,
-          newValue: t2.selected,
-          route: route
-        }));          
+        k = {};
+        k[ACTION] = MODIFY_SELECTED;
+        k[OLD_VALUE] = t1.selected;
+        k[NEW_VALUE] = t2.selected;
+        k[ROUTE] = route;
+        diffs.push(new Diff(k));          
       }        
       return diffs;
     },
     findInnerDiff: function (t1, t2, route) {
-      var subtrees = markSubTrees(t1, t2);
-      var mappings = subtrees.length;
+      var subtrees = markSubTrees(t1, t2),
+        mappings = subtrees.length, k;
       // no correspondence whatsoever
       // if t1 or t2 contain differences that are not text nodes, return a diff. 
 
       // two text nodes with differences
       if (mappings === 0) {
         if (t1.nodeType === 3 && t2.nodeType === 3 && t1.data !== t2.data) {
-          return new Diff({
-            action: MODIFY_TEXT_ELEMENT,
-            oldValue: t1.data,
-            newValue: t2.data,
-            route: route
-          });
+          k = {};
+          k[ACTION] = MODIFY_TEXT_ELEMENT;
+          k[OLD_VALUE] = t1.data;
+          k[NEW_VALUE] = t2.data;
+          k[ROUTE] = route;
+          return new Diff(k);
         }
       }
       // possibly identical content: verify
@@ -588,31 +602,31 @@
           //       in findFirstInnerDiff. Can we unify these?
           if (e1 && !e2) {
             if (e1.nodeType === 3) {
-              return new Diff({
-                action: REMOVE_TEXT_ELEMENT,
-                route: route.concat(i),
-                element: e1.data
-              });
+              k = {};
+              k[ACTION] = REMOVE_TEXT_ELEMENT;
+              k[ROUTE] = route.concat(i);
+              k[ELEMENT] = e1.data;
+              return new Diff(k);
             }
-            return new Diff({
-              action: REMOVE_ELEMENT,
-              route: route.concat(i),
-              element: nodeToObj(e1)
-            });
+            k = {};
+            k[ACTION] = REMOVE_ELEMENT;
+            k[ROUTE] = route.concat(i);
+            k[ELEMENT] = nodeToObj(e1);
+            return new Diff(k);
           }
           if (e2 && !e1) {
             if (e2.nodeType === 3) {
-              return new Diff({
-                action: ADD_TEXT_ELEMENT,
-                route: route.concat(i),
-                element: e2.data
-              });
+              k = {};
+              k[ACTION] = ADD_TEXT_ELEMENT;
+              k[ROUTE] = route.concat(i);
+              k[ELEMENT] = e2.data;
+              return new Diff(k);
             }
-            return new Diff({
-              action: ADD_ELEMENT,
-              route: route.concat(i),
-              element: nodeToObj(e2)
-            });
+            k = {};
+            k[ACTION] = ADD_ELEMENT;
+            k[ROUTE] = route.concat(i);
+            k[ELEMENT] = nodeToObj(e2);
+            return new Diff(k);
           }
           if (e1.nodeType != 3 || e2.nodeType != 3) {
             difflist = this.findOuterDiff(e1, e2, route.concat(i));
@@ -668,39 +682,39 @@
       return;
     },
     applyDiff: function (tree, diff) {
-      var node = this.getFromRoute(tree, diff.route);
-      if (diff.action === ADD_ATTRIBUTE) {
+      var node = this.getFromRoute(tree, diff[ROUTE]);
+      if (diff[ACTION] === ADD_ATTRIBUTE) {
         if (!node || !node.setAttribute)
           return false;
         node.setAttribute(diff.attribute.name, diff.attribute.value);
-      } else if (diff.action === MODIFY_ATTRIBUTE) {
+      } else if (diff[ACTION] === MODIFY_ATTRIBUTE) {
         if (!node || !node.setAttribute)
           return false;          
         node.setAttribute(diff.attribute.name, diff.attribute.newValue);
-      } else if (diff.action === REMOVE_ATTRIBUTE) {
+      } else if (diff[ACTION] === REMOVE_ATTRIBUTE) {
         if (!node || !node.removeAttribute)
           return false;          
         node.removeAttribute(diff.attribute.name);
-      } else if (diff.action === MODIFY_VALUE) {
+      } else if (diff[ACTION] === MODIFY_VALUE) {
         if (!node || typeof node.value === 'undefined')
           return false;          
-        node.value = diff.newValue;
-      } else if (diff.action === MODIFY_CHECKED) {
+        node.value = diff[NEW_VALUE];
+      } else if (diff[ACTION] === MODIFY_CHECKED) {
         if (!node || typeof node.checked === 'undefined')
           return false;          
-        node.checked = diff.newValue;    
-      } else if (diff.action === MODIFY_SELECTED) {
+        node.checked = diff[NEW_VALUE];    
+      } else if (diff[ACTION] === MODIFY_SELECTED) {
         if (!node || typeof node.selected === 'undefined')
           return false;          
-        node.selected = diff.newValue;            
-      } else if (diff.action === MODIFY_TEXT_ELEMENT) {
+        node.selected = diff[NEW_VALUE];            
+      } else if (diff[ACTION] === MODIFY_TEXT_ELEMENT) {
           if (!node || node.nodeType!=3)
             return false;
-        this.textDiff(node, node.data, diff.oldValue, diff.newValue);
-      } else if (diff.action === REPLACE_ELEMENT) {
-        var newNode = objToNode(diff.newValue);
+        this.textDiff(node, node.data, diff[OLD_VALUE], diff[NEW_VALUE]);
+      } else if (diff[ACTION] === REPLACE_ELEMENT) {
+        var newNode = objToNode(diff[NEW_VALUE]);
         node.parentNode.replaceChild(newNode, node);
-      } else if (diff.action === RELOCATE_GROUP) {
+      } else if (diff[ACTION] === RELOCATE_GROUP) {
         var group = diff.group,
           from = diff.from,
           to = diff.to,
@@ -720,27 +734,27 @@
             node.insertBefore(child, reference);
           }
         }
-      } else if (diff.action === REMOVE_ELEMENT) {
+      } else if (diff[ACTION] === REMOVE_ELEMENT) {
         node.parentNode.removeChild(node);
-      } else if (diff.action === REMOVE_TEXT_ELEMENT) {
+      } else if (diff[ACTION] === REMOVE_TEXT_ELEMENT) {
           if (!node || node.nodeType!=3)
             return false;
         node.parentNode.removeChild(node);
-      } else if (diff.action === ADD_ELEMENT) {
-        var route = diff.route.slice(),
+      } else if (diff[ACTION] === ADD_ELEMENT) {
+        var route = diff[ROUTE].slice(),
           c = route.splice(route.length - 1, 1)[0];
         node = this.getFromRoute(tree, route);
-        var newNode = objToNode(diff.element);
+        var newNode = objToNode(diff[ELEMENT]);
         if (c >= node.childNodes.length) {
           node.appendChild(newNode);
         } else {
           var reference = node.childNodes[c];
           node.insertBefore(newNode, reference);
         }
-      } else if (diff.action === ADD_TEXT_ELEMENT) {
-        var route = diff.route.slice(),
+      } else if (diff[ACTION] === ADD_TEXT_ELEMENT) {
+        var route = diff[ROUTE].slice(),
           c = route.splice(route.length - 1, 1)[0],
-          newNode = document.createTextNode(diff.element);
+          newNode = document.createTextNode(diff[ELEMENT]);
         node = this.getFromRoute(tree, route);
         if (!node || !node.childNodes)
           return false;
@@ -772,28 +786,28 @@
         diff.action = REMOVE_ATTRIBUTE;
         this.applyDiff(tree, diff);
       } else if (diff.action === MODIFY_ATTRIBUTE) {
-        swap(diff.attribute, "oldValue", "newValue");
+        swap(diff.attribute, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
       } else if (diff.action === REMOVE_ATTRIBUTE) {
         diff.action = ADD_ATTRIBUTE;
         this.applyDiff(tree, diff);
       } else if (diff.action === MODIFY_TEXT_ELEMENT) {
-        swap(diff, "oldValue", "newValue");
+        swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
       } else if (diff.action === MODIFY_VALUE) {
-        swap(diff, "oldValue", "newValue");
+        swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
       } else if (diff.action === MODIFY_CHECKED) {
-        swap(diff, "oldValue", "newValue");
+        swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
       } else if (diff.action === MODIFY_SELECTED) {
-        swap(diff, "oldValue", "newValue");
+        swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);         
       } else if (diff.action === REPLACE_ELEMENT) {
-        swap(diff, "oldValue", "newValue");
+        swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
       } else if (diff.action === RELOCATE_GROUP) {
-        swap(diff, "from", "to");
+        swap(diff, FROM, TO);
         this.applyDiff(tree, diff);
       } else if (diff.action === REMOVE_ELEMENT) {
         diff.action = ADD_ELEMENT;
