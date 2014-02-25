@@ -2,32 +2,31 @@
 
   var diffcount;
 
-  const ADD_ATTRIBUTE = "add attribute",
-  MODIFY_ATTRIBUTE = "modify attribute",
-  REMOVE_ATTRIBUTE = "remove attribute",
-  MODIFY_TEXT_ELEMENT = "modify text element",
-  RELOCATE_GROUP = "relocate group",
-  REMOVE_ELEMENT = "remove element",
-  ADD_ELEMENT = "add element",
-  REMOVE_TEXT_ELEMENT = "remove text element",
-  ADD_TEXT_ELEMENT = "add text element",
-  REPLACE_ELEMENT = "replace element",
-  MODIFY_VALUE = "modify value",
-  MODIFY_CHECKED = "modify checked",
-  MODIFY_SELECTED = "modify selected",
-  ACTION = "action",
-  ROUTE = "route",
-  OLD_VALUE = "oldValue",
-  NEW_VALUE = "newValue",
-  ELEMENT = "element",
-  GROUP = "group",
-  FROM = "from",
-  TO = "to",
-  NAME = "name",
-  VALUE = "value";
-  
+  var ADD_ATTRIBUTE = 0,
+    MODIFY_ATTRIBUTE = 1,
+    REMOVE_ATTRIBUTE = 2,
+    MODIFY_TEXT_ELEMENT = 3,
+    RELOCATE_GROUP = 4,
+    REMOVE_ELEMENT = 5,
+    ADD_ELEMENT = 6,
+    REMOVE_TEXT_ELEMENT = 7,
+    ADD_TEXT_ELEMENT = 8,
+    REPLACE_ELEMENT = 9,
+    MODIFY_VALUE = 10,
+    MODIFY_CHECKED = 11,
+    MODIFY_SELECTED = 12,
+    ACTION = 13,
+    ROUTE = 14,
+    OLD_VALUE = 15,
+    NEW_VALUE = 16,
+    ELEMENT = 17,
+    GROUP = 18,
+    FROM = 19,
+    TO = 20,
+    NAME = 21,
+    VALUE = 22;
 
-  
+
   var Diff = function (options) {
     var diff = this;
     Object.keys(options).forEach(function (option) {
@@ -82,26 +81,27 @@
     return thesame;
   };
 
-  
+
   var cleanCloneNode = function (node) {
     // Clone a node with contents and add values manually,
     // to avoid https://bugzilla.mozilla.org/show_bug.cgi?id=230307
-    var clonedNode = node.cloneNode(true), textareas, clonedTextareas, i;
+    var clonedNode = node.cloneNode(true),
+      textareas, clonedTextareas, i;
 
     if (node.nodeType != 8 && node.nodeType != 3) {
-    
+
       textareas = node.querySelectorAll('textarea');
       clonedTextareas = clonedNode.querySelectorAll('textarea');
-      for (i=0; i < textareas.length;i++) {
+      for (i = 0; i < textareas.length; i++) {
         if (clonedTextareas[i].value !== textareas[i].value) {
           clonedTextareas[i].value = textareas[i].value;
         }
       }
       if (node.value && (node.value !== clonedNode.value)) {
-          clonedNode.value = node.value;
+        clonedNode.value = node.value;
       }
     }
-    return clonedNode;  
+    return clonedNode;
   };
 
   var nodeToObj = function (node) {
@@ -133,7 +133,7 @@
       }
       if (node.selected) {
         objNode.s = node.selected;
-      }      
+      }
     }
     return objNode;
   };
@@ -145,8 +145,8 @@
     } else if (objNode.hasOwnProperty('co')) {
       node = document.createComment(objNode.co);
     } else {
-      if (objNode.nn==='svg' || insideSvg) {
-        node = document.createElementNS('http://www.w3.org/2000/svg',objNode.nn);
+      if (objNode.nn === 'svg' || insideSvg) {
+        node = document.createElementNS('http://www.w3.org/2000/svg', objNode.nn);
         insideSvg = true;
       } else {
         node = document.createElement(objNode.nn);
@@ -169,7 +169,7 @@
       }
       if (objNode.s) {
         node.selected = objNode.s;
-      }      
+      }
     }
     return node;
   };
@@ -320,7 +320,7 @@
         if (node.nodeType === 3) {
           if (t2.childNodes[i].nodeType === 3 && node.data != t2.childNodes[i].data) {
             testNode = node;
-            while(testNode.nextSibling && testNode.nextSibling.nodeType === 3) {
+            while (testNode.nextSibling && testNode.nextSibling.nodeType === 3) {
               testNode = testNode.nextSibling;
               if (t2.childNodes[i].data === testNode.data) {
                 similarNode = true;
@@ -335,7 +335,7 @@
               k[NEW_VALUE] = t2.childNodes[i].data;
               return new Diff(k);
             }
-          } 
+          }
           k = {};
           k[ACTION] = REMOVE_TEXT_ELEMENT;
           k[ROUTE] = route.concat(i);
@@ -419,12 +419,44 @@
 
 
   var diffDOM = function (debug, diffcap) {
-      if (typeof debug === 'undefined')
-          debug = false;
-      if (typeof diffcap === 'undefined')
-          diffcap = 10;
-      this.debug = debug;
-      this.diffcap = diffcap;
+    if (typeof debug === 'undefined') {
+      debug = false;
+
+    } else {
+
+      ADD_ATTRIBUTE = "add attribute",
+      MODIFY_ATTRIBUTE = "modify attribute",
+      REMOVE_ATTRIBUTE = "remove attribute",
+      MODIFY_TEXT_ELEMENT = "modify text element",
+      RELOCATE_GROUP = "relocate group",
+      REMOVE_ELEMENT = "remove element",
+      ADD_ELEMENT = "add element",
+      REMOVE_TEXT_ELEMENT = "remove text element",
+      ADD_TEXT_ELEMENT = "add text element",
+      REPLACE_ELEMENT = "replace element",
+      MODIFY_VALUE = "modify value",
+      MODIFY_CHECKED = "modify checked",
+      MODIFY_SELECTED = "modify selected",
+      ACTION = "action",
+      ROUTE = "route",
+      OLD_VALUE = "oldValue",
+      NEW_VALUE = "newValue",
+      ELEMENT = "element",
+      GROUP = "group",
+      FROM = "from",
+      TO = "to",
+      NAME = "name",
+      VALUE = "value";
+
+    }
+
+
+
+
+    if (typeof diffcap === 'undefined')
+      diffcap = 10;
+    this.debug = debug;
+    this.diffcap = diffcap;
   };
   diffDOM.prototype = {
 
@@ -435,10 +467,10 @@
       t1 = cleanCloneNode(t1);
       t2 = cleanCloneNode(t2);
       if (this.debug) {
-          this.t1Orig = nodeToObj(t1);
-          this.t2Orig = nodeToObj(t2);
+        this.t1Orig = nodeToObj(t1);
+        this.t2Orig = nodeToObj(t2);
       }
-      
+
       this.tracker = new DiffTracker();
       return this.findDiffs(t1, t2);
     },
@@ -485,7 +517,7 @@
     },
     findOuterDiff: function (t1, t2, route) {
       var k;
-      
+
       if (t1.nodeName != t2.nodeName) {
         k = {};
         k[ACTION] = REPLACE_ELEMENT;
@@ -511,14 +543,15 @@
         diffs = [];
 
       attr1.forEach(function (attr) {
-        var pos = find(attr, attr2), k;
+        var pos = find(attr, attr2),
+          k;
         if (pos === -1) {
           k = {};
           k[ACTION] = REMOVE_ATTRIBUTE;
           k[ROUTE] = route;
           k[NAME] = attr.name;
           k[VALUE] = attr.value;
-            
+
           diffs.push(new Diff(k));
           return diffs;
         }
@@ -530,7 +563,7 @@
           k[NAME] = attr.name;
           k[OLD_VALUE] = attr.value;
           k[NEW_VALUE] = a2.value;
-            
+
           diffs.push(new Diff(k));
         }
       });
@@ -550,7 +583,7 @@
         k[OLD_VALUE] = t1.value;
         k[NEW_VALUE] = t2.value;
         k[ROUTE] = route;
-        diffs.push(new Diff(k));          
+        diffs.push(new Diff(k));
       }
       if ((t1.checked || t2.checked) && t1.checked !== t2.checked) {
         k = {};
@@ -558,7 +591,7 @@
         k[OLD_VALUE] = t1.checked;
         k[NEW_VALUE] = t2.checked;
         k[ROUTE] = route;
-        diffs.push(new Diff(k));          
+        diffs.push(new Diff(k));
       }
       if ((t1.selected || t2.selected) && t1.selected !== t2.selected) {
         k = {};
@@ -566,13 +599,14 @@
         k[OLD_VALUE] = t1.selected;
         k[NEW_VALUE] = t2.selected;
         k[ROUTE] = route;
-        diffs.push(new Diff(k));          
-      }        
+        diffs.push(new Diff(k));
+      }
       return diffs;
     },
     findInnerDiff: function (t1, t2, route) {
       var subtrees = markSubTrees(t1, t2),
-        mappings = subtrees.length, k;
+        mappings = subtrees.length,
+        k;
       // no correspondence whatsoever
       // if t1 or t2 contain differences that are not text nodes, return a diff. 
 
@@ -664,7 +698,7 @@
       var c, node = tree;
       while (route.length > 0) {
         if (!node.childNodes) {
-            return false;
+          return false;
         }
         c = route.splice(0, 1)[0];
         node = node.childNodes[c];
@@ -684,35 +718,35 @@
         node.setAttribute(diff[NAME], diff[VALUE]);
       } else if (diff[ACTION] === MODIFY_ATTRIBUTE) {
         if (!node || !node.setAttribute)
-          return false;          
+          return false;
         node.setAttribute(diff[NAME], diff[NEW_VALUE]);
       } else if (diff[ACTION] === REMOVE_ATTRIBUTE) {
         if (!node || !node.removeAttribute)
-          return false;          
+          return false;
         node.removeAttribute(diff[NAME]);
       } else if (diff[ACTION] === MODIFY_VALUE) {
         if (!node || typeof node.value === 'undefined')
-          return false;          
+          return false;
         node.value = diff[NEW_VALUE];
       } else if (diff[ACTION] === MODIFY_CHECKED) {
         if (!node || typeof node.checked === 'undefined')
-          return false;          
-        node.checked = diff[NEW_VALUE];    
+          return false;
+        node.checked = diff[NEW_VALUE];
       } else if (diff[ACTION] === MODIFY_SELECTED) {
         if (!node || typeof node.selected === 'undefined')
-          return false;          
-        node.selected = diff[NEW_VALUE];            
+          return false;
+        node.selected = diff[NEW_VALUE];
       } else if (diff[ACTION] === MODIFY_TEXT_ELEMENT) {
-          if (!node || node.nodeType!=3)
-            return false;
+        if (!node || node.nodeType != 3)
+          return false;
         this.textDiff(node, node.data, diff[OLD_VALUE], diff[NEW_VALUE]);
       } else if (diff[ACTION] === REPLACE_ELEMENT) {
         var newNode = objToNode(diff[NEW_VALUE]);
         node.parentNode.replaceChild(newNode, node);
       } else if (diff[ACTION] === RELOCATE_GROUP) {
-        var group = diff.group,
-          from = diff.from,
-          to = diff.to,
+        var group = diff[GROUP],
+          from = diff[FROM],
+          to = diff[TO],
           child, reference;
         reference = node.childNodes[to + group.length];
         // slide elements up
@@ -732,8 +766,8 @@
       } else if (diff[ACTION] === REMOVE_ELEMENT) {
         node.parentNode.removeChild(node);
       } else if (diff[ACTION] === REMOVE_TEXT_ELEMENT) {
-          if (!node || node.nodeType!=3)
-            return false;
+        if (!node || node.nodeType != 3)
+          return false;
         node.parentNode.removeChild(node);
       } else if (diff[ACTION] === ADD_ELEMENT) {
         var route = diff[ROUTE].slice(),
@@ -797,7 +831,7 @@
         this.applyDiff(tree, diff);
       } else if (diff[ACTION] === MODIFY_SELECTED) {
         swap(diff, OLD_VALUE, NEW_VALUE);
-        this.applyDiff(tree, diff);         
+        this.applyDiff(tree, diff);
       } else if (diff[ACTION] === REPLACE_ELEMENT) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
