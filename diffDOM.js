@@ -742,6 +742,9 @@
       } else if (diff.action === MODIFY_TEXT_ELEMENT) {
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
+      } else if (diff.action === MODIFY_VALUE) {
+        swap(diff, "oldValue", "newValue");
+        this.applyDiff(tree, diff);        
       } else if (diff.action === REPLACE_ELEMENT) {
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
