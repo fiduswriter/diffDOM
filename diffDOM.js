@@ -12,7 +12,9 @@
   REMOVE_TEXT_ELEMENT = "remove text element",
   ADD_TEXT_ELEMENT = "add text element",
   REPLACE_ELEMENT = "replace element",
-  MODIFY_VALUE = "modify value";
+  MODIFY_VALUE = "modify value",
+  MODIFY_CHECKED = "modify checked",
+  MODIFY_SELECTED = "modify selected";
 
   
   var Diff = function (options) {
@@ -115,6 +117,12 @@
       if (node.value) {
         objNode.v = node.value;
       }
+      if (node.checked) {
+        objNode.ch = node.checked;
+      }
+      if (node.selected) {
+        objNode.s = node.selected;
+      }      
     }
     return objNode;
   };
@@ -145,6 +153,12 @@
       if (objNode.v) {
         node.value = objNode.v;
       }
+      if (objNode.ch) {
+        node.checked = objNode.ch;
+      }
+      if (objNode.s) {
+        node.selected = objNode.s;
+      }      
     }
     return node;
   };
@@ -529,6 +543,22 @@
           route: route
         }));          
       }
+      if ((t1.checked || t2.checked) && t1.checked !== t2.checked) {
+        diffs.push(new Diff({
+          action: MODIFY_CHECKED,
+          oldValue: t1.checked,
+          newValue: t2.checked,
+          route: route
+        }));          
+      }
+      if ((t1.selected || t2.selected) && t1.selected !== t2.selected) {
+        diffs.push(new Diff({
+          action: MODIFY_SELECTED,
+          oldValue: t1.selected,
+          newValue: t2.selected,
+          route: route
+        }));          
+      }        
       return diffs;
     },
     findInnerDiff: function (t1, t2, route) {
@@ -652,9 +682,17 @@
           return false;          
         node.removeAttribute(diff.attribute.name);
       } else if (diff.action === MODIFY_VALUE) {
-        if (!node || !node.value)
+        if (!node || typeof node.value === 'undefined')
           return false;          
-        node.value = diff.newValue;        
+        node.value = diff.newValue;
+      } else if (diff.action === MODIFY_CHECKED) {
+        if (!node || typeof node.checked === 'undefined')
+          return false;          
+        node.checked = diff.newValue;    
+      } else if (diff.action === MODIFY_SELECTED) {
+        if (!node || typeof node.selected === 'undefined')
+          return false;          
+        node.selected = diff.newValue;            
       } else if (diff.action === MODIFY_TEXT_ELEMENT) {
           if (!node || node.nodeType!=3)
             return false;
@@ -744,7 +782,13 @@
         this.applyDiff(tree, diff);
       } else if (diff.action === MODIFY_VALUE) {
         swap(diff, "oldValue", "newValue");
-        this.applyDiff(tree, diff);        
+        this.applyDiff(tree, diff);
+      } else if (diff.action === MODIFY_CHECKED) {
+        swap(diff, "oldValue", "newValue");
+        this.applyDiff(tree, diff);
+      } else if (diff.action === MODIFY_SELECTED) {
+        swap(diff, "oldValue", "newValue");
+        this.applyDiff(tree, diff);         
       } else if (diff.action === REPLACE_ELEMENT) {
         swap(diff, "oldValue", "newValue");
         this.applyDiff(tree, diff);
