@@ -24,7 +24,14 @@
     FROM = 19,
     TO = 20,
     NAME = 21,
-    VALUE = 22;
+    VALUE = 22,
+    TEXT = 23,
+    ATTRIBUTES = 24,
+    NODE_NAME = 25,
+    COMMENT = 26,
+    CHILD_NODES = 27,
+    CHECKED = 28,
+    SELECTED = 29;
 
 
   var Diff = function (options) {
@@ -108,31 +115,31 @@
     var objNode = {}, i;
 
     if (node.nodeType === 3) {
-      objNode.t = node.data;
+      objNode[TEXT] = node.data;
     } else if (node.nodeType === 8) {
-      objNode.co = node.data;
+      objNode[COMMENT] = node.data;
     } else {
-      objNode.nn = node.nodeName;
+      objNode[NODE_NAME] = node.nodeName;
       if (node.attributes && node.attributes.length > 0) {
-        objNode.a = [];
+        objNode[ATTRIBUTES] = [];
         for (i = 0; i < node.attributes.length; i++) {
-          objNode.a.push([node.attributes[i].name, node.attributes[i].value]);
+          objNode[ATTRIBUTES].push([node.attributes[i].name, node.attributes[i].value]);
         }
       }
       if (node.childNodes && node.childNodes.length > 0) {
-        objNode.c = [];
+        objNode[CHILD_NODES] = [];
         for (i = 0; i < node.childNodes.length; i++) {
-          objNode.c.push(nodeToObj(node.childNodes[i]));
+          objNode[CHILD_NODES].push(nodeToObj(node.childNodes[i]));
         }
       }
       if (node.value) {
-        objNode.v = node.value;
+        objNode[VALUE] = node.value;
       }
       if (node.checked) {
-        objNode.ch = node.checked;
+        objNode[CHECKED] = node.checked;
       }
       if (node.selected) {
-        objNode.s = node.selected;
+        objNode[SELECTED] = node.selected;
       }
     }
     return objNode;
@@ -140,37 +147,40 @@
 
   var objToNode = function (objNode, insideSvg) {
     var node, i;
-    if (objNode.hasOwnProperty('t')) {
-      node = document.createTextNode(objNode.t);
-    } else if (objNode.hasOwnProperty('co')) {
-      node = document.createComment(objNode.co);
+    if (objNode.hasOwnProperty(TEXT)) {
+        console.log(objNode);
+      node = document.createTextNode(objNode[TEXT]);
+      console.log(node);
+    } else if (objNode.hasOwnProperty(COMMENT)) {
+      node = document.createComment(objNode[COMMENT]);
     } else {
-      if (objNode.nn === 'svg' || insideSvg) {
-        node = document.createElementNS('http://www.w3.org/2000/svg', objNode.nn);
+      if (objNode[NODE_NAME] === 'svg' || insideSvg) {
+        node = document.createElementNS('http://www.w3.org/2000/svg', objNode[NODE_NAME]);
         insideSvg = true;
       } else {
-        node = document.createElement(objNode.nn);
+        node = document.createElement(objNode[NODE_NAME]);
       }
-      if (objNode.a) {
-        for (i = 0; i < objNode.a.length; i++) {
-          node.setAttribute(objNode.a[i][0], objNode.a[i][1]);
+      if (objNode[ATTRIBUTES]) {
+        for (i = 0; i < objNode[ATTRIBUTES].length; i++) {
+          node.setAttribute(objNode[ATTRIBUTES][i][0], objNode[ATTRIBUTES][i][1]);
         }
       }
-      if (objNode.c) {
-        for (i = 0; i < objNode.c.length; i++) {
-          node.appendChild(objToNode(objNode.c[i], insideSvg));
+      if (objNode[CHILD_NODES]) {
+        for (i = 0; i < objNode[CHILD_NODES].length; i++) {
+          node.appendChild(objToNode(objNode[CHILD_NODES][i], insideSvg));
         }
       }
-      if (objNode.v) {
-        node.value = objNode.v;
+      if (objNode[VALUE]) {
+        node.value = objNode[VALUE];
       }
-      if (objNode.ch) {
-        node.checked = objNode.ch;
+      if (objNode[CHECKED]) {
+        node.checked = objNode[CHECKED];
       }
-      if (objNode.s) {
-        node.selected = objNode.s;
+      if (objNode[SELECTED]) {
+        node.selected = objNode[SELECTED];
       }
     }
+  //  console.log(node);
     return node;
   };
 
@@ -339,7 +349,7 @@
           k = {};
           k[ACTION] = REMOVE_TEXT_ELEMENT;
           k[ROUTE] = route.concat(i);
-          k[ELEMENT] = node.data;
+          k[VALUE] = node.data;
           return new Diff(k);
         }
         k = {};
@@ -354,7 +364,7 @@
           k = {};
           k[ACTION] = ADD_TEXT_ELEMENT;
           k[ROUTE] = route.concat(i);
-          k[ELEMENT] = node.data;
+          k[VALUE] = node.data;
           return new Diff(k);
         }
         k = {};
@@ -446,8 +456,14 @@
       FROM = "from",
       TO = "to",
       NAME = "name",
-      VALUE = "value";
-
+      VALUE = "value",
+      TEXT = "text",
+      ATTRIBUTES = "attributes",
+    NODE_NAME = "nodeName",
+    COMMENT = "comment",
+    CHILD_NODES = "childNodes",
+    CHECKED = "checked",
+    SELECTED = "selected";
     }
 
 
@@ -648,7 +664,7 @@
               k = {};
               k[ACTION] = ADD_TEXT_ELEMENT;
               k[ROUTE] = route.concat(i);
-              k[ELEMENT] = e2.data;
+              k[VALUE] = e2.data;
               return new Diff(k);
             }
             k = {};
@@ -783,7 +799,7 @@
       } else if (diff[ACTION] === ADD_TEXT_ELEMENT) {
         var route = diff[ROUTE].slice(),
           c = route.splice(route.length - 1, 1)[0],
-          newNode = document.createTextNode(diff[ELEMENT]);
+          newNode = document.createTextNode(diff[VALUE]);
         node = this.getFromRoute(tree, route);
         if (!node || !node.childNodes)
           return false;
@@ -840,16 +856,16 @@
         this.applyDiff(tree, diff);
       } else if (diff[ACTION] === REMOVE_ELEMENT) {
         diff[ACTION] = ADD_ELEMENT;
-        this.applyDiff(tree, diff);;
+        this.applyDiff(tree, diff);
       } else if (diff[ACTION] === ADD_ELEMENT) {
         diff[ACTION] = REMOVE_ELEMENT;
-        this.applyDiff(tree, diff);;
+        this.applyDiff(tree, diff);
       } else if (diff[ACTION] === REMOVE_TEXT_ELEMENT) {
         diff[ACTION] = ADD_TEXT_ELEMENT;
-        this.applyDiff(tree, diff);;
+        this.applyDiff(tree, diff);
       } else if (diff[ACTION] === ADD_TEXT_ELEMENT) {
         diff[ACTION] = REMOVE_TEXT_ELEMENT;
-        this.applyDiff(tree, diff);;
+        this.applyDiff(tree, diff);
       }
     },
   };
