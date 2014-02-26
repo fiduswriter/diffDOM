@@ -148,9 +148,7 @@
   var objToNode = function (objNode, insideSvg) {
     var node, i;
     if (objNode.hasOwnProperty(TEXT)) {
-      //  console.log(objNode);
       node = document.createTextNode(objNode[TEXT]);
-      //console.log(node);
     } else if (objNode.hasOwnProperty(COMMENT)) {
       node = document.createComment(objNode[COMMENT]);
     } else {
@@ -873,6 +871,4 @@
 
 
   window.diffDOM = diffDOM;
-  window.nodeToObj = nodeToObj;
-  window.objToNode = objToNode;
 }());
