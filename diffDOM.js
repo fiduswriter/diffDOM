@@ -148,9 +148,9 @@
   var objToNode = function (objNode, insideSvg) {
     var node, i;
     if (objNode.hasOwnProperty(TEXT)) {
-        console.log(objNode);
+      //  console.log(objNode);
       node = document.createTextNode(objNode[TEXT]);
-      console.log(node);
+      //console.log(node);
     } else if (objNode.hasOwnProperty(COMMENT)) {
       node = document.createComment(objNode[COMMENT]);
     } else {
@@ -650,7 +650,7 @@
               k = {};
               k[ACTION] = REMOVE_TEXT_ELEMENT;
               k[ROUTE] = route.concat(i);
-              k[ELEMENT] = e1.data;
+              k[VALUE] = e1.data;
               return new Diff(k);
             }
             k = {};
