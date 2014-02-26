@@ -432,6 +432,60 @@
 
 
   <script>
+    function nodeToObj(node) {
+      var objNode = {}, i;
+
+      if (node.nodeType === 3) {
+        objNode.t = node.data;
+      } else if (node.nodeType === 8) {
+        objNode.co = node.data;
+      } else {
+        objNode.nn = node.nodeName;
+        if (node.attributes && node.attributes.length > 0) {
+          objNode.a = [];
+          for (i = 0; i < node.attributes.length; i++) {
+            objNode.a.push([node.attributes[i].name, node.attributes[i].value]);
+          }
+        }
+        if (node.childNodes && node.childNodes.length > 0) {
+          objNode.c = [];
+          for (i = 0; i < node.childNodes.length; i++) {
+            objNode.c.push(nodeToObj(node.childNodes[i]));
+          }
+        }
+      }
+      return objNode;
+    }
+
+    function objToNode(objNode, insideSvg) {
+      var node, i;
+      if (objNode.hasOwnProperty('t')) {
+        node = document.createTextNode(objNode.t);
+      } else if (objNode.hasOwnProperty('co')) {
+        node = document.createComment(objNode.co);
+      } else {
+        if (objNode.nn === 'svg' || insideSvg) {
+          node = document.createElementNS('http://www.w3.org/2000/svg', objNode.nn);
+          insideSvg = true;
+        } else {
+          node = document.createElement(objNode.nn);
+        }
+        if (objNode.a) {
+          for (i = 0; i < objNode.a.length; i++) {
+            node.setAttribute(objNode.a[i][0], objNode.a[i][1]);
+          }
+        }
+        if (objNode.c) {
+          for (i = 0; i < objNode.c.length; i++) {
+            node.appendChild(objToNode(objNode.c[i], insideSvg));
+          }
+        }
+      }
+      return node;
+    }
+
+
+
     function reportDiv() {
       document.body.appendChild(document.createElement('div'));
     }

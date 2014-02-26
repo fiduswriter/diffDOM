@@ -871,6 +871,4 @@
 
 
   window.diffDOM = diffDOM;
-  window.nodeToObj = nodeToObj;
-  window.objToNode = objToNode;
 }());
