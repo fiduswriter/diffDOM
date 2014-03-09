@@ -883,5 +883,4 @@
   };
 
   window.diffDOM = diffDOM;
-  window.cleanCloneNode = cleanCloneNode;
 }());
