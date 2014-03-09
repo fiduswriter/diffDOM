@@ -107,6 +107,11 @@
       if (node.value && (node.value !== clonedNode.value)) {
         clonedNode.value = node.value;
       }
+      if (node.selected && !(clonedNode.selected)) {
+        clonedNode.selected = true;
+      } else if (!(node.selected) && clonedNode.selected) {
+        clonedNode.selected = false;
+      }
     }
     return clonedNode;
   };
@@ -178,7 +183,6 @@
         node.selected = objNode[SELECTED];
       }
     }
-  //  console.log(node);
     return node;
   };
 
@@ -531,7 +535,7 @@
     },
     findOuterDiff: function (t1, t2, route) {
       var k;
-
+      
       if (t1.nodeName != t2.nodeName) {
         k = {};
         k[ACTION] = REPLACE_ELEMENT;
@@ -540,7 +544,7 @@
         k[ROUTE] = route;
         return [new Diff(k)];
       }
-
+      
       var slice = Array.prototype.slice,
         byName = function (a, b) {
           return a.name > b.name;
@@ -555,43 +559,9 @@
           return -1;
         },
         diffs = [];
-
-      attr1.forEach(function (attr) {
-        var pos = find(attr, attr2),
-          k;
-        if (pos === -1) {
-          k = {};
-          k[ACTION] = REMOVE_ATTRIBUTE;
-          k[ROUTE] = route;
-          k[NAME] = attr.name;
-          k[VALUE] = attr.value;
-
-          diffs.push(new Diff(k));
-          return diffs;
-        }
-        var a2 = attr2.splice(pos, 1)[0];
-        if (attr.value !== a2.value) {
-          k = {};
-          k[ACTION] = MODIFY_ATTRIBUTE;
-          k[ROUTE] = route;
-          k[NAME] = attr.name;
-          k[OLD_VALUE] = attr.value;
-          k[NEW_VALUE] = a2.value;
-
-          diffs.push(new Diff(k));
-        }
-      });
-      attr2.forEach(function (attr) {
-        var k;
-        k = {};
-        k[ACTION] = ADD_ATTRIBUTE;
-        k[ROUTE] = route;
-        k[NAME] = attr.name;
-        k[VALUE] = attr.value;
-        diffs.push(new Diff(k));
-      });
-
-      if ((t1.value || t2.value) && t1.value !== t2.value) {
+      
+      
+      if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
         k = {};
         k[ACTION] = MODIFY_VALUE;
         k[OLD_VALUE] = t1.value;
@@ -606,15 +576,59 @@
         k[NEW_VALUE] = t2.checked;
         k[ROUTE] = route;
         diffs.push(new Diff(k));
-      }
+      }  
+
+      attr1.forEach(function (attr) {
+        var pos = find(attr, attr2),
+          k;
+        if (pos === -1) {
+          k = {};
+          k[ACTION] = REMOVE_ATTRIBUTE;
+          k[ROUTE] = route;
+          k[NAME] = attr.name;
+          k[VALUE] = attr.value;
+          diffs.push(new Diff(k));
+          return [diffs];
+        }
+        var a2 = attr2.splice(pos, 1)[0];
+        if (attr.value !== a2.value) {
+          k = {};
+          k[ACTION] = MODIFY_ATTRIBUTE;
+          k[ROUTE] = route;
+          k[NAME] = attr.name;
+          k[OLD_VALUE] = attr.value;
+          k[NEW_VALUE] = a2.value;
+
+          diffs.push(new Diff(k));
+                   
+        }
+      });
+      if (diffs.length > 0) {
+        return diffs;
+      };
+      attr2.forEach(function (attr) {
+        var k;
+        k = {};
+        k[ACTION] = ADD_ATTRIBUTE;
+        k[ROUTE] = route;
+        k[NAME] = attr.name;
+        k[VALUE] = attr.value;
+        diffs.push(new Diff(k));
+        
+      });
+      
       if ((t1.selected || t2.selected) && t1.selected !== t2.selected) {
+        if (diffs.length > 0) {
+            return diffs;
+        }
         k = {};
         k[ACTION] = MODIFY_SELECTED;
         k[OLD_VALUE] = t1.selected;
         k[NEW_VALUE] = t2.selected;
         k[ROUTE] = route;
         diffs.push(new Diff(k));
-      }
+      }      
+      
       return diffs;
     },
     findInnerDiff: function (t1, t2, route) {
@@ -749,7 +763,7 @@
       } else if (diff[ACTION] === MODIFY_SELECTED) {
         if (!node || typeof node.selected === 'undefined')
           return false;
-        node.selected = diff[NEW_VALUE];
+        node.selected = diff[NEW_VALUE];     
       } else if (diff[ACTION] === MODIFY_TEXT_ELEMENT) {
         if (!node || node.nodeType != 3)
           return false;
@@ -868,7 +882,6 @@
     },
   };
 
-
-
   window.diffDOM = diffDOM;
+  window.cleanCloneNode = cleanCloneNode;
 }());
