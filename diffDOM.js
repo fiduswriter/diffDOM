@@ -588,7 +588,7 @@
           k[NAME] = attr.name;
           k[VALUE] = attr.value;
           diffs.push(new Diff(k));
-          return [diffs];
+          return diffs;
         }
         var a2 = attr2.splice(pos, 1)[0];
         if (attr.value !== a2.value) {
