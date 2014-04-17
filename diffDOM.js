@@ -882,5 +882,14 @@
     },
   };
 
-  window.diffDOM = diffDOM;
-}());
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = diffDOM;
+    }
+    exports.diffDOM = diffDOM;
+  } else {
+    // `window` in the browser, or `exports` on the server
+    this.diffDOM = diffDOM;
+  }
+
+}.call(this));

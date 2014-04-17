@@ -1,0 +1,21 @@
+{
+  "name": "diffDOM",
+  "version": "0.0.1",
+  "description": "A diff for DOM elements, as client-side JavaScript code. Gets all modifications, insertions and removals between two DOM fragments.",
+  "main": "diffDOM.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fiduswriter/diffDOM.git"
+  },
+  "author": "Johannes Wilm mail@johanneswilm.org",
+  "license": "LGPL",
+  "bugs": {
+    "url": "https://github.com/fiduswriter/diffDOM/issues"
+  }
+}
