@@ -21,6 +21,11 @@ Include the diffDOM.js file in your HTML like this:
 <script src="diffDOM.js">
 ```
 
+Or like this in node/browserify:
+```
+var diffDOM = require("diffDOM");
+```
+
 Then create an instance of diffDOM within the javascript code:
 ```
 dd = new diffDOM();
