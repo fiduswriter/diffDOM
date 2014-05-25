@@ -15,24 +15,24 @@
     MODIFY_VALUE = 10,
     MODIFY_CHECKED = 11,
     MODIFY_SELECTED = 12,
-    ACTION = 13,
-    ROUTE = 14,
-    OLD_VALUE = 15,
-    NEW_VALUE = 16,
-    ELEMENT = 17,
-    GROUP = 18,
-    FROM = 19,
-    TO = 20,
-    NAME = 21,
-    VALUE = 22,
-    TEXT = 23,
-    ATTRIBUTES = 24,
-    NODE_NAME = 25,
-    COMMENT = 26,
-    CHILD_NODES = 27,
-    CHECKED = 28,
-    SELECTED = 29;
-
+    MODIFY_DATA = 13,
+    ACTION = 14,
+    ROUTE = 15,
+    OLD_VALUE = 16,
+    NEW_VALUE = 17,
+    ELEMENT = 18,
+    GROUP = 19,
+    FROM = 20,
+    TO = 21,
+    NAME = 22,
+    VALUE = 23,
+    TEXT = 24,
+    ATTRIBUTES = 25,
+    NODE_NAME = 26,
+    COMMENT = 27,
+    CHILD_NODES = 28,
+    CHECKED = 29,
+    SELECTED = 30;
 
   var Diff = function (options) {
     var diff = this;
@@ -93,7 +93,7 @@
     // Clone a node with contents and add values manually,
     // to avoid https://bugzilla.mozilla.org/show_bug.cgi?id=230307
     var clonedNode = node.cloneNode(true),
-      textareas, clonedTextareas, i;
+      textareas, clonedTextareas, options, clonedOptions, i;
 
     if (node.nodeType != 8 && node.nodeType != 3) {
 
@@ -107,6 +107,15 @@
       if (node.value && (node.value !== clonedNode.value)) {
         clonedNode.value = node.value;
       }
+      options = node.querySelectorAll('option');
+      clonedOptions = clonedNode.querySelectorAll('option');
+      for (i = 0; i < options.length; i++) {
+        if (options[i].selected && !(clonedOptions[i].selected)) {
+          clonedOptions[i].selected = true;
+        } else if (!(options[i].selected) && clonedOptions[i].selected) {
+          clonedOptions[i].selected = false;
+        }
+      }      
       if (node.selected && !(clonedNode.selected)) {
         clonedNode.selected = true;
       } else if (!(node.selected) && clonedNode.selected) {
@@ -502,7 +511,6 @@
             throw new Error("surpassed diffcap:" + JSON.stringify(this.t1Orig) + " -> " + JSON.stringify(this.t2Orig));
           }
         }
-
         difflist = this.findFirstDiff(t1, t2, []);
         if (difflist) {
           if (!difflist.length) {
@@ -549,8 +557,8 @@
         byName = function (a, b) {
           return a.name > b.name;
         },
-        attr1 = slice.call(t1.attributes).sort(byName),
-        attr2 = slice.call(t2.attributes).sort(byName),
+        attr1 = t1.attributes ? slice.call(t1.attributes).sort(byName) : [],
+        attr2 = t2.attributes ? slice.call(t2.attributes).sort(byName) : [],
         find = function (attr, list) {
           for (var i = 0, last = list.length; i < last; i++) {
             if (list[i].name === attr.name)
@@ -559,8 +567,6 @@
           return -1;
         },
         diffs = [];
-      
-      
       if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
         k = {};
         k[ACTION] = MODIFY_VALUE;
@@ -600,9 +606,17 @@
           k[NEW_VALUE] = a2.value;
 
           diffs.push(new Diff(k));
-                   
+               //    console.log(diffs);
         }
       });
+      if (!t1.attributes && t1.data !== t2.data) {
+          k = {};
+          k[ACTION] = MODIFY_DATA;
+          k[ROUTE] = route;
+          k[OLD_VALUE] = t1.data;
+          k[NEW_VALUE] = t2.data;
+          diffs.push(new Diff(k));          
+      }
       if (diffs.length > 0) {
         return diffs;
       };
@@ -756,6 +770,10 @@
         if (!node || typeof node.value === 'undefined')
           return false;
         node.value = diff[NEW_VALUE];
+      } else if (diff[ACTION] === MODIFY_DATA) {
+        if (!node || typeof node.data === 'undefined')
+          return false;
+        node.data = diff[NEW_VALUE];
       } else if (diff[ACTION] === MODIFY_CHECKED) {
         if (!node || typeof node.checked === 'undefined')
           return false;
@@ -854,6 +872,9 @@
       } else if (diff[ACTION] === MODIFY_VALUE) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
+      } else if (diff[ACTION] === MODIFY_DATA) {
+        swap(diff, OLD_VALUE, NEW_VALUE);
+        this.applyDiff(tree, diff);        
       } else if (diff[ACTION] === MODIFY_CHECKED) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
