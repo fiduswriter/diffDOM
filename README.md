@@ -12,13 +12,18 @@ This project is licensed under the LGPL v. 3. For details see LICENSE.txt.
 
 ## Demo and tests
 
-Check http://johanneswilm.github.io/diffDOM for demo and tests.
+Check http://fiduswriter.github.io/diffDOM for demo and tests.
 
 ## Usage
 
 Include the diffDOM.js file in your HTML like this:
 ```
 <script src="diffDOM.js">
+```
+
+Or like this in node/browserify:
+```
+var diffDOM = require("diffDOM");
 ```
 
 Then create an instance of diffDOM within the javascript code:
