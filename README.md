@@ -54,7 +54,7 @@ Now elementA will be what it was like before applying the diff.
 
 #### Remote changes
 
-If you need to movediffs from one machine to anotherone, you will likely want to send the diffs through a websocket connection or as part of a form submit. In both cases you need to convert the diff to a json string.
+If you need to move diffs from one machine to another one, you will likely want to send the diffs through a websocket connection or as part of a form submit. In both cases you need to convert the diff to a json string.
 
 To convert a diff to a json string which you can send over the network, do:
 ```
@@ -80,7 +80,7 @@ if (result) {
 ```
 #### Advanced merging of text node changes
 
-diffDOM does not include merging for changes to text nodes. However, it includes hooks so that you can add more advanced handeling. Simple overwrite the textDiff function of the diffDOM instance. The functions TEXTDIFF and TEXTPATCH need to be defined in the code:
+diffDOM does not include merging for changes to text nodes. However, it includes hooks so that you can add more advanced handling. Simple overwrite the textDiff function of the diffDOM instance. The functions TEXTDIFF and TEXTPATCH need to be defined in the code:
 ```
 dd = new diffDOM();
 
@@ -99,7 +99,7 @@ dd.textDiff = function (node, currentValue, expectedValue, newValue) {
 
 #### Debugging
 
-For debugging you might want to set a max number of diff changes between two elements before diffDOM gives up. To allow for a maximum of 500 differences between elements when diffing, initiatilize diffDOM like this:
+For debugging you might want to set a max number of diff changes between two elements before diffDOM gives up. To allow for a maximum of 500 differences between elements when diffing, initialize diffDOM like this:
 ```
 dd = new diffDOM(true, 500);
 ```
