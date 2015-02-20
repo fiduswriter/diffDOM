@@ -63,7 +63,59 @@
     }
   };
 
-  var roughlyEqual = function roughlyEqual(e1, e2, preventRecursion) {
+  var elementDescriptors = function(el) {
+    var output = [];
+    if (el.nodeType == 1) {
+      output.push(el.tagName);
+      if (typeof(el.className) == 'string') {
+        output.push(el.tagName + '.' + el.className.replace(/ /g, '.'));
+      }
+      if (el.id) {
+        output.push(el.tagName + '#' + el.id);
+      }
+    }
+    return output;
+  }
+
+  var findUniqueDescriptors = function(li) {
+    var uniqueDescriptors = {};
+    var duplicateDescriptors = {};
+
+    for (var i = 0; i < li.length; i++) {
+      var node = li[i];
+      var descriptors = elementDescriptors(node);
+      for (var j = 0; j < descriptors.length; j++) {
+        var descriptor = descriptors[j];
+        var inUnique = descriptor in uniqueDescriptors;
+        var inDupes = descriptor in duplicateDescriptors;
+        if (!inUnique && !inDupes) {
+          uniqueDescriptors[descriptor] = true;
+        } else if (inUnique) {
+          delete uniqueDescriptors[descriptor];
+          duplicateDescriptors[descriptor] = true;
+        }
+      }
+    }
+
+    return uniqueDescriptors;
+  }
+
+  var uniqueInBoth = function(l1, l2) {
+    var l1Unique = findUniqueDescriptors(l1);
+    var l2Unique = findUniqueDescriptors(l2);
+    var inBoth = {};
+
+    var key;
+    for (key in l1Unique) {
+      if (l2Unique[key]) {
+        inBoth[key] = true;
+      }
+    }
+
+    return inBoth;
+  }
+
+  var roughlyEqual = function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
     if (!e1 || !e2) return false;
     if (e1.nodeType !== e2.nodeType) return false;
     if (e1.nodeType === 3) {
@@ -74,15 +126,28 @@
       return preventRecursion ? true : e1.data === e2.data;
     }
     if (e1.nodeName !== e2.nodeName) return false;
+    if (e1.tagName === e2.tagName) {
+      if (e1.tagName in uniqueDescriptors) return true
+      if (e1.id && e1.id === e2.id) {
+        var idDescriptor = e1.tagName + '#' + e1.id;
+        if (idDescriptor in uniqueDescriptors) return true;
+      }
+      if (e1.className && e1.className === e2.className) {
+        var classDescriptor = e1.tagName + '.' + e1.className.replace(/ /g, '.');
+        if (classDescriptor in uniqueDescriptors) return true;
+      }
+      if (sameSiblings) return true;
+    }
     if (e1.childNodes.length !== e2.childNodes.length) return false;
     var thesame = true;
+    var childUniqueDescriptors = uniqueInBoth(e1.childNodes, e2.childNodes);
     for (var i = e1.childNodes.length - 1; i >= 0; i--) {
       if (preventRecursion) {
         thesame = thesame && (e1.childNodes[i].nodeName === e2.childNodes[i].nodeName);
       } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
         //       was not set, we must explicitly force it to true for child iterations.
-        thesame = thesame && roughlyEqual(e1.childNodes[i], e2.childNodes[i], true);
+        thesame = thesame && roughlyEqual(e1.childNodes[i], e2.childNodes[i], childUniqueDescriptors, true, true);
       }
     }
     return thesame;
@@ -207,14 +272,41 @@
       len2 = c2.length;
     // set up the matching table
     var matches = [],
-      a, i, j;
+      a, i, j, k, l;
     for (a = 0; a < len1 + 1; a++) {
       matches[a] = [];
     }
+
+    var uniqueDescriptors = uniqueInBoth(c1, c2);
+
+    // If all of the elements are the same tag, id and class, then we can
+    // consider them roughly the same even if they have a different number of
+    // children. This will reduce removing and re-adding similar elements.
+    var subsetsSame = len1 == len2;
+    if (subsetsSame) {
+      for (k = 0; k < len1; k++) {
+        var c1Desc = elementDescriptors(c1[k]);
+        var c2Desc = elementDescriptors(c2[k]);
+        if (c1Desc.length != c2Desc.length) {
+          subsetsSame = false;
+          break;
+        }
+        for (l = 0; l < c1Desc.length; l++) {
+          if (c1Desc[l] != c2Desc[l]) {
+            subsetsSame = false;
+            break;
+          }
+        }
+        if (!subsetsSame) {
+          break;
+        }
+      }
+    }
+
     // fill the matches with distance values
     for (i = 0; i < len1; i++) {
       for (j = 0; j < len2; j++) {
-        if (!marked1[i] && !marked2[j] && roughlyEqual(c1[i], c2[j])) {
+        if (!marked1[i] && !marked2[j] && roughlyEqual(c1[i], c2[j], uniqueDescriptors, subsetsSame)) {
           matches[i + 1][j + 1] = (matches[i][j] ? matches[i][j] + 1 : 1);
           if (matches[i + 1][j + 1] > lcsSize) {
             lcsSize = matches[i + 1][j + 1];
