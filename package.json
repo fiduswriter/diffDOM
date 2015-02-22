@@ -1,5 +1,5 @@
 {
-  "name": "diffDOM",
+  "name": "diff-dom",
   "version": "1.0.0",
   "description": "A diff for DOM elements, as client-side JavaScript code. Gets all modifications, insertions and removals between two DOM fragments.",
   "main": "diffDOM.js",
@@ -17,5 +17,10 @@
   "license": "LGPL",
   "bugs": {
     "url": "https://github.com/fiduswriter/diffDOM/issues"
-  }
+  },
+  "homepage": "https://github.com/fiduswriter/diffDOM",
+  "keywords": [
+    "diff",
+    "dom"
+  ]
 }
