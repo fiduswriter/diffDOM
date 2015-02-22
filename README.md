@@ -23,7 +23,7 @@ Include the diffDOM.js file in your HTML like this:
 
 Or like this in node/browserify:
 ```
-var diffDOM = require("diffDOM");
+var diffDOM = require("diff-dom");
 ```
 
 Then create an instance of diffDOM within the javascript code:
