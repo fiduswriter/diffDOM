@@ -88,8 +88,6 @@
     liArray.forEach(function (node) {
       descriptors = elementDescriptors(node);
       descriptors.forEach(function (descriptor) {
-      //for (j = 0; j < descriptors.length; j++) {
-        //descriptor = descriptors[j];
         inUnique = descriptor in uniqueDescriptors;
         inDupes = descriptor in duplicateDescriptors;
         if (!inUnique && !inDupes) {
@@ -99,7 +97,7 @@
           duplicateDescriptors[descriptor] = true;
         }
       });
-      //}
+
     });
 
     return uniqueDescriptors;
