@@ -1,3 +1,4 @@
+"use strict";
 (function () {
 
   var diffcount;
@@ -39,7 +40,8 @@
     Object.keys(options).forEach(function (option) {
       diff[option] = options[option];
     });
-  }
+  };
+
   Diff.prototype = {
     toString: function () {
       return JSON.stringify(this);
@@ -47,19 +49,19 @@
   };
 
   var SubsetMapping = function SubsetMapping(a, b) {
-    this["old"] = a;
-    this["new"] = b;
+    this.old = a;
+    this.new = b;
   };
 
   SubsetMapping.prototype = {
     contains: function contains(subset) {
       if (subset.length < this.length) {
-        return subset["new"] >= this["new"] && subset["new"] < this["new"] + this.length;
+        return subset.new >= this.new && subset.new < this.new + this.length;
       }
       return false;
     },
     toString: function toString() {
-      return this.length + " element subset, first mapping: old " + this["old"] + " → new " + this["new"];
+      return this.length + " element subset, first mapping: old " + this.old + " → new " + this.new;
     }
   };
 
@@ -75,82 +77,109 @@
       }
     }
     return output;
-  }
+  };
 
   var findUniqueDescriptors = function(li) {
-    var uniqueDescriptors = {};
-    var duplicateDescriptors = {};
+    var uniqueDescriptors = {},
+      duplicateDescriptors = {},
+      liArray = Array.prototype.slice.call(li),
+      node, descriptors, descriptor, inUnique, inDupes;
 
-    for (var i = 0; i < li.length; i++) {
-      var node = li[i];
-      var descriptors = elementDescriptors(node);
-      for (var j = 0; j < descriptors.length; j++) {
-        var descriptor = descriptors[j];
-        var inUnique = descriptor in uniqueDescriptors;
-        var inDupes = descriptor in duplicateDescriptors;
+    liArray.forEach(function (node) {
+      descriptors = elementDescriptors(node);
+      descriptors.forEach(function (descriptor) {
+      //for (j = 0; j < descriptors.length; j++) {
+        //descriptor = descriptors[j];
+        inUnique = descriptor in uniqueDescriptors;
+        inDupes = descriptor in duplicateDescriptors;
         if (!inUnique && !inDupes) {
           uniqueDescriptors[descriptor] = true;
         } else if (inUnique) {
           delete uniqueDescriptors[descriptor];
           duplicateDescriptors[descriptor] = true;
         }
-      }
-    }
+      });
+      //}
+    });
 
     return uniqueDescriptors;
-  }
+  };
 
   var uniqueInBoth = function(l1, l2) {
-    var l1Unique = findUniqueDescriptors(l1);
-    var l2Unique = findUniqueDescriptors(l2);
-    var inBoth = {};
+    var l1Unique = findUniqueDescriptors(l1),
+      l2Unique = findUniqueDescriptors(l2),
+      inBoth = {},
+      key;
 
-    var key;
-    for (key in l1Unique) {
+    Object.keys(l1Unique).forEach(function() {
       if (l2Unique[key]) {
         inBoth[key] = true;
       }
-    }
+    });
 
     return inBoth;
-  }
+  };
 
   var roughlyEqual = function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
-    if (!e1 || !e2) return false;
-    if (e1.nodeType !== e2.nodeType) return false;
+    var childUniqueDescriptors, nodeList1, nodeList2;
+
+    if (!e1 || !e2) {
+      return false;
+    }
+    if (e1.nodeType !== e2.nodeType) {
+      return false;
+    }
     if (e1.nodeType === 3) {
-      if (e2.nodeType !== 3) return false;
+      if (e2.nodeType !== 3) {
+        return false;
+      }
       // Note that we initially don't care what the text content of a node is,
       // the mere fact that it's the same tag and "has text" means it's roughly
       // equal, and then we can find out the true text difference later.
       return preventRecursion ? true : e1.data === e2.data;
     }
-    if (e1.nodeName !== e2.nodeName) return false;
+    if (e1.nodeName !== e2.nodeName) {
+      return false;
+    }
     if (e1.tagName === e2.tagName) {
-      if (e1.tagName in uniqueDescriptors) return true
+      if (e1.tagName in uniqueDescriptors) {
+        return true;
+      }
       if (e1.id && e1.id === e2.id) {
         var idDescriptor = e1.tagName + '#' + e1.id;
-        if (idDescriptor in uniqueDescriptors) return true;
+        if (idDescriptor in uniqueDescriptors) {
+          return true;
+        }
       }
       if (e1.className && e1.className === e2.className) {
         var classDescriptor = e1.tagName + '.' + e1.className.replace(/ /g, '.');
-        if (classDescriptor in uniqueDescriptors) return true;
+        if (classDescriptor in uniqueDescriptors) {
+          return true;
+        }
       }
-      if (sameSiblings) return true;
-    }
-    if (e1.childNodes.length !== e2.childNodes.length) return false;
-    var thesame = true;
-    var childUniqueDescriptors = uniqueInBoth(e1.childNodes, e2.childNodes);
-    for (var i = e1.childNodes.length - 1; i >= 0; i--) {
-      if (preventRecursion) {
-        thesame = thesame && (e1.childNodes[i].nodeName === e2.childNodes[i].nodeName);
-      } else {
-        // note: we only allow one level of recursion at any depth. If 'preventRecursion'
-        //       was not set, we must explicitly force it to true for child iterations.
-        thesame = thesame && roughlyEqual(e1.childNodes[i], e2.childNodes[i], childUniqueDescriptors, true, true);
+      if (sameSiblings) {
+        return true;
       }
     }
-    return thesame;
+    if (e1.childNodes.length !== e2.childNodes.length) {
+      return false;
+    }
+
+    nodeList1 = Array.prototype.slice.call(e1.childNodes).reverse();
+    nodeList2 = Array.prototype.slice.call(e2.childNodes).reverse();
+
+    if (preventRecursion) {
+      return nodeList1.every(function(element, index) {
+        return element.nodeName === nodeList2[index].nodeName;
+      });
+    } else {
+      // note: we only allow one level of recursion at any depth. If 'preventRecursion'
+      // was not set, we must explicitly force it to true for child iterations.
+      childUniqueDescriptors = uniqueInBoth(e1.childNodes, e2.childNodes);
+      return nodeList1.every(function(element, index) {
+        return roughlyEqual(element, nodeList2[index], childUniqueDescriptors, true, true);
+      });
+    }
   };
 
 
@@ -158,29 +187,30 @@
     // Clone a node with contents and add values manually,
     // to avoid https://bugzilla.mozilla.org/show_bug.cgi?id=230307
     var clonedNode = node.cloneNode(true),
-      textareas, clonedTextareas, options, clonedOptions, i;
+      textareas, clonedTextareas, options, clonedOptions;
 
     if (node.nodeType != 8 && node.nodeType != 3) {
 
-      textareas = node.querySelectorAll('textarea');
+      textareas = Array.prototype.slice.call(node.querySelectorAll('textarea'));
       clonedTextareas = clonedNode.querySelectorAll('textarea');
-      for (i = 0; i < textareas.length; i++) {
-        if (clonedTextareas[i].value !== textareas[i].value) {
-          clonedTextareas[i].value = textareas[i].value;
+      textareas.forEach(function(textarea, index) {
+        if (clonedTextareas[index].value !== textarea.value) {
+          clonedTextareas[index].value = textarea.value;
         }
-      }
+      });
       if (node.value && (node.value !== clonedNode.value)) {
         clonedNode.value = node.value;
       }
-      options = node.querySelectorAll('option');
+      options = Array.prototype.slice.call(node.querySelectorAll('option'));
       clonedOptions = clonedNode.querySelectorAll('option');
-      for (i = 0; i < options.length; i++) {
-        if (options[i].selected && !(clonedOptions[i].selected)) {
-          clonedOptions[i].selected = true;
-        } else if (!(options[i].selected) && clonedOptions[i].selected) {
-          clonedOptions[i].selected = false;
+      options.forEach(function(option, index) {
+        if (option.selected && !(clonedOptions[index].selected)) {
+          clonedOptions[index].selected = true;
+        } else if (!(option.selected) && clonedOptions[index].selected) {
+          clonedOptions[index].selected = false;
         }
-      }      
+      });
+
       if (node.selected && !(clonedNode.selected)) {
         clonedNode.selected = true;
       } else if (!(node.selected) && clonedNode.selected) {
@@ -191,7 +221,7 @@
   };
 
   var nodeToObj = function (node) {
-    var objNode = {}, i;
+    var objNode = {};
 
     if (node.nodeType === 3) {
       objNode[TEXT] = node.data;
@@ -201,15 +231,19 @@
       objNode[NODE_NAME] = node.nodeName;
       if (node.attributes && node.attributes.length > 0) {
         objNode[ATTRIBUTES] = [];
-        for (i = 0; i < node.attributes.length; i++) {
-          objNode[ATTRIBUTES].push([node.attributes[i].name, node.attributes[i].value]);
-        }
+        Array.prototype.slice.call(node.attributes).forEach(
+          function(attribute) {
+            objNode[ATTRIBUTES].push([attribute.name, attribute.value]);
+          }
+        );
       }
       if (node.childNodes && node.childNodes.length > 0) {
         objNode[CHILD_NODES] = [];
-        for (i = 0; i < node.childNodes.length; i++) {
-          objNode[CHILD_NODES].push(nodeToObj(node.childNodes[i]));
-        }
+        Array.prototype.slice.call(node.childNodes).forEach(
+          function (childNode) {
+            objNode[CHILD_NODES].push(nodeToObj(childNode));
+          }
+        );
       }
       if (node.value) {
         objNode[VALUE] = node.value;
@@ -225,7 +259,7 @@
   };
 
   var objToNode = function (objNode, insideSvg) {
-    var node, i;
+    var node;
     if (objNode.hasOwnProperty(TEXT)) {
       node = document.createTextNode(objNode[TEXT]);
     } else if (objNode.hasOwnProperty(COMMENT)) {
@@ -238,14 +272,14 @@
         node = document.createElement(objNode[NODE_NAME]);
       }
       if (objNode[ATTRIBUTES]) {
-        for (i = 0; i < objNode[ATTRIBUTES].length; i++) {
-          node.setAttribute(objNode[ATTRIBUTES][i][0], objNode[ATTRIBUTES][i][1]);
-        }
+        objNode[ATTRIBUTES].forEach(function (attribute) {
+          node.setAttribute(attribute[0], attribute[1]);
+        });
       }
       if (objNode[CHILD_NODES]) {
-        for (i = 0; i < objNode[CHILD_NODES].length; i++) {
-          node.appendChild(objToNode(objNode[CHILD_NODES][i], insideSvg));
-        }
+        objNode[CHILD_NODES].forEach(function (childNode) {
+          node.appendChild(objToNode(childNode, insideSvg));
+        });
       }
       if (objNode[VALUE]) {
         node.value = objNode[VALUE];
@@ -268,60 +302,57 @@
   var findCommonSubsets = function (c1, c2, marked1, marked2) {
     var lcsSize = 0,
       index = [],
-      len1 = c1.length,
-      len2 = c2.length;
-    // set up the matching table
-    var matches = [],
-      a, i, j, k, l;
-    for (a = 0; a < len1 + 1; a++) {
-      matches[a] = [];
-    }
-
-    var uniqueDescriptors = uniqueInBoth(c1, c2);
-
+      c1Array = Array.prototype.slice.call(c1), c2Array = Array.prototype.slice.call(c2),
+      matches = Array.apply(null, Array(c1.length+1)).map(function () {return [];}), // set up the matching table
+      uniqueDescriptors = uniqueInBoth(c1, c2),
     // If all of the elements are the same tag, id and class, then we can
     // consider them roughly the same even if they have a different number of
     // children. This will reduce removing and re-adding similar elements.
-    var subsetsSame = len1 == len2;
+      subsetsSame = c1.length == c2.length,
+      origin, ret;
+
     if (subsetsSame) {
-      for (k = 0; k < len1; k++) {
-        var c1Desc = elementDescriptors(c1[k]);
-        var c2Desc = elementDescriptors(c2[k]);
+
+      c1Array.some(function(element, i) {
+        var c1Desc = elementDescriptors(element),
+          c2Desc = elementDescriptors(c2[i]);
         if (c1Desc.length != c2Desc.length) {
           subsetsSame = false;
-          break;
+          return true;
         }
-        for (l = 0; l < c1Desc.length; l++) {
-          if (c1Desc[l] != c2Desc[l]) {
+        c1Desc.some(function(description, i) {
+          if (description != c2Desc[i]) {
             subsetsSame = false;
-            break;
+            return true;
           }
-        }
+        });
         if (!subsetsSame) {
-          break;
+          return true;
         }
-      }
+
+      });
     }
 
     // fill the matches with distance values
-    for (i = 0; i < len1; i++) {
-      for (j = 0; j < len2; j++) {
-        if (!marked1[i] && !marked2[j] && roughlyEqual(c1[i], c2[j], uniqueDescriptors, subsetsSame)) {
-          matches[i + 1][j + 1] = (matches[i][j] ? matches[i][j] + 1 : 1);
-          if (matches[i + 1][j + 1] > lcsSize) {
-            lcsSize = matches[i + 1][j + 1];
-            index = [i + 1, j + 1];
+    c1Array.forEach(function(c1Element, c1Index) {
+      c2Array.forEach(function(c2Element, c2Index) {
+        if (!marked1[c1Index] && !marked2[c2Index] && roughlyEqual(c1Element, c2Element, uniqueDescriptors, subsetsSame)) {
+          matches[c1Index + 1][c2Index + 1] = (matches[c1Index][c2Index] ? matches[c1Index][c2Index] + 1 : 1);
+          if (matches[c1Index + 1][c2Index + 1] > lcsSize) {
+            lcsSize = matches[c1Index + 1][c2Index + 1];
+            index = [c1Index + 1, c2Index + 1];
           }
         } else {
-          matches[i + 1][j + 1] = 0;
+          matches[c1Index + 1][c2Index + 1] = 0;
         }
-      }
-    }
+      });
+    });
+
     if (lcsSize === 0) {
       return false;
     }
-    var origin = [index[0] - lcsSize, index[1] - lcsSize];
-    var ret = new SubsetMapping(origin[0], origin[1]);
+    origin = [index[0] - lcsSize, index[1] - lcsSize];
+    ret = new SubsetMapping(origin[0], origin[1]);
     ret.length = lcsSize;
     return ret;
   };
@@ -330,21 +361,7 @@
    * This should really be a predefined function in Array...
    */
   var makeArray = function (n, v) {
-    var deepcopy = function (v) {
-      v.slice();
-      for (var i = 0, last = v.length; i < last; i++) {
-        if (v[i] instanceof Array) {
-          v[i] = deepcopy(v[i]);
-        }
-      }
-    };
-    if (v instanceof Array) {
-      v = deepcopy(v);
-    }
-    var set = function () {
-      return v;
-    };
-    return (new Array(n)).join('.').split('.').map(set);
+    return Array.apply(null, Array(n)).map(function () {return v;});
   };
 
   /**
@@ -357,7 +374,7 @@
     var set = function (v) {
       return function () {
         return v;
-      }
+      };
     },
       gaps1 = makeArray(t1.childNodes.length, true),
       gaps2 = makeArray(t2.childNodes.length, true),
@@ -366,10 +383,10 @@
     // give elements from the same subset the same group number
     stable.forEach(function (subset) {
       var i, end;
-      for (i = subset["old"], end = i + subset.length; i < end; i++) {
+      for (i = subset.old, end = i + subset.length; i < end; i++) {
         gaps1[i] = group;
       }
-      for (i = subset["new"], end = i + subset.length; i < end; i++) {
+      for (i = subset.new, end = i + subset.length; i < end; i++) {
         gaps2[i] = group;
       }
       group++;
@@ -393,18 +410,18 @@
       marked1 = makeArray(oldChildren.length, false),
       marked2 = makeArray(newChildren.length, false),
       subsets = [],
-      subset = true,
-      i;
+      subset = true;
+
     while (subset) {
       subset = findCommonSubsets(oldChildren, newChildren, marked1, marked2);
       if (subset) {
         subsets.push(subset);
-        for (i = 0; i < subset.length; i++) {
+
+        Array.apply(null, Array(subset.length)).map(function (x, i) {return i;}).forEach(function(i){
           marked1[subset.old + i] = true;
-        }
-        for (i = 0; i < subset.length; i++) {
           marked2[subset.new + i] = true;
-        }
+        });
+
       }
     }
     return subsets;
@@ -478,7 +495,7 @@
       }
       if (gaps1[i] != gaps2[i]) {
         group = subtrees[gaps1[i]];
-        var toGroup = Math.min(group["new"], (t1.childNodes.length - group.length));
+        var toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
         if (toGroup != i) {
           //Check wehther destination nodes are different than originating ones.
           var destinationDifferent = false;
@@ -515,6 +532,7 @@
   var DiffTracker = function () {
     this.list = [];
   };
+
   DiffTracker.prototype = {
     list: false,
     add: function (difflist) {
@@ -527,9 +545,6 @@
       this.list.forEach(fn);
     }
   };
-
-
-
 
   var diffDOM = function (debug, diffcap) {
     if (typeof debug === 'undefined') {
@@ -570,8 +585,6 @@
     }
 
 
-
-
     if (typeof diffcap === 'undefined')
       diffcap = 10;
     this.debug = debug;
@@ -594,7 +607,7 @@
       return this.findDiffs(t1, t2);
     },
     findDiffs: function (t1, t2) {
-      var diff;
+      var diff, difflist;
       do {
         if (this.debug) {
           diffcount++;
@@ -635,7 +648,7 @@
     },
     findOuterDiff: function (t1, t2, route) {
       var k;
-      
+
       if (t1.nodeName != t2.nodeName) {
         k = {};
         k[ACTION] = REPLACE_ELEMENT;
@@ -644,7 +657,7 @@
         k[ROUTE] = route;
         return [new Diff(k)];
       }
-      
+
       var slice = Array.prototype.slice,
         byName = function (a, b) {
           return a.name > b.name;
@@ -674,7 +687,7 @@
         k[NEW_VALUE] = t2.checked;
         k[ROUTE] = route;
         diffs.push(new Diff(k));
-      }  
+      }
 
       attr1.forEach(function (attr) {
         var pos = find(attr, attr2),
@@ -707,7 +720,7 @@
           k[ROUTE] = route;
           k[OLD_VALUE] = t1.data;
           k[NEW_VALUE] = t2.data;
-          diffs.push(new Diff(k));          
+          diffs.push(new Diff(k));
       }
       if (diffs.length > 0) {
         return diffs;
@@ -720,9 +733,9 @@
         k[NAME] = attr.name;
         k[VALUE] = attr.value;
         diffs.push(new Diff(k));
-        
+
       });
-      
+
       if ((t1.selected || t2.selected) && t1.selected !== t2.selected) {
         if (diffs.length > 0) {
             return diffs;
@@ -733,16 +746,17 @@
         k[NEW_VALUE] = t2.selected;
         k[ROUTE] = route;
         diffs.push(new Diff(k));
-      }      
-      
+      }
+
       return diffs;
     },
     findInnerDiff: function (t1, t2, route) {
       var subtrees = markSubTrees(t1, t2),
         mappings = subtrees.length,
+        diff, difflist, i, last, e1, e2,
         k;
       // no correspondence whatsoever
-      // if t1 or t2 contain differences that are not text nodes, return a diff. 
+      // if t1 or t2 contain differences that are not text nodes, return a diff.
 
       // two text nodes with differences
       if (mappings === 0) {
@@ -757,7 +771,6 @@
       }
       // possibly identical content: verify
       if (mappings < 2) {
-        var diff, difflist, i, last, e1, e2;
         for (i = 0, last = Math.max(t1.childNodes.length, t2.childNodes.length); i < last; i++) {
           e1 = t1.childNodes[i];
           e2 = t2.childNodes[i];
@@ -813,8 +826,9 @@
 
     // ===== Apply a diff =====
 
-    apply: function (tree, diffs) {
-      var dobj = this;
+    apply: function (tree, diffs_) {
+      var dobj = this,
+        diffs = diffs_;
       if (typeof diffs.length === "undefined") {
         diffs = [diffs];
       }
@@ -873,7 +887,7 @@
       } else if (diff[ACTION] === MODIFY_SELECTED) {
         if (!node || typeof node.selected === 'undefined')
           return false;
-        node.selected = diff[NEW_VALUE];     
+        node.selected = diff[NEW_VALUE];
       } else if (diff[ACTION] === MODIFY_TEXT_ELEMENT) {
         if (!node || node.nodeType != 3)
           return false;
@@ -966,7 +980,7 @@
         this.applyDiff(tree, diff);
       } else if (diff[ACTION] === MODIFY_DATA) {
         swap(diff, OLD_VALUE, NEW_VALUE);
-        this.applyDiff(tree, diff);        
+        this.applyDiff(tree, diff);
       } else if (diff[ACTION] === MODIFY_CHECKED) {
         swap(diff, OLD_VALUE, NEW_VALUE);
         this.applyDiff(tree, diff);
