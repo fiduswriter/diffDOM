@@ -848,7 +848,7 @@
               k[ROUTE] = route;
               diffs.push(new Diff(k));
           }
-          console.log(diffs);
+
           return diffs;
         },
 
