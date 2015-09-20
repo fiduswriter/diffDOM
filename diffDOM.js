@@ -429,99 +429,6 @@
         return subsets;
     };
 
-    var findFirstInnerDiff = function(t1, t2, subtrees, route) {
-        if (subtrees.length === 0) {
-            return false;
-        }
-
-        var gapInformation = getGapInformation(t1, t2, subtrees),
-            gaps1 = gapInformation.gaps1,
-            gl1 = gaps1.length,
-            gaps2 = gapInformation.gaps2,
-            gl2 = gaps1.length,
-            destinationDifferent, toGroup,
-            i, j, k;
-
-        // Check for correct submap sequencing (irrespective of gaps) first:
-        var group, node, similarNode, testNode, shortest = gl1 < gl2 ? gaps1 : gaps2;
-
-        // group relocation
-        for (i = 0; i < shortest.length; i += 1) {
-            if (gaps1[i] === true) {
-                node = t1.childNodes[i];
-                if (node.nodeType === 3) {
-                    if (t2.childNodes[i].nodeType === 3 && node.data !== t2.childNodes[i].data) {
-                        testNode = node;
-                        while (testNode.nextSibling && testNode.nextSibling.nodeType === 3) {
-                            testNode = testNode.nextSibling;
-                            if (t2.childNodes[i].data === testNode.data) {
-                                similarNode = true;
-                                break;
-                            }
-                        }
-                        if (!similarNode) {
-                            k = {};
-                            k[ACTION] = MODIFY_TEXT_ELEMENT;
-                            k[ROUTE] = route.concat(i);
-                            k[OLD_VALUE] = node.data;
-                            k[NEW_VALUE] = t2.childNodes[i].data;
-                            return new Diff(k);
-                        }
-                    }
-                    k = {};
-                    k[ACTION] = REMOVE_TEXT_ELEMENT;
-                    k[ROUTE] = route.concat(i);
-                    k[VALUE] = node.data;
-                    return new Diff(k);
-                }
-                k = {};
-                k[ACTION] = REMOVE_ELEMENT;
-                k[ROUTE] = route.concat(i);
-                k[ELEMENT] = nodeToObj(node);
-                return new Diff(k);
-            }
-            if (gaps2[i] === true) {
-                node = t2.childNodes[i];
-                if (node.nodeType === 3) {
-                    k = {};
-                    k[ACTION] = ADD_TEXT_ELEMENT;
-                    k[ROUTE] = route.concat(i);
-                    k[VALUE] = node.data;
-                    return new Diff(k);
-                }
-                k = {};
-                k[ACTION] = ADD_ELEMENT;
-                k[ROUTE] = route.concat(i);
-                k[ELEMENT] = nodeToObj(node);
-                return new Diff(k);
-            }
-            if (gaps1[i] !== gaps2[i]) {
-                group = subtrees[gaps1[i]];
-                toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
-                if (toGroup !== i) {
-                    // Check whether destination nodes are different than originating ones.
-                    destinationDifferent = false;
-                    for (j = 0; j < group.length; j += 1) {
-                        if (!t1.childNodes[toGroup + j].isEqualNode(t1.childNodes[i + j])) {
-                            destinationDifferent = true;
-                        }
-
-                    }
-                    if (destinationDifferent) {
-                        k = {};
-                        k[ACTION] = RELOCATE_GROUP;
-                        k[GROUP] = group;
-                        k[FROM] = i;
-                        k[TO] = toGroup;
-                        k[ROUTE] = route;
-                        return new Diff(k);
-                    }
-                }
-            }
-        }
-        return false;
-    };
-
 
     function swap(obj, p1, p2) {
         (function(_) {
@@ -537,9 +444,9 @@
 
     DiffTracker.prototype = {
         list: false,
-        add: function(diffList) {
+        add: function(diffs) {
             var list = this.list;
-            diffList.forEach(function(diff) {
+            diffs.forEach(function(diff) {
                 list.push(diff);
             });
         },
@@ -612,7 +519,7 @@
             return this.findDiffs(t1, t2);
         },
         findDiffs: function(t1, t2) {
-            var diffList;
+            var diffs;
             do {
                 if (this.debug) {
                     diffcount += 1;
@@ -621,41 +528,33 @@
                         throw new Error("surpassed diffcap:" + JSON.stringify(this.t1Orig) + " -> " + JSON.stringify(this.t2Orig));
                     }
                 }
-                diffList = this.findFirstDiff(t1, t2, []);
-                if (diffList) {
-                    if (!diffList.length) {
-                        diffList = [diffList];
-                    }
-                    this.tracker.add(diffList);
-                    this.apply(t1, diffList);
+                diffs = this.findFirstDiff(t1, t2, []);
+                if (diffs.length > 0) {
+                    this.tracker.add(diffs);
+                    this.apply(t1, diffs);
                 }
-            } while (diffList);
+            } while (diffs);
             return this.tracker.list;
         },
         findFirstDiff: function(t1, t2, route) {
-            var diffList;
+            var diffs;
 
             // outer differences?
-            diffList = this.findOuterDiff(t1, t2, route);
-            if (diffList.length > 0) {
-                return diffList;
+            diffs = this.findOuterDiff(t1, t2, route);
+            if (diffs.length > 0) {
+                return diffs;
             }
             // inner differences?
-            var diff = this.findInnerDiff(t1, t2, route);
-            if (diff) {
-                if (typeof diff.length === "undefined") {
-                    diff = [diff];
-                }
-                if (diff.length > 0) {
-                    return diff;
-                }
+            diffs = this.findInnerDiff(t1, t2, route);
+            if (diffs.length > 0) {
+                return diffs;
             }
             if (this.valueDiffing) {
               // value differences?
-              diffList = this.findValueDiff(t1, t2, route);
+              diffs = this.findValueDiff(t1, t2, route);
 
-              if (diffList.length > 0) {
-                  return diffList;
+              if (diffs.length > 0) {
+                  return diffs;
               }
             }
 
@@ -742,8 +641,9 @@
         findInnerDiff: function(t1, t2, route) {
             var subtrees = markSubTrees(t1, t2),
                 mappings = subtrees.length,
-                diff, diffList, i, last, e1, e2,
+                diff, diffs, i, last, e1, e2,
                 k;
+
             // no correspondence whatsoever
             // if t1 or t2 contain differences that are not text nodes, return a diff.
 
@@ -755,7 +655,8 @@
                     k[OLD_VALUE] = t1.data;
                     k[NEW_VALUE] = t2.data;
                     k[ROUTE] = route;
-                    return new Diff(k);
+                    diff = new Diff(k);
+                    return [diff];
                 }
             }
             // possibly identical content: verify
@@ -772,13 +673,15 @@
                             k[ACTION] = REMOVE_TEXT_ELEMENT;
                             k[ROUTE] = route.concat(i);
                             k[VALUE] = e1.data;
-                            return new Diff(k);
+                            diff = new Diff(k);
+                            return [diff];
                         }
                         k = {};
                         k[ACTION] = REMOVE_ELEMENT;
                         k[ROUTE] = route.concat(i);
                         k[ELEMENT] = nodeToObj(e1);
-                        return new Diff(k);
+                        diff = new Diff(k);
+                        return [diff];
                     }
                     if (e2 && !e1) {
                         if (e2.nodeType === 3) {
@@ -786,28 +689,31 @@
                             k[ACTION] = ADD_TEXT_ELEMENT;
                             k[ROUTE] = route.concat(i);
                             k[VALUE] = e2.data;
-                            return new Diff(k);
+                            diff = new Diff(k);
+                            return [diff];
                         }
                         k = {};
                         k[ACTION] = ADD_ELEMENT;
                         k[ROUTE] = route.concat(i);
                         k[ELEMENT] = nodeToObj(e2);
-                        return new Diff(k);
+                        diff = new Diff(k);
+                        return [diff];
                     }
                     if (e1.nodeType !== 3 || e2.nodeType !== 3) {
-                        diffList = this.findOuterDiff(e1, e2, route.concat(i));
-                        if (diffList.length > 0) {
-                            return diffList;
+                        diffs = this.findOuterDiff(e1, e2, route.concat(i));
+                        if (diffs.length > 0) {
+                            return diffs;
                         }
                     }
-                    diff = this.findInnerDiff(e1, e2, route.concat(i));
-                    if (diff) {
-                        return diff;
+                    diffs = this.findInnerDiff(e1, e2, route.concat(i));
+
+                    if (diffs.length > 0) {
+                        return diffs;
                     }
                     if (this.valueDiffing) {
-                        diffList = this.findValueDiff(e1,e2, route.concat(i));
-                        if (diffList.length > 0) {
-                            return diffList;
+                        diffs = this.findValueDiff(e1,e2, route.concat(i));
+                        if (diffs.length > 0) {
+                            return diffs;
                         }
                     }
                 }
@@ -852,17 +758,111 @@
           return diffs;
         },
 
-        // imported
-        findFirstInnerDiff: findFirstInnerDiff,
+
+        findFirstInnerDiff: function(t1, t2, subtrees, route) {
+            if (subtrees.length === 0) {
+                return [];
+            }
+
+            var gapInformation = getGapInformation(t1, t2, subtrees),
+                gaps1 = gapInformation.gaps1,
+                gl1 = gaps1.length,
+                gaps2 = gapInformation.gaps2,
+                gl2 = gaps1.length,
+                destinationDifferent, toGroup,
+                diff, i, j, k;
+
+            // Check for correct submap sequencing (irrespective of gaps) first:
+            var group, node, similarNode, testNode, shortest = gl1 < gl2 ? gaps1 : gaps2;
+
+            // group relocation
+            for (i = 0; i < shortest.length; i += 1) {
+                if (gaps1[i] === true) {
+                    node = t1.childNodes[i];
+                    if (node.nodeType === 3) {
+                        if (t2.childNodes[i].nodeType === 3 && node.data !== t2.childNodes[i].data) {
+                            testNode = node;
+                            while (testNode.nextSibling && testNode.nextSibling.nodeType === 3) {
+                                testNode = testNode.nextSibling;
+                                if (t2.childNodes[i].data === testNode.data) {
+                                    similarNode = true;
+                                    break;
+                                }
+                            }
+                            if (!similarNode) {
+                                k = {};
+                                k[ACTION] = MODIFY_TEXT_ELEMENT;
+                                k[ROUTE] = route.concat(i);
+                                k[OLD_VALUE] = node.data;
+                                k[NEW_VALUE] = t2.childNodes[i].data;
+                                diff = new Diff(k);
+                                return [diff];
+                            }
+                        }
+                        k = {};
+                        k[ACTION] = REMOVE_TEXT_ELEMENT;
+                        k[ROUTE] = route.concat(i);
+                        k[VALUE] = node.data;
+                        diff = new Diff(k);
+                        return [diff];
+                    }
+                    k = {};
+                    k[ACTION] = REMOVE_ELEMENT;
+                    k[ROUTE] = route.concat(i);
+                    k[ELEMENT] = nodeToObj(node);
+                    diff = new Diff(k);
+                    return [diff];
+                }
+                if (gaps2[i] === true) {
+                    node = t2.childNodes[i];
+                    if (node.nodeType === 3) {
+                        k = {};
+                        k[ACTION] = ADD_TEXT_ELEMENT;
+                        k[ROUTE] = route.concat(i);
+                        k[VALUE] = node.data;
+                        diff = new Diff(k);
+                        return [diff];
+                    }
+                    k = {};
+                    k[ACTION] = ADD_ELEMENT;
+                    k[ROUTE] = route.concat(i);
+                    k[ELEMENT] = nodeToObj(node);
+                    diff = new Diff(k);
+                    return [diff];
+                }
+                if (gaps1[i] !== gaps2[i]) {
+                    group = subtrees[gaps1[i]];
+                    toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
+                    if (toGroup !== i) {
+                        // Check whether destination nodes are different than originating ones.
+                        destinationDifferent = false;
+                        for (j = 0; j < group.length; j += 1) {
+                            if (!t1.childNodes[toGroup + j].isEqualNode(t1.childNodes[i + j])) {
+                                destinationDifferent = true;
+                            }
+
+                        }
+                        if (destinationDifferent) {
+                            k = {};
+                            k[ACTION] = RELOCATE_GROUP;
+                            k[GROUP] = group;
+                            k[FROM] = i;
+                            k[TO] = toGroup;
+                            k[ROUTE] = route;
+                            diff = new Diff(k);
+                            return [diff];
+                        }
+                    }
+                }
+            }
+            return [];
+        },
 
         // ===== Apply a diff =====
 
-        apply: function(tree, diffs_) {
-            var dobj = this,
-                diffs = diffs_;
-            if (typeof diffs.length === "undefined") {
-                diffs = [diffs];
-            }
+        apply: function(tree, diffs) {
+            var dobj = this;
+
             if (diffs.length === 0) {
                 return true;
             }
