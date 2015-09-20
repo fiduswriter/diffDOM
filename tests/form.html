@@ -111,7 +111,11 @@
       print("diff operations for " + elTexts[0] + " → " + elTexts[1]);
     }
 
-    var dd = new diffDOM(true, 700, true),
+    var dd = new diffDOM({
+        debug: true,
+        diffcap: 700,
+        valueDiffing: true
+      }),
       tl = new TraceLogger(dd), elements, first, second, third, fourth, theDiff;
 
     // Textarea

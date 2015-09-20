@@ -455,13 +455,34 @@
         }
     };
 
-    var diffDOM = function(debug, diffcap, valueDiffing) {
-        if (typeof valueDiffing === 'undefined') {
-            valueDiffing = true;
+    var diffDOM = function(options){
+
+        var defaults = {
+          debug:   false,
+          diffcap:  10,
+          valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
+          siblingTextNodes: true, // Whether to take into consideration sibling text nodes.
+          // diffing text elements can be overwritten for use with diff_match_patch and alike
+          // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
+          textDiff: function() {
+              arguments[0].data = arguments[3];
+              return;
+          }
+        }, i;
+
+        if (typeof options == "undefined") {
+          options = {};
         }
-        if (typeof debug === 'undefined') {
-            debug = false;
-        } else {
+
+        for (i in defaults) {
+            if (typeof options[i] == "undefined") {
+                this[i] = defaults[i];
+            } else {
+                this[i] = options[i];
+            }
+        }
+
+        if (this.debug) {
             ADD_ATTRIBUTE = "add attribute";
             MODIFY_ATTRIBUTE = "modify attribute";
             REMOVE_ATTRIBUTE = "remove attribute";
@@ -494,13 +515,6 @@
             SELECTED = "selected";
         }
 
-
-        if (typeof diffcap === 'undefined') {
-            diffcap = 10;
-        }
-        this.debug = debug;
-        this.diffcap = diffcap;
-        this.valueDiffing = valueDiffing;
     };
     diffDOM.prototype = {
 
@@ -563,6 +577,7 @@
             return false;
         },
         findOuterDiff: function(t1, t2, route) {
+
             var k, diffs = [];
 
             if (t1.nodeName !== t2.nodeName) {
@@ -639,6 +654,13 @@
             return diffs;
         },
         findInnerDiff: function(t1, t2, route) {
+
+            if (!this.siblingTextNodes && !this.valueDiffing) {
+                if (t1.innerHTML === t2.innerHTML) {
+                    return [];
+                }
+            }
+
             var subtrees = markSubTrees(t1, t2),
                 mappings = subtrees.length,
                 diff, diffs, i, last, e1, e2,
@@ -884,12 +906,6 @@
                 node = node.childNodes[c];
             }
             return node;
-        },
-        // diffing text elements can be overwritten for use with diff_match_patch and alike
-        // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
-        textDiff: function() {
-            arguments[0].data = arguments[3];
-            return;
         },
         applyDiff: function(tree, diff) {
             var node = this.getFromRoute(tree, diff[ROUTE]),

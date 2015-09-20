@@ -428,7 +428,7 @@
   </div>
   <div><span></span>hallo<span></span>
   </div>
-  
+
   <div><select><option></option><option>A</option></select></div>
   <div><select><option>A</option><option></option></select></div>
 
@@ -506,7 +506,10 @@
       document.body.lastChild.appendChild(par);
     }
 
-    var dd = new diffDOM(true, 500),
+    var dd = new diffDOM({
+      debug: true,
+      diffcap: 500
+    }),
       tl = new TraceLogger(dd),
       divNodeList, divs = [],
       diffs, t1, i;

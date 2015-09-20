@@ -121,7 +121,10 @@
       return cost;
     }
 
-    var dd = new diffDOM(true, 500),
+    var dd = new diffDOM({
+        debug: true,
+        diffcap: 500
+      }),
       tl = new TraceLogger(dd),
       divNodeList, divs = [],
       diffs, t1, i;
