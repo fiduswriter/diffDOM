@@ -537,9 +537,9 @@
 
     DiffTracker.prototype = {
         list: false,
-        add: function(difflist) {
+        add: function(diffList) {
             var list = this.list;
-            difflist.forEach(function(diff) {
+            diffList.forEach(function(diff) {
                 list.push(diff);
             });
         },
@@ -548,7 +548,10 @@
         }
     };
 
-    var diffDOM = function(debug, diffcap) {
+    var diffDOM = function(debug, diffcap, valueDiffing) {
+        if (typeof valueDiffing === 'undefined') {
+            valueDiffing = true;
+        }
         if (typeof debug === 'undefined') {
             debug = false;
         } else {
@@ -590,6 +593,7 @@
         }
         this.debug = debug;
         this.diffcap = diffcap;
+        this.valueDiffing = valueDiffing;
     };
     diffDOM.prototype = {
 
@@ -608,7 +612,7 @@
             return this.findDiffs(t1, t2);
         },
         findDiffs: function(t1, t2) {
-            var difflist;
+            var diffList;
             do {
                 if (this.debug) {
                     diffcount += 1;
@@ -617,22 +621,24 @@
                         throw new Error("surpassed diffcap:" + JSON.stringify(this.t1Orig) + " -> " + JSON.stringify(this.t2Orig));
                     }
                 }
-                difflist = this.findFirstDiff(t1, t2, []);
-                if (difflist) {
-                    if (!difflist.length) {
-                        difflist = [difflist];
+                diffList = this.findFirstDiff(t1, t2, []);
+                if (diffList) {
+                    if (!diffList.length) {
+                        diffList = [diffList];
                     }
-                    this.tracker.add(difflist);
-                    this.apply(t1, difflist);
+                    this.tracker.add(diffList);
+                    this.apply(t1, diffList);
                 }
-            } while (difflist);
+            } while (diffList);
             return this.tracker.list;
         },
         findFirstDiff: function(t1, t2, route) {
+            var diffList;
+
             // outer differences?
-            var difflist = this.findOuterDiff(t1, t2, route);
-            if (difflist.length > 0) {
-                return difflist;
+            diffList = this.findOuterDiff(t1, t2, route);
+            if (diffList.length > 0) {
+                return diffList;
             }
             // inner differences?
             var diff = this.findInnerDiff(t1, t2, route);
@@ -644,11 +650,21 @@
                     return diff;
                 }
             }
+            if (this.valueDiffing) {
+              // value differences?
+              diffList = this.findValueDiff(t1, t2, route);
+
+              if (diffList.length > 0) {
+                  return diffList;
+              }
+            }
+
+
             // no differences
             return false;
         },
         findOuterDiff: function(t1, t2, route) {
-            var k;
+            var k, diffs = [];
 
             if (t1.nodeName !== t2.nodeName) {
                 k = {};
@@ -673,24 +689,7 @@
                         }
                     }
                     return -1;
-                },
-                diffs = [];
-            if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
-                k = {};
-                k[ACTION] = MODIFY_VALUE;
-                k[OLD_VALUE] = t1.value;
-                k[NEW_VALUE] = t2.value;
-                k[ROUTE] = route;
-                diffs.push(new Diff(k));
-            }
-            if ((t1.checked || t2.checked) && t1.checked !== t2.checked) {
-                k = {};
-                k[ACTION] = MODIFY_CHECKED;
-                k[OLD_VALUE] = t1.checked;
-                k[NEW_VALUE] = t2.checked;
-                k[ROUTE] = route;
-                diffs.push(new Diff(k));
-            }
+                };
 
             attr1.forEach(function(attr) {
                 var pos = find(attr, attr2),
@@ -738,24 +737,12 @@
 
             });
 
-            if ((t1.selected || t2.selected) && t1.selected !== t2.selected) {
-                if (diffs.length > 0) {
-                    return diffs;
-                }
-                k = {};
-                k[ACTION] = MODIFY_SELECTED;
-                k[OLD_VALUE] = t1.selected;
-                k[NEW_VALUE] = t2.selected;
-                k[ROUTE] = route;
-                diffs.push(new Diff(k));
-            }
-
             return diffs;
         },
         findInnerDiff: function(t1, t2, route) {
             var subtrees = markSubTrees(t1, t2),
                 mappings = subtrees.length,
-                diff, difflist, i, last, e1, e2,
+                diff, diffList, i, last, e1, e2,
                 k;
             // no correspondence whatsoever
             // if t1 or t2 contain differences that are not text nodes, return a diff.
@@ -808,20 +795,61 @@
                         return new Diff(k);
                     }
                     if (e1.nodeType !== 3 || e2.nodeType !== 3) {
-                        difflist = this.findOuterDiff(e1, e2, route.concat(i));
-                        if (difflist.length > 0) {
-                            return difflist;
+                        diffList = this.findOuterDiff(e1, e2, route.concat(i));
+                        if (diffList.length > 0) {
+                            return diffList;
                         }
                     }
                     diff = this.findInnerDiff(e1, e2, route.concat(i));
                     if (diff) {
                         return diff;
                     }
+                    if (this.valueDiffing) {
+                        diffList = this.findValueDiff(e1,e2, route.concat(i));
+                        if (diffList.length > 0) {
+                            return diffList;
+                        }
+                    }
                 }
             }
 
             // one or more differences: find first diff
             return this.findFirstInnerDiff(t1, t2, subtrees, route);
+        },
+
+        findValueDiff: function (t1, t2, route) {
+          // Differences of value. Only useful if the value/selection/checked value
+          // differs from what is represented in the DOM. For example in the case
+          // of filled out forms, etc.
+          var diffs = [], k;
+
+          if ((t1.selected || t2.selected) && t1.selected !== t2.selected) {
+              k = {};
+              k[ACTION] = MODIFY_SELECTED;
+              k[OLD_VALUE] = t1.selected;
+              k[NEW_VALUE] = t2.selected;
+              k[ROUTE] = route;
+              diffs.push(new Diff(k));
+          }
+
+          if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
+              k = {};
+              k[ACTION] = MODIFY_VALUE;
+              k[OLD_VALUE] = t1.value;
+              k[NEW_VALUE] = t2.value;
+              k[ROUTE] = route;
+              diffs.push(new Diff(k));
+          }
+          if ((t1.checked || t2.checked) && t1.checked !== t2.checked) {
+              k = {};
+              k[ACTION] = MODIFY_CHECKED;
+              k[OLD_VALUE] = t1.checked;
+              k[NEW_VALUE] = t2.checked;
+              k[ROUTE] = route;
+              diffs.push(new Diff(k));
+          }
+          console.log(diffs);
+          return diffs;
         },
 
         // imported

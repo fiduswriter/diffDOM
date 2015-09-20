@@ -89,7 +89,7 @@ dd.textDiff = function (node, currentValue, expectedValue, newValue) {
         // The text node contains the text we expect it to contain, so we simple change the text of it to the new value.
         node.data = newValue;
     } else {
-        // The text node currently does not contain what we expected it to contain, so we need to merge. 
+        // The text node currently does not contain what we expected it to contain, so we need to merge.
         difference = TEXTDIFF(expectedValue, currentValue);
         node.data = TEXTPATCH(newValue, difference);
     }
@@ -104,3 +104,10 @@ For debugging you might want to set a max number of diff changes between two ele
 dd = new diffDOM(true, 500);
 ```
 
+#### Disable value diff detection
+
+For forms that have been filled out by a user in ways that have changed which value is associated with an input field or which options are checked/selected without
+the DOM having been updated, the values are diffed. For use cases in which no changes have been made to any of the form values, one may choose to skip diffing the values. To do this, hand `false` as a third configuration option to diffDOM:
+```
+dd = new diffDOM(false, 0, false);
+```
