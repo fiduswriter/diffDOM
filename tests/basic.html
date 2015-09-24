@@ -24,7 +24,6 @@
 
   <!-- Add all divs to be compared here two by two -->
 
-
   <div>lol<span>ydew<i>hey</i>de</span>
   </div>
   <div>lol
@@ -514,7 +513,7 @@
       divNodeList, divs = [],
       diffs, t1, i;
 
-    divNodeList = document.querySelectorAll('div');
+    divNodeList = document.querySelectorAll('body > div');
 
     for (i = 0; i < divNodeList.length; i++) {
       divs[i] = divNodeList[i];
@@ -535,12 +534,11 @@
 
     for (i = 0; i < divs.length; i = i + 2) {
 
-
       try {
         reportDiv();
         print("diff operations for div #" + i + " → div #" + (i + 1));
         diffs = dd.diff(divs[i], divs[i + 1]);
-        console.log(diffs);
+      //  console.log(diffs);
 
         print("applying...");
         t1 = divs[i].cloneNode(true);
