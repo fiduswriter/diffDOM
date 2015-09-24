@@ -26,10 +26,10 @@
         TO = 21,
         NAME = 22,
         VALUE = 23,
-        TEXT = 24,
+        DATA = 24,
         ATTRIBUTES = 25,
         NODE_NAME = 26,
-        COMMENT = 27,
+        NODE_TYPE = 27,
         CHILD_NODES = 28,
         CHECKED = 29,
         SELECTED = 30;
@@ -219,48 +219,47 @@
 
     var nodeToObj = function(node) {
         var objNode = {};
-
-        if (node.nodeType === 3) {
-            objNode[TEXT] = node.data;
-        } else if (node.nodeType === 8) {
-            objNode[COMMENT] = node.data;
-        } else {
-            objNode[NODE_NAME] = node.nodeName;
-            if (node.attributes && node.attributes.length > 0) {
-                objNode[ATTRIBUTES] = [];
-                Array.prototype.slice.call(node.attributes).forEach(
-                    function(attribute) {
-                        objNode[ATTRIBUTES].push([attribute.name, attribute.value]);
-                    }
-                );
-            }
-            if (node.childNodes && node.childNodes.length > 0) {
-                objNode[CHILD_NODES] = [];
-                Array.prototype.slice.call(node.childNodes).forEach(
-                    function(childNode) {
-                        objNode[CHILD_NODES].push(nodeToObj(childNode));
-                    }
-                );
-            }
-            if (node.value) {
-                objNode[VALUE] = node.value;
-            }
-            if (node.checked) {
-                objNode[CHECKED] = node.checked;
-            }
-            if (node.selected) {
-                objNode[SELECTED] = node.selected;
-            }
+        objNode[NODE_TYPE] = node.nodeType;
+        objNode[DATA] = node.data;
+        if (node.nodeType != 3 && node.nodeType != 8) {
+          objNode[NODE_NAME] = node.nodeName;
+          if (node.attributes && node.attributes.length > 0) {
+              objNode[ATTRIBUTES] = [];
+              Array.prototype.slice.call(node.attributes).forEach(
+                  function(attribute) {
+                      objNode[ATTRIBUTES].push([attribute.name, attribute.value]);
+                  }
+              );
+          }
+          if (node.childNodes && node.childNodes.length > 0) {
+              objNode[CHILD_NODES] = [];
+              Array.prototype.slice.call(node.childNodes).forEach(
+                  function(childNode) {
+                      objNode[CHILD_NODES].push(nodeToObj(childNode));
+                  }
+              );
+          }
+          if (node.value) {
+              objNode[VALUE] = node.value;
+          }
+          if (node.checked) {
+              objNode[CHECKED] = node.checked;
+          }
+          if (node.selected) {
+              objNode[SELECTED] = node.selected;
+          }
         }
+
         return objNode;
     };
 
+
     var objToNode = function(objNode, insideSvg) {
         var node;
-        if (objNode.hasOwnProperty(TEXT)) {
-            node = document.createTextNode(objNode[TEXT]);
-        } else if (objNode.hasOwnProperty(COMMENT)) {
-            node = document.createComment(objNode[COMMENT]);
+        if (objNode[NODE_TYPE] === 3) {
+            node = document.createTextNode(objNode[DATA]);
+        } else if (objNode[NODE_TYPE] === 8) {
+            node = document.createComment(objNode[DATA]);
         } else {
             if (objNode[NODE_NAME] === 'svg' || insideSvg) {
                 node = document.createElementNS('http://www.w3.org/2000/svg', objNode[NODE_NAME]);
@@ -506,10 +505,10 @@
             TO = "to";
             NAME = "name";
             VALUE = "value";
-            TEXT = "text";
+            DATA = "data";
             ATTRIBUTES = "attributes";
             NODE_NAME = "nodeName";
-            COMMENT = "comment";
+            NODE_TYPE = "nodeType";
             CHILD_NODES = "childNodes";
             CHECKED = "checked";
             SELECTED = "selected";
@@ -522,8 +521,8 @@
 
         diff: function(t1, t2) {
             diffcount = 0;
-            t1 = cleanCloneNode(t1);
-            t2 = cleanCloneNode(t2);
+        //    t1 = nodeToObj(t1);
+        //    t2 = nodeYoObj(t2);
             if (this.debug) {
                 this.t1Orig = nodeToObj(t1);
                 this.t2Orig = nodeToObj(t2);
@@ -571,7 +570,6 @@
                   return diffs;
               }
             }
-
 
             // no differences
             return false;
