@@ -116,3 +116,10 @@ dd = new diffDOM({
     valueDiffing: false
   });
 ```
+
+#### Limit how deep level of the DOM tree should be diff for large size of HTML code
+```
+diff = dd.diff(elementA, elementB,{
+      levelsDeep: 3
+    });
+```

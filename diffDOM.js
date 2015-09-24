@@ -437,6 +437,18 @@
         }(obj[p1]));
     }
 
+    function getLevelsDeep(node){
+        var deep = 0;
+        if(node.nodeType === 1){
+            var pn = node;
+            do{
+                pn = pn.parentNode;
+                deep++;
+            }while(pn);
+        }
+
+        return deep;
+    }
 
     var DiffTracker = function() {
         this.list = [];
@@ -520,7 +532,7 @@
 
         // ===== Create a diff =====
 
-        diff: function(t1, t2) {
+        diff: function(t1, t2, options) {
             diffcount = 0;
             t1 = cleanCloneNode(t1);
             t2 = cleanCloneNode(t2);
@@ -529,6 +541,7 @@
                 this.t2Orig = nodeToObj(t2);
             }
 
+            this.diffOptions = options || {};
             this.tracker = new DiffTracker();
             return this.findDiffs(t1, t2);
         },
@@ -659,6 +672,10 @@
                 if (t1.innerHTML === t2.innerHTML) {
                     return [];
                 }
+            }
+
+            if(!!this.diffOptions.levelsDeep && this.diffOptions.levelsDeep < getLevelsDeep(t1)){
+                return [];
             }
 
             var subtrees = markSubTrees(t1, t2),
