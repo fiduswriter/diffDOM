@@ -440,11 +440,8 @@
     function getLevelsDeep(node){
         var deep = 0;
         if(node.nodeType === 1){
-            var pn = node;
-            do{
-                pn = pn.parentNode;
-                deep++;
-            }while(pn);
+            deep = node.parentNode?node.parentNode.levelsDeep:deep;
+            node.levelsDeep = ++deep;
         }
 
         return deep;
