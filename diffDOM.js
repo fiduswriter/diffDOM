@@ -528,21 +528,32 @@
             var diffs;
 
             // outer differences?
-            diffs = this.findOuterDiff(t1, t2, route);
-            if (diffs.length > 0) {
-                return diffs;
+            if (!t1.outer_done) {
+                diffs = this.findOuterDiff(t1, t2, route);
+                if (diffs.length > 0) {
+                    return diffs;
+                } else {
+                    t1.outer_done = true;
+                }
             }
             // inner differences?
-            diffs = this.findInnerDiff(t1, t2, route);
-            if (diffs.length > 0) {
-                return diffs;
+            if (!t1.inner_done) {
+              diffs = this.findInnerDiff(t1, t2, route);
+              if (diffs.length > 0) {
+                  return diffs;
+              } else {
+                  t1.inner_done = true;
+              }
             }
-            if (this.valueDiffing) {
+
+            if (this.valueDiffing && !t1.value_done) {
               // value differences?
               diffs = this.findValueDiff(t1, t2, route);
 
               if (diffs.length > 0) {
                   return diffs;
+              } else {
+                  t1.value_done = true;
               }
             }
 
@@ -562,10 +573,6 @@
                 return [new Diff(k)];
             }
 
-//            var slice = Array.prototype.slice,
-              //  byName = function(a, b) {
-              //      return a[0] > b[0];
-              //  },
 
                 var attr1 = t1[ATTRIBUTES] ? Object.keys(t1[ATTRIBUTES]).sort() : [],
                 attr2 = t2[ATTRIBUTES] ? Object.keys(t2[ATTRIBUTES]).sort() : [],
@@ -591,7 +598,7 @@
                     diffs.push(new Diff(l));
                     return diffs;
                 }
-                var a2 = attr2.splice(pos, 1)[0];
+                attr2.splice(pos, 1)[0];
                 if (t1[ATTRIBUTES][attr] !== t2[ATTRIBUTES][attr]) {
                     l = {};
                     l[ACTION] = MODIFY_ATTRIBUTE;
@@ -699,20 +706,34 @@
                         return [diff];
                     }
                     if (e1[NODE_TYPE] !== 3 || e2[NODE_TYPE] !== 3) {
+                      if (!t1_child_nodes[i].outer_done) {
                         diffs = this.findOuterDiff(e1, e2, route.concat(i));
                         if (diffs.length > 0) {
                             return diffs;
+                        } else {
+                            t1_child_nodes[i].outer_done = true;
                         }
+                      }
                     }
-                    diffs = this.findInnerDiff(e1, e2, route.concat(i));
+                    if (!t1_child_nodes[i].inner_done) {
+                      diffs = this.findInnerDiff(e1, e2, route.concat(i));
 
-                    if (diffs.length > 0) {
-                        return diffs;
+                      if (diffs.length > 0) {
+                          return diffs;
+                      } else {
+                          t1_child_nodes[i].inner_done = true;
+                      }
                     }
-                    if (this.valueDiffing) {
+
+
+
+
+                    if (this.valueDiffing && !t1_child_nodes[i].value_done) {
                         diffs = this.findValueDiff(e1,e2, route.concat(i));
                         if (diffs.length > 0) {
                             return diffs;
+                        } else {
+                          t1_child_nodes[i].value_done = true;
                         }
                     }
                 }
@@ -894,7 +915,7 @@
             var routeInfo = this.getFromVirtualRoute(tree, diff[ROUTE]),
                 node = routeInfo.node, parentNode = routeInfo.parentNode,
                 nodeIndex = routeInfo.nodeIndex,
-                newNode, reference, route, group, from, to, child, c, i;
+                newNode, route, group, from, to, c, i;
 
             switch (diff[ACTION]) {
                 case ADD_ATTRIBUTE:
