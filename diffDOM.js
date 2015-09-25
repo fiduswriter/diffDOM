@@ -230,7 +230,9 @@
     };
 
     var cloneObj = function(obj) {
+        // TODO: Do we really need to clone here? Is it not enough to just return the original object?
         return JSON.parse(JSON.stringify(obj));
+        //return obj;
     };
 
     var nodeToObj = function(node) {
@@ -723,7 +725,7 @@
                         k = {};
                         k[ACTION] = REMOVE_ELEMENT;
                         k[ROUTE] = route.concat(i);
-                        k[ELEMENT] = cloneObj(e1); //nodeToObj(e1);
+                        k[ELEMENT] = cloneObj(e1);
                         diff = new Diff(k);
                         return [diff];
                     }
@@ -739,7 +741,7 @@
                         k = {};
                         k[ACTION] = ADD_ELEMENT;
                         k[ROUTE] = route.concat(i);
-                        k[ELEMENT] = cloneObj(e2); //nodeToObj(e2);
+                        k[ELEMENT] = cloneObj(e2);
                         diff = new Diff(k);
                         return [diff];
                     }
@@ -868,7 +870,7 @@
                     k = {};
                     k[ACTION] = REMOVE_ELEMENT;
                     k[ROUTE] = route.concat(i);
-                    k[ELEMENT] = cloneObj(node); // nodeToObj(node);
+                    k[ELEMENT] = cloneObj(node);
                     diff = new Diff(k);
                     return [diff];
                 }
@@ -885,7 +887,7 @@
                     k = {};
                     k[ACTION] = ADD_ELEMENT;
                     k[ROUTE] = route.concat(i);
-                    k[ELEMENT] = cloneObj(node); //nodeToObj(node);
+                    k[ELEMENT] = cloneObj(node);
                     diff = new Diff(k);
                     return [diff];
                 }
@@ -896,11 +898,9 @@
                         // Check whether destination nodes are different than originating ones.
                         destinationDifferent = false;
                         for (j = 0; j < group.length; j += 1) {
-                            // OBS! Comparison using JSON.stringify may miss cases that are equal as the order of attributes may be different.
                             if (!isEqual(t1[CHILD_NODES][toGroup + j], t1[CHILD_NODES][i + j])) {
                                 destinationDifferent = true;
                             }
-
                         }
                         if (destinationDifferent) {
                             k = {};
