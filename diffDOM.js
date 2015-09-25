@@ -973,7 +973,6 @@
 
                     if (diff[NAME] === 'checked') {
                         node[CHECKED] = true;
-                        //    console.log(node)
                     } else if (diff[NAME] === 'selected') {
                         node[SELECTED] = true;
                     } else if (node[NODE_NAME] === 'INPUT' && diff[NAME] === 'value') {
@@ -1023,20 +1022,14 @@
                     parentNode[CHILD_NODES][nodeIndex] = diff[NEW_VALUE];
                     break;
                 case RELOCATE_GROUP:
-
                     group = diff[GROUP];
                     from = diff[FROM];
                     to = diff[TO];
-                    console.log(node[CHILD_NODES]);
-                    console.log([from, to]);
                     if (from < to) {
-                        console.log(JSON.stringify(node[CHILD_NODES][0]));
-
                         for (i = 0; i < group.length; i += 1) {
                             newNode = node[CHILD_NODES].splice(from, 1)[0];
                             node[CHILD_NODES].splice((to + group.length - 1), 0, newNode);
                         }
-                        console.log(JSON.stringify(node[CHILD_NODES][0]));
                     } else {
                         for (i = 0; i < group.length; i += 1) {
                             node[CHILD_NODES].splice((to + i), 0, node[CHILD_NODES].splice((from + i), 1)[0]);
