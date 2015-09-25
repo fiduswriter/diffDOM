@@ -210,13 +210,13 @@
                   }
               );
           }
-          if (node.value && node.innerText !== node.value && !(objNode[NODE_NAME] === 'INPUT' && objNode[ATTRIBUTES]['value'] === node.value) ) {
+          if (node.value) {
               objNode[VALUE] = node.value;
           }
-          if (node.checked  &! (objNode[ATTRIBUTES] && objNode[ATTRIBUTES]['checked'])) {
+          if (node.checked) {
               objNode[CHECKED] = node.checked;
           }
-          if (node.selected &! (objNode[ATTRIBUTES] && objNode[ATTRIBUTES]['selected'])) {
+          if (node.selected) {
               objNode[SELECTED] = node.selected;
           }
         }
@@ -728,7 +728,7 @@
           // of filled out forms, etc.
           var diffs = [], k;
 
-          if (Boolean(t1[SELECTED] || t1[ATTRIBUTES] && t1[ATTRIBUTES].hasOwnProperty('selected')) !== Boolean(t2[SELECTED] || t2[ATTRIBUTES] && t2[ATTRIBUTES].hasOwnProperty('selected'))) {
+          if (t1[SELECTED] !== t2[SELECTED]) {
               k = {};
               k[ACTION] = MODIFY_SELECTED;
               k[OLD_VALUE] = t1[SELECTED];
@@ -745,7 +745,7 @@
               k[ROUTE] = route;
               diffs.push(new Diff(k));
           }
-          if (Boolean(t1[CHECKED] || t1[ATTRIBUTES] && t1[ATTRIBUTES].hasOwnProperty('checked')) !== Boolean(t2[CHECKED] || t2[ATTRIBUTES] && t2[ATTRIBUTES].hasOwnProperty('checked'))) {
+          if (t1[CHECKED] !== t2[CHECKED]) {
               k = {};
               k[ACTION] = MODIFY_CHECKED;
               k[OLD_VALUE] = t1[CHECKED];
@@ -935,6 +935,10 @@
                     break;
                 case MODIFY_TEXT_ELEMENT:
                     node[DATA] = diff[NEW_VALUE];
+
+                    if (parentNode[NODE_NAME]==='TEXTAREA') {
+                        parentNode[VALUE] = diff[NEW_VALUE];
+                    }
                     break;
                 case MODIFY_VALUE:
                     node[VALUE] = diff[NEW_VALUE];
@@ -962,7 +966,8 @@
                         console.log(JSON.stringify(node[CHILD_NODES][0]));
 
                         for (i = 0; i < group.length; i += 1) {
-                            node[CHILD_NODES].splice((to+group.length-1),0,node[CHILD_NODES].splice(from,1)[0]);
+                            newNode = node[CHILD_NODES].splice(from,1)[0];
+                            node[CHILD_NODES].splice((to+group.length-1),0,newNode);
                         }
                         console.log(JSON.stringify(node[CHILD_NODES][0]));
                     } else {
@@ -993,6 +998,9 @@
                     break;
                 case REMOVE_TEXT_ELEMENT:
                     parentNode[CHILD_NODES].splice(nodeIndex, 1);
+                    if (parentNode[NODE_NAME]==='TEXTAREA') {
+                        delete parentNode[VALUE];
+                    }
                     break;
                 case ADD_TEXT_ELEMENT:
                     route = diff[ROUTE].slice();
@@ -1009,6 +1017,9 @@
                         node[CHILD_NODES].push(newNode);
                     } else {
                         node[CHILD_NODES].splice(c, 0, newNode);
+                    }
+                    if (node[NODE_NAME]==='TEXTAREA') {
+                        node[VALUE] = diff[NEW_VALUE];
                     }
                     break;
                 default:
