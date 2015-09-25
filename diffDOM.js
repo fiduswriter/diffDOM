@@ -65,14 +65,17 @@
 
     var elementDescriptors = function(el) {
         var output = [];
-        if (el.nodeType === 1) {
-            output.push(el.tagName);
-            if (typeof(el.className) === 'string') {
-                output.push(el.tagName + '.' + el.className.replace(/ /g, '.'));
+        if (el[NODE_NAME] != '#text' && el[NODE_NAME] != '#comment') {
+            output.push(el[NODE_NAME]);
+            if (el[ATTRIBUTES]) {
+              if (el[ATTRIBUTES]['class']) {
+                  output.push(el[NODE_NAME] + '.' + el[ATTRIBUTES]['class'].replace(/ /g, '.'));
+              }
+              if (el[ATTRIBUTES]['id']) {
+                  output.push(el[NODE_NAME] + '#' + el[ATTRIBUTES]['id']);
+              }
             }
-            if (el.id) {
-                output.push(el.tagName + '#' + el.id);
-            }
+
         }
         return output;
     };
@@ -163,12 +166,13 @@
 
     };
 
-    var roughlyEqual = function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
+    var roughlyEqual = function (e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
         var childUniqueDescriptors, nodeList1, nodeList2;
 
         if (!e1 || !e2) {
             return false;
         }
+
         if (e1[NODE_NAME] !== e2[NODE_NAME]) {
             return false;
         }
@@ -180,10 +184,17 @@
             return preventRecursion ? true : e1[DATA] === e2[DATA];
         }
 
+
         if (e1[NODE_NAME] in uniqueDescriptors) {
             return true;
         }
-        if (e1[ATTRIBUTES] && e2[ATTRIBUTES]) {
+
+        if(Boolean(e1[ATTRIBUTES]) != Boolean(e2[ATTRIBUTES])) {
+            return false;
+        }
+
+        if (e1[ATTRIBUTES]) {
+
             if (e1[ATTRIBUTES].id && e1[ATTRIBUTES].id === e2[ATTRIBUTES].id) {
                 var idDescriptor = e1[NODE_NAME] + '#' + e1[ATTRIBUTES].id;
                 if (idDescriptor in uniqueDescriptors) {
@@ -197,7 +208,7 @@
                 }
             }
         }
-
+        
         if (sameSiblings) {
             return true;
         }
@@ -222,6 +233,7 @@
             });
         }
     };
+
 
     var cloneObj = function(obj) {
         // TODO: Do we really need to clone here? Is it not enough to just return the original object?
