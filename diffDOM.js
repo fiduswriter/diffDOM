@@ -127,7 +127,8 @@
         if (e1[element] !== e2[element]) {
             return false;
         }
-      })) {
+        return true;
+      })) {)
           return false;
       }
 
