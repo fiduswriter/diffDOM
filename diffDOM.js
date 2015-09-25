@@ -117,6 +117,52 @@
         return inBoth;
     };
 
+    var isEqual = function(e1, e2) {
+      var element;
+      for (element in [NODE_TYPE, NODE_NAME, VALUE, CHECKED, SELECTED, DATA]) {
+          if (e1[element] !== e2[element]) {
+              return false;
+          }
+      }
+
+      if (Boolean(e1[ATTRIBUTES]) !== Boolean(e2[ATTRIBUTES])) {
+          return false;
+      }
+
+      if (Boolean(e1[CHILD_NODES]) !== Boolean(e2[CHILD_NODES])) {
+          return false;
+      }
+
+      if (e1[ATTRIBUTES]) {
+          var e1Attributes = Object.keys(e1[ATTRIBUTES]),
+            e2Attributes = Object.keys(e2[ATTRIBUTES]);
+
+          if (e1Attributes.length != e2Attributes.length) {
+              return false;
+          }
+          for (attribute in e1Attributes) {
+              if (e1[ATTRIBUTES][attribute] !== e2[ATTRIBUTES][attribute]) {
+                  return false;
+              }
+          }
+      }
+
+      if (e1[CHILD_NODES]) {
+          if (e1[CHILD_NODES].length !== e2[CHILD_NODES].length) {
+              return false;
+          }
+          if (!e1[CHILD_NODES].every(function(childNode,index) {
+              return isEqual(childNode, e2[CHILD_NODES][index]);
+          })) {
+              return false;
+          }
+
+      }
+
+      return true;
+
+    };
+
     var roughlyEqual = function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
         var childUniqueDescriptors, nodeList1, nodeList2;
 
@@ -851,8 +897,7 @@
                         destinationDifferent = false;
                         for (j = 0; j < group.length; j += 1) {
                             // OBS! Comparison using JSON.stringify may miss cases that are equal as the order of attributes may be different.
-                            if (JSON.stringify(t1[CHILD_NODES][toGroup + j]) !== JSON.stringify(t1[CHILD_NODES][i + j])) {
-
+                            if (!isEqual(t1[CHILD_NODES][toGroup + j], t1[CHILD_NODES][i + j])) {
                                 destinationDifferent = true;
                             }
 
