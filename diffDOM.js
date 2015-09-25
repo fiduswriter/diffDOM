@@ -118,7 +118,8 @@
     };
 
     var isEqual = function(e1, e2) {
-      var element;
+      var element, e1Attributes, e2Attributes, attribute;
+
       for (element in [NODE_TYPE, NODE_NAME, VALUE, CHECKED, SELECTED, DATA]) {
           if (e1[element] !== e2[element]) {
               return false;
@@ -134,8 +135,8 @@
       }
 
       if (e1[ATTRIBUTES]) {
-          var e1Attributes = Object.keys(e1[ATTRIBUTES]),
-            e2Attributes = Object.keys(e2[ATTRIBUTES]);
+          e1Attributes = Object.keys(e1[ATTRIBUTES]);
+          e2Attributes = Object.keys(e2[ATTRIBUTES]);
 
           if (e1Attributes.length != e2Attributes.length) {
               return false;
