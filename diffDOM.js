@@ -120,12 +120,15 @@
     };
 
     var isEqual = function(e1, e2) {
-      var element, e1Attributes, e2Attributes, attribute;
 
-      for (element in [NODE_NAME, VALUE, CHECKED, SELECTED, DATA]) {
-          if (e1[element] !== e2[element]) {
-              return false;
-          }
+      var e1Attributes, e2Attributes, attribute;
+
+      if (![NODE_NAME, VALUE, CHECKED, SELECTED, DATA].every(function (element) {
+        if (e1[element] !== e2[element]) {
+            return false;
+        }
+      })) {
+          return false;
       }
 
       if (Boolean(e1[ATTRIBUTES]) !== Boolean(e2[ATTRIBUTES])) {
@@ -208,7 +211,7 @@
                 }
             }
         }
-        
+
         if (sameSiblings) {
             return true;
         }
