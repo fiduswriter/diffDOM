@@ -190,11 +190,9 @@
     var nodeToObj = function(node) {
         var objNode = {};
         objNode[NODE_TYPE] = node.nodeType;
-        if (node.data) {
+        if (node.nodeType === 3 || node.nodeType === 8) {
           objNode[DATA] = node.data;
-        }
-
-        if (node.nodeType != 3 && node.nodeType != 8) {
+        } else {
           objNode[NODE_NAME] = node.nodeName;
           if (node.attributes && node.attributes.length > 0) {
               objNode[ATTRIBUTES] = {};
@@ -513,6 +511,7 @@
                 if (this.debug) {
                     diffcount += 1;
                     if (diffcount > this.diffcap) {
+                        console.log(diffs);
                         window.diffError = [this.t1Orig, this.t2Orig];
                         throw new Error("surpassed diffcap:" + JSON.stringify(this.t1Orig) + " -> " + JSON.stringify(this.t2Orig));
                     }
@@ -652,8 +651,8 @@
                 if (t1[NODE_TYPE] === 3 && t2[NODE_TYPE] === 3 && t1[DATA] !== t2[DATA]) {
                     k = {};
                     k[ACTION] = MODIFY_TEXT_ELEMENT;
-                    k[OLD_VALUE] = t1[DATA] ? t1[DATA] : '';
-                    k[NEW_VALUE] = t2[DATA] ? t2[DATA] : '';
+                    k[OLD_VALUE] = t1[DATA];
+                    k[NEW_VALUE] = t2[DATA];
                     k[ROUTE] = route;
                     diff = new Diff(k);
                     return [diff];
@@ -672,7 +671,7 @@
                             k = {};
                             k[ACTION] = REMOVE_TEXT_ELEMENT;
                             k[ROUTE] = route.concat(i);
-                            k[VALUE] = e1[DATA] ? e1[DATA]: '';
+                            k[VALUE] = e1[DATA];
                             diff = new Diff(k);
                             return [diff];
                         }
@@ -688,7 +687,7 @@
                             k = {};
                             k[ACTION] = ADD_TEXT_ELEMENT;
                             k[ROUTE] = route.concat(i);
-                            k[VALUE] = e2[DATA] ? e2[DATA] : '';
+                            k[VALUE] = e2[DATA];
                             diff = new Diff(k);
                             return [diff];
                         }
@@ -741,8 +740,8 @@
           if ((t1[VALUE] || t2[VALUE]) && t1[VALUE] !== t2[VALUE] && t1[NODE_NAME] !== 'OPTION') {
               k = {};
               k[ACTION] = MODIFY_VALUE;
-              k[OLD_VALUE] = t1[VALUE] ? t1[VALUE] : '';
-              k[NEW_VALUE] = t2[VALUE] ? t2[VALUE] : '';
+              k[OLD_VALUE] = t1[VALUE];
+              k[NEW_VALUE] = t2[VALUE];
               k[ROUTE] = route;
               diffs.push(new Diff(k));
           }
@@ -793,8 +792,8 @@
                                 k = {};
                                 k[ACTION] = MODIFY_TEXT_ELEMENT;
                                 k[ROUTE] = route.concat(i);
-                                k[OLD_VALUE] = node[DATA] ? node[DATA] : '';
-                                k[NEW_VALUE] = t2[CHILD_NODES][i][DATA] ? t2[CHILD_NODES][i][DATA] : '';
+                                k[OLD_VALUE] = node[DATA];
+                                k[NEW_VALUE] = t2[CHILD_NODES][i][DATA];
                                 diff = new Diff(k);
                                 return [diff];
                             }
@@ -802,7 +801,7 @@
                         k = {};
                         k[ACTION] = REMOVE_TEXT_ELEMENT;
                         k[ROUTE] = route.concat(i);
-                        k[VALUE] = node[DATA] ? node[DATA] : '';
+                        k[VALUE] = node[DATA];
                         diff = new Diff(k);
                         return [diff];
                     }
@@ -819,7 +818,7 @@
                         k = {};
                         k[ACTION] = ADD_TEXT_ELEMENT;
                         k[ROUTE] = route.concat(i);
-                        k[VALUE] = node[DATA] ? node[DATA] : '';
+                        k[VALUE] = node[DATA];
                         diff = new Diff(k);
                         return [diff];
                     }
@@ -957,10 +956,15 @@
                     group = diff[GROUP];
                     from = diff[FROM];
                     to = diff[TO];
+                    console.log(node[CHILD_NODES]);
+                    console.log([from,to]);
                     if (from < to) {
+                        console.log(JSON.stringify(node[CHILD_NODES][0]));
+
                         for (i = 0; i < group.length; i += 1) {
                             node[CHILD_NODES].splice((to+group.length-1),0,node[CHILD_NODES].splice(from,1)[0]);
                         }
+                        console.log(JSON.stringify(node[CHILD_NODES][0]));
                     } else {
                         for (i = 0; i < group.length; i += 1) {
                             node[CHILD_NODES].splice((to+i),0,node[CHILD_NODES].splice((from+i),1)[0]);
