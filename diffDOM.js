@@ -29,10 +29,9 @@
         DATA = 24,
         ATTRIBUTES = 25,
         NODE_NAME = 26,
-        NODE_TYPE = 27,
-        CHILD_NODES = 28,
-        CHECKED = 29,
-        SELECTED = 30;
+        CHILD_NODES = 27,
+        CHECKED = 28,
+        SELECTED = 29;
 
     var Diff = function(options) {
         var diff = this;
@@ -120,7 +119,7 @@
     var isEqual = function(e1, e2) {
       var element, e1Attributes, e2Attributes, attribute;
 
-      for (element in [NODE_TYPE, NODE_NAME, VALUE, CHECKED, SELECTED, DATA]) {
+      for (element in [NODE_NAME, VALUE, CHECKED, SELECTED, DATA]) {
           if (e1[element] !== e2[element]) {
               return false;
           }
@@ -170,43 +169,37 @@
         if (!e1 || !e2) {
             return false;
         }
-        if (e1[NODE_TYPE] !== e2[NODE_TYPE]) {
+        if (e1[NODE_NAME] !== e2[NODE_NAME]) {
             return false;
         }
-        if (e1[NODE_TYPE] === 3) {
-            if (e2[NODE_TYPE] !== 3) {
-                return false;
-            }
+
+        if (e1[NODE_NAME] === '#text') {
             // Note that we initially don't care what the text content of a node is,
             // the mere fact that it's the same tag and "has text" means it's roughly
             // equal, and then we can find out the true text difference later.
             return preventRecursion ? true : e1[DATA] === e2[DATA];
         }
-        if (e1[NODE_NAME] !== e2[NODE_NAME]) {
-            return false;
-        }
-        if (e1[NODE_NAME] === e2[NODE_NAME]) {
-            if (e1[NODE_NAME] in uniqueDescriptors) {
-                return true;
-            }
-            if (e1[ATTRIBUTES] && e2[ATTRIBUTES]) {
-                if (e1[ATTRIBUTES].id && e1[ATTRIBUTES].id === e2[ATTRIBUTES].id) {
-                    var idDescriptor = e1[NODE_NAME] + '#' + e1[ATTRIBUTES].id;
-                    if (idDescriptor in uniqueDescriptors) {
-                        return true;
-                    }
-                }
-                if (e1[ATTRIBUTES].class && e1[ATTRIBUTES].class === e2[ATTRIBUTES].class) {
-                    var classDescriptor = e1[NODE_NAME] + '.' + e1[ATTRIBUTES].class.replace(/ /g, '.');
-                    if (classDescriptor in uniqueDescriptors) {
-                        return true;
-                    }
-                }
-            }
 
-            if (sameSiblings) {
-                return true;
+        if (e1[NODE_NAME] in uniqueDescriptors) {
+            return true;
+        }
+        if (e1[ATTRIBUTES] && e2[ATTRIBUTES]) {
+            if (e1[ATTRIBUTES].id && e1[ATTRIBUTES].id === e2[ATTRIBUTES].id) {
+                var idDescriptor = e1[NODE_NAME] + '#' + e1[ATTRIBUTES].id;
+                if (idDescriptor in uniqueDescriptors) {
+                    return true;
+                }
             }
+            if (e1[ATTRIBUTES].class && e1[ATTRIBUTES].class === e2[ATTRIBUTES].class) {
+                var classDescriptor = e1[NODE_NAME] + '.' + e1[ATTRIBUTES].class.replace(/ /g, '.');
+                if (classDescriptor in uniqueDescriptors) {
+                    return true;
+                }
+            }
+        }
+
+        if (sameSiblings) {
+            return true;
         }
 
         nodeList1 = e1[CHILD_NODES] ? Array.prototype.slice.call(e1[CHILD_NODES]).reverse() : [];
@@ -238,11 +231,10 @@
 
     var nodeToObj = function(node) {
         var objNode = {};
-        objNode[NODE_TYPE] = node.nodeType;
-        if (node.nodeType === 3 || node.nodeType === 8) {
+        objNode[NODE_NAME] = node.nodeName;
+        if (objNode[NODE_NAME] === '#text' || objNode[NODE_NAME] === '#comment') {
             objNode[DATA] = node.data;
         } else {
-            objNode[NODE_NAME] = node.nodeName;
             if (node.attributes && node.attributes.length > 0) {
                 objNode[ATTRIBUTES] = {};
                 Array.prototype.slice.call(node.attributes).forEach(
@@ -276,12 +268,11 @@
 
     var objToNode = function(objNode, insideSvg) {
         var node, attribute;
-        if (objNode[NODE_TYPE] === 3) {
-            //    console.log(objNode);
-            node = objNode[DATA] ? document.createTextNode(objNode[DATA]) : document.createTextNode('');
+        if (objNode[NODE_NAME] === '#text') {
+            node = document.createTextNode(objNode[DATA]);
 
-        } else if (objNode[NODE_TYPE] === 8) {
-            node = objNode[DATA] ? document.createComment(objNode[DATA]) : document.createComment('');
+        } else if (objNode[NODE_NAME] === '#comment') {
+            node = document.createComment(objNode[DATA]);
         } else {
             if (objNode[NODE_NAME] === 'svg' || insideSvg) {
                 node = document.createElementNS('http://www.w3.org/2000/svg', objNode[NODE_NAME]);
@@ -527,7 +518,6 @@
             DATA = "data";
             ATTRIBUTES = "attributes";
             NODE_NAME = "nodeName";
-            NODE_TYPE = "nodeType";
             CHILD_NODES = "childNodes";
             CHECKED = "checked";
             SELECTED = "selected";
@@ -615,8 +605,8 @@
             if (t1[NODE_NAME] !== t2[NODE_NAME]) {
                 k = {};
                 k[ACTION] = REPLACE_ELEMENT;
-                k[OLD_VALUE] = cloneObj(t1); //nodeToObj(t1);
-                k[NEW_VALUE] = cloneObj(t2); //nodeToObj(t2);
+                k[OLD_VALUE] = cloneObj(t1);
+                k[NEW_VALUE] = cloneObj(t2);
                 k[ROUTE] = route;
                 return [new Diff(k)];
             }
@@ -696,7 +686,7 @@
 
             // two text nodes with differences
             if (mappings === 0) {
-                if (t1[NODE_TYPE] === 3 && t2[NODE_TYPE] === 3 && t1[DATA] !== t2[DATA]) {
+                if (t1[NODE_NAME] === '#text' && t2[NODE_NAME] === '#text' && t1[DATA] !== t2[DATA]) {
                     k = {};
                     k[ACTION] = MODIFY_TEXT_ELEMENT;
                     k[OLD_VALUE] = t1[DATA];
@@ -715,7 +705,7 @@
                     // This is a similar code path to the one
                     //       in findFirstInnerDiff. Can we unify these?
                     if (e1 && !e2) {
-                        if (e1[NODE_TYPE] === 3) {
+                        if (e1[NODE_NAME] === '#text') {
                             k = {};
                             k[ACTION] = REMOVE_TEXT_ELEMENT;
                             k[ROUTE] = route.concat(i);
@@ -731,7 +721,7 @@
                         return [diff];
                     }
                     if (e2 && !e1) {
-                        if (e2[NODE_TYPE] === 3) {
+                        if (e2[NODE_NAME] === '#text') {
                             k = {};
                             k[ACTION] = ADD_TEXT_ELEMENT;
                             k[ROUTE] = route.concat(i);
@@ -746,7 +736,7 @@
                         diff = new Diff(k);
                         return [diff];
                     }
-                    if (e1[NODE_TYPE] !== 3 || e2[NODE_TYPE] !== 3) {
+                    if (e1[NODE_NAME] !== '#text' || e2[NODE_NAME] !== '#text') {
                         if (!t1_child_nodes[i].outer_done) {
                             diffs = this.findOuterDiff(e1, e2, route.concat(i));
                             if (diffs.length > 0) {
@@ -841,10 +831,10 @@
             for (i = 0; i < shortest.length; i += 1) {
                 if (gaps1[i] === true) {
                     node = t1[CHILD_NODES][i];
-                    if (node[NODE_TYPE] === 3) {
-                        if (t2[CHILD_NODES][i][NODE_TYPE] === 3 && node[DATA] !== t2[CHILD_NODES][i][DATA]) {
+                    if (node[NODE_NAME] === '#text') {
+                        if (t2[CHILD_NODES][i][NODE_NAME] === '#text' && node[DATA] !== t2[CHILD_NODES][i][DATA]) {
                             testI = i;
-                            while (t1[CHILD_NODES].length > testI + 1 && t1[CHILD_NODES][testI + 1][NODE_TYPE] === 3) {
+                            while (t1[CHILD_NODES].length > testI + 1 && t1[CHILD_NODES][testI + 1][NODE_NAME] === '#text') {
                                 testI += 1;
                                 if (t2[CHILD_NODES][i][DATA] === t1[CHILD_NODES][testI][DATA]) {
                                     similarNode = true;
@@ -877,7 +867,7 @@
                 }
                 if (gaps2[i] === true) {
                     node = t2[CHILD_NODES][i];
-                    if (node[NODE_TYPE] === 3) {
+                    if (node[NODE_NAME] === '#text') {
                         k = {};
                         k[ACTION] = ADD_TEXT_ELEMENT;
                         k[ROUTE] = route.concat(i);
@@ -1068,7 +1058,7 @@
                     route = diff[ROUTE].slice();
                     c = route.splice(route.length - 1, 1)[0];
                     newNode = {};
-                    newNode[NODE_TYPE] = 3;
+                    newNode[NODE_NAME] = '#text';
                     newNode[DATA] = diff[VALUE];
                     node = this.getFromVirtualRoute(tree, route).node;
                     if (!node[CHILD_NODES]) {
