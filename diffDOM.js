@@ -191,34 +191,34 @@
         var objNode = {};
         objNode[NODE_TYPE] = node.nodeType;
         if (node.nodeType === 3 || node.nodeType === 8) {
-          objNode[DATA] = node.data;
+            objNode[DATA] = node.data;
         } else {
-          objNode[NODE_NAME] = node.nodeName;
-          if (node.attributes && node.attributes.length > 0) {
-              objNode[ATTRIBUTES] = {};
-              Array.prototype.slice.call(node.attributes).forEach(
-                  function(attribute) {
-                      objNode[ATTRIBUTES][attribute.name] = attribute.value;
-                  }
-              );
-          }
-          if (node.childNodes && node.childNodes.length > 0) {
-              objNode[CHILD_NODES] = [];
-              Array.prototype.slice.call(node.childNodes).forEach(
-                  function(childNode) {
-                      objNode[CHILD_NODES].push(nodeToObj(childNode));
-                  }
-              );
-          }
-          if (node.value) {
-              objNode[VALUE] = node.value;
-          }
-          if (node.checked) {
-              objNode[CHECKED] = node.checked;
-          }
-          if (node.selected) {
-              objNode[SELECTED] = node.selected;
-          }
+            objNode[NODE_NAME] = node.nodeName;
+            if (node.attributes && node.attributes.length > 0) {
+                objNode[ATTRIBUTES] = {};
+                Array.prototype.slice.call(node.attributes).forEach(
+                    function(attribute) {
+                        objNode[ATTRIBUTES][attribute.name] = attribute.value;
+                    }
+                );
+            }
+            if (node.childNodes && node.childNodes.length > 0) {
+                objNode[CHILD_NODES] = [];
+                Array.prototype.slice.call(node.childNodes).forEach(
+                    function(childNode) {
+                        objNode[CHILD_NODES].push(nodeToObj(childNode));
+                    }
+                );
+            }
+            if (node.value) {
+                objNode[VALUE] = node.value;
+            }
+            if (node.checked) {
+                objNode[CHECKED] = node.checked;
+            }
+            if (node.selected) {
+                objNode[SELECTED] = node.selected;
+            }
         }
 
         return objNode;
@@ -228,7 +228,7 @@
     var objToNode = function(objNode, insideSvg) {
         var node, attribute;
         if (objNode[NODE_TYPE] === 3) {
-      //    console.log(objNode);
+            //    console.log(objNode);
             node = objNode[DATA] ? document.createTextNode(objNode[DATA]) : document.createTextNode('');
 
         } else if (objNode[NODE_TYPE] === 8) {
@@ -425,23 +425,22 @@
         }
     };
 
-    var diffDOM = function(options){
+    var diffDOM = function(options) {
 
         var defaults = {
-          debug:   false,
-          diffcap:  10,
-          valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
-          siblingTextNodes: true, // Whether to take into consideration sibling text nodes.
-          // diffing text elements can be overwritten for use with diff_match_patch and alike
-          // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
-          textDiff: function() {
-              arguments[0].data = arguments[3];
-              return;
-          }
-        }, i;
+                debug: false,
+                diffcap: 10,
+                valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
+                // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
+                textDiff: function() {
+                    arguments[0].data = arguments[3];
+                    return;
+                }
+            },
+            i;
 
         if (typeof options == "undefined") {
-          options = {};
+            options = {};
         }
 
         for (i in defaults) {
@@ -493,7 +492,7 @@
         diff: function(t1Node, t2Node) {
 
             var t1 = nodeToObj(t1Node),
-            t2 = nodeToObj(t2Node);
+                t2 = nodeToObj(t2Node);
 
             diffcount = 0;
 
@@ -538,23 +537,23 @@
             }
             // inner differences?
             if (!t1.inner_done) {
-              diffs = this.findInnerDiff(t1, t2, route);
-              if (diffs.length > 0) {
-                  return diffs;
-              } else {
-                  t1.inner_done = true;
-              }
+                diffs = this.findInnerDiff(t1, t2, route);
+                if (diffs.length > 0) {
+                    return diffs;
+                } else {
+                    t1.inner_done = true;
+                }
             }
 
             if (this.valueDiffing && !t1.value_done) {
-              // value differences?
-              diffs = this.findValueDiff(t1, t2, route);
+                // value differences?
+                diffs = this.findValueDiff(t1, t2, route);
 
-              if (diffs.length > 0) {
-                  return diffs;
-              } else {
-                  t1.value_done = true;
-              }
+                if (diffs.length > 0) {
+                    return diffs;
+                } else {
+                    t1.value_done = true;
+                }
             }
 
             // no differences
@@ -574,7 +573,7 @@
             }
 
 
-                var attr1 = t1[ATTRIBUTES] ? Object.keys(t1[ATTRIBUTES]).sort() : [],
+            var attr1 = t1[ATTRIBUTES] ? Object.keys(t1[ATTRIBUTES]).sort() : [],
                 attr2 = t2[ATTRIBUTES] ? Object.keys(t2[ATTRIBUTES]).sort() : [],
                 find = function(attr, list) {
                     var j, last = list.length;
@@ -635,13 +634,6 @@
             return diffs;
         },
         findInnerDiff: function(t1, t2, route) {
-
-          //  if (!this.siblingTextNodes && !this.valueDiffing) {
-              //  if (JSON.stringify(t1) === JSON.stringify(t2)) {
-                  // OBS! THis will not catch all cases.
-              //      return [];
-              //  }
-          //  }
 
             var subtrees = markSubTrees(t1, t2),
                 mappings = subtrees.length,
@@ -706,34 +698,34 @@
                         return [diff];
                     }
                     if (e1[NODE_TYPE] !== 3 || e2[NODE_TYPE] !== 3) {
-                      if (!t1_child_nodes[i].outer_done) {
-                        diffs = this.findOuterDiff(e1, e2, route.concat(i));
+                        if (!t1_child_nodes[i].outer_done) {
+                            diffs = this.findOuterDiff(e1, e2, route.concat(i));
+                            if (diffs.length > 0) {
+                                return diffs;
+                            } else {
+                                t1_child_nodes[i].outer_done = true;
+                            }
+                        }
+                    }
+                    if (!t1_child_nodes[i].inner_done) {
+                        diffs = this.findInnerDiff(e1, e2, route.concat(i));
+
                         if (diffs.length > 0) {
                             return diffs;
                         } else {
-                            t1_child_nodes[i].outer_done = true;
+                            t1_child_nodes[i].inner_done = true;
                         }
-                      }
-                    }
-                    if (!t1_child_nodes[i].inner_done) {
-                      diffs = this.findInnerDiff(e1, e2, route.concat(i));
-
-                      if (diffs.length > 0) {
-                          return diffs;
-                      } else {
-                          t1_child_nodes[i].inner_done = true;
-                      }
                     }
 
 
 
 
                     if (this.valueDiffing && !t1_child_nodes[i].value_done) {
-                        diffs = this.findValueDiff(e1,e2, route.concat(i));
+                        diffs = this.findValueDiff(e1, e2, route.concat(i));
                         if (diffs.length > 0) {
                             return diffs;
                         } else {
-                          t1_child_nodes[i].value_done = true;
+                            t1_child_nodes[i].value_done = true;
                         }
                     }
                 }
@@ -743,39 +735,40 @@
             return this.findFirstInnerDiff(t1, t2, subtrees, route);
         },
 
-        findValueDiff: function (t1, t2, route) {
-          // Differences of value. Only useful if the value/selection/checked value
-          // differs from what is represented in the DOM. For example in the case
-          // of filled out forms, etc.
-          var diffs = [], k;
+        findValueDiff: function(t1, t2, route) {
+            // Differences of value. Only useful if the value/selection/checked value
+            // differs from what is represented in the DOM. For example in the case
+            // of filled out forms, etc.
+            var diffs = [],
+                k;
 
-          if (t1[SELECTED] !== t2[SELECTED]) {
-              k = {};
-              k[ACTION] = MODIFY_SELECTED;
-              k[OLD_VALUE] = t1[SELECTED];
-              k[NEW_VALUE] = t2[SELECTED];
-              k[ROUTE] = route;
-              diffs.push(new Diff(k));
-          }
+            if (t1[SELECTED] !== t2[SELECTED]) {
+                k = {};
+                k[ACTION] = MODIFY_SELECTED;
+                k[OLD_VALUE] = t1[SELECTED];
+                k[NEW_VALUE] = t2[SELECTED];
+                k[ROUTE] = route;
+                diffs.push(new Diff(k));
+            }
 
-          if ((t1[VALUE] || t2[VALUE]) && t1[VALUE] !== t2[VALUE] && t1[NODE_NAME] !== 'OPTION') {
-              k = {};
-              k[ACTION] = MODIFY_VALUE;
-              k[OLD_VALUE] = t1[VALUE];
-              k[NEW_VALUE] = t2[VALUE];
-              k[ROUTE] = route;
-              diffs.push(new Diff(k));
-          }
-          if (t1[CHECKED] !== t2[CHECKED]) {
-              k = {};
-              k[ACTION] = MODIFY_CHECKED;
-              k[OLD_VALUE] = t1[CHECKED];
-              k[NEW_VALUE] = t2[CHECKED];
-              k[ROUTE] = route;
-              diffs.push(new Diff(k));
-          }
+            if ((t1[VALUE] || t2[VALUE]) && t1[VALUE] !== t2[VALUE] && t1[NODE_NAME] !== 'OPTION') {
+                k = {};
+                k[ACTION] = MODIFY_VALUE;
+                k[OLD_VALUE] = t1[VALUE];
+                k[NEW_VALUE] = t2[VALUE];
+                k[ROUTE] = route;
+                diffs.push(new Diff(k));
+            }
+            if (t1[CHECKED] !== t2[CHECKED]) {
+                k = {};
+                k[ACTION] = MODIFY_CHECKED;
+                k[OLD_VALUE] = t1[CHECKED];
+                k[NEW_VALUE] = t2[CHECKED];
+                k[ROUTE] = route;
+                diffs.push(new Diff(k));
+            }
 
-          return diffs;
+            return diffs;
         },
 
 
@@ -895,7 +888,8 @@
         },
         getFromVirtualRoute: function(tree, route) {
             route = route.slice();
-            var c, node = tree, parentNode, nodeIndex;
+            var c, node = tree,
+                parentNode, nodeIndex;
             while (route.length > 0) {
                 if (!node[CHILD_NODES]) {
                     return false;
@@ -906,14 +900,15 @@
                 nodeIndex = c;
             }
             return {
-              node: node,
-              parentNode: parentNode,
-              nodeIndex: nodeIndex
+                node: node,
+                parentNode: parentNode,
+                nodeIndex: nodeIndex
             };
         },
         applyVirtualDiff: function(tree, diff) {
             var routeInfo = this.getFromVirtualRoute(tree, diff[ROUTE]),
-                node = routeInfo.node, parentNode = routeInfo.parentNode,
+                node = routeInfo.node,
+                parentNode = routeInfo.parentNode,
                 nodeIndex = routeInfo.nodeIndex,
                 newNode, route, group, from, to, c, i;
 
@@ -927,7 +922,7 @@
 
                     if (diff[NAME] === 'checked') {
                         node[CHECKED] = true;
-                    //    console.log(node)
+                        //    console.log(node)
                     } else if (diff[NAME] === 'selected') {
                         node[SELECTED] = true;
                     } else if (node[NODE_NAME] === 'INPUT' && diff[NAME] === 'value') {
@@ -936,10 +931,10 @@
 
                     break;
                 case MODIFY_ATTRIBUTE:
-                      node[ATTRIBUTES][diff[NAME]] = diff[NEW_VALUE];
-                      if (node[NODE_NAME] === 'INPUT' && diff[NAME] === 'value') {
-                          node[VALUE] = diff[VALUE];
-                      }
+                    node[ATTRIBUTES][diff[NAME]] = diff[NEW_VALUE];
+                    if (node[NODE_NAME] === 'INPUT' && diff[NAME] === 'value') {
+                        node[VALUE] = diff[VALUE];
+                    }
                     break;
                 case REMOVE_ATTRIBUTE:
 
@@ -957,7 +952,7 @@
                 case MODIFY_TEXT_ELEMENT:
                     node[DATA] = diff[NEW_VALUE];
 
-                    if (parentNode[NODE_NAME]==='TEXTAREA') {
+                    if (parentNode[NODE_NAME] === 'TEXTAREA') {
                         parentNode[VALUE] = diff[NEW_VALUE];
                     }
                     break;
@@ -982,18 +977,18 @@
                     from = diff[FROM];
                     to = diff[TO];
                     console.log(node[CHILD_NODES]);
-                    console.log([from,to]);
+                    console.log([from, to]);
                     if (from < to) {
                         console.log(JSON.stringify(node[CHILD_NODES][0]));
 
                         for (i = 0; i < group.length; i += 1) {
-                            newNode = node[CHILD_NODES].splice(from,1)[0];
-                            node[CHILD_NODES].splice((to+group.length-1),0,newNode);
+                            newNode = node[CHILD_NODES].splice(from, 1)[0];
+                            node[CHILD_NODES].splice((to + group.length - 1), 0, newNode);
                         }
                         console.log(JSON.stringify(node[CHILD_NODES][0]));
                     } else {
                         for (i = 0; i < group.length; i += 1) {
-                            node[CHILD_NODES].splice((to+i),0,node[CHILD_NODES].splice((from+i),1)[0]);
+                            node[CHILD_NODES].splice((to + i), 0, node[CHILD_NODES].splice((from + i), 1)[0]);
                         }
                     }
                     break;
@@ -1004,7 +999,7 @@
                     route = diff[ROUTE].slice();
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromVirtualRoute(tree, route).node;
-                    newNode = diff[ELEMENT];//objToNode(diff[ELEMENT]);
+                    newNode = diff[ELEMENT]; //objToNode(diff[ELEMENT]);
 
                     if (!node[CHILD_NODES]) {
                         node[CHILD_NODES] = [];
@@ -1019,7 +1014,7 @@
                     break;
                 case REMOVE_TEXT_ELEMENT:
                     parentNode[CHILD_NODES].splice(nodeIndex, 1);
-                    if (parentNode[NODE_NAME]==='TEXTAREA') {
+                    if (parentNode[NODE_NAME] === 'TEXTAREA') {
                         delete parentNode[VALUE];
                     }
                     break;
@@ -1039,7 +1034,7 @@
                     } else {
                         node[CHILD_NODES].splice(c, 0, newNode);
                     }
-                    if (node[NODE_NAME]==='TEXTAREA') {
+                    if (node[NODE_NAME] === 'TEXTAREA') {
                         node[VALUE] = diff[NEW_VALUE];
                     }
                     break;
