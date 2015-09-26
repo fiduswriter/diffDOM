@@ -457,19 +457,19 @@
         }
 
         if (this.debug) {
-            ADD_ATTRIBUTE = "add attribute";
-            MODIFY_ATTRIBUTE = "modify attribute";
-            REMOVE_ATTRIBUTE = "remove attribute";
-            MODIFY_TEXT_ELEMENT = "modify text element";
-            RELOCATE_GROUP = "relocate group";
-            REMOVE_ELEMENT = "remove element";
-            ADD_ELEMENT = "add element";
-            REMOVE_TEXT_ELEMENT = "remove text element";
-            ADD_TEXT_ELEMENT = "add text element";
-            REPLACE_ELEMENT = "replace element";
-            MODIFY_VALUE = "modify value";
-            MODIFY_CHECKED = "modify checked";
-            MODIFY_SELECTED = "modify selected";
+            ADD_ATTRIBUTE = "addAttribute";
+            MODIFY_ATTRIBUTE = "modifyAttribute";
+            REMOVE_ATTRIBUTE = "removeAttribute";
+            MODIFY_TEXT_ELEMENT = "modifyTextElement";
+            RELOCATE_GROUP = "relocateGroup";
+            REMOVE_ELEMENT = "removeElement";
+            ADD_ELEMENT = "addElement";
+            REMOVE_TEXT_ELEMENT = "removeTextElement";
+            ADD_TEXT_ELEMENT = "addTextElement";
+            REPLACE_ELEMENT = "replaceElement";
+            MODIFY_VALUE = "modifyValue";
+            MODIFY_CHECKED = "modifyChecked";
+            MODIFY_SELECTED = "modifySelected";
             ACTION = "action";
             ROUTE = "route";
             OLD_VALUE = "oldValue";
@@ -531,32 +531,32 @@
             var diffs;
 
             // outer differences?
-            if (!t1.outer_done) {
+            if (!t1.outerDone) {
                 diffs = this.findOuterDiff(t1, t2, route);
                 if (diffs.length > 0) {
                     return diffs;
                 } else {
-                    t1.outer_done = true;
+                    t1.outerDone = true;
                 }
             }
             // inner differences?
-            if (!t1.inner_done) {
+            if (!t1.innerDone) {
                 diffs = this.findInnerDiff(t1, t2, route);
                 if (diffs.length > 0) {
                     return diffs;
                 } else {
-                    t1.inner_done = true;
+                    t1.innerDone = true;
                 }
             }
 
-            if (this.valueDiffing && !t1.value_done) {
+            if (this.valueDiffing && !t1.valueDone) {
                 // value differences?
                 diffs = this.findValueDiff(t1, t2, route);
 
                 if (diffs.length > 0) {
                     return diffs;
                 } else {
-                    t1.value_done = true;
+                    t1.valueDone = true;
                 }
             }
 
@@ -702,35 +702,35 @@
                         return [diff];
                     }
                     if (e1[NODE_NAME] !== '#text' || e2[NODE_NAME] !== '#text') {
-                        if (!t1_child_nodes[i].outer_done) {
+                        if (!t1_child_nodes[i].outerDone) {
                             diffs = this.findOuterDiff(e1, e2, route.concat(i));
                             if (diffs.length > 0) {
                                 return diffs;
                             } else {
-                                t1_child_nodes[i].outer_done = true;
+                                t1_child_nodes[i].outerDone = true;
                             }
                         }
                     }
-                    if (!t1_child_nodes[i].inner_done) {
+                    if (!t1_child_nodes[i].innerDone) {
                         diffs = this.findInnerDiff(e1, e2, route.concat(i));
 
                         if (diffs.length > 0) {
-                            delete t1_child_nodes[i].outer_done;
+                            delete t1_child_nodes[i].outerDone;
                             return diffs;
                         } else {
-                            t1_child_nodes[i].inner_done = true;
+                            t1_child_nodes[i].innerDone = true;
                         }
                     }
 
 
 
 
-                    if (this.valueDiffing && !t1_child_nodes[i].value_done) {
+                    if (this.valueDiffing && !t1_child_nodes[i].valueDone) {
                         diffs = this.findValueDiff(e1, e2, route.concat(i));
                         if (diffs.length > 0) {
                             return diffs;
                         } else {
-                            t1_child_nodes[i].value_done = true;
+                            t1_child_nodes[i].valueDone = true;
                         }
                     }
                 }
