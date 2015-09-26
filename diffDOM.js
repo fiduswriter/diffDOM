@@ -933,6 +933,7 @@
                 return true;
             }
             diffs.forEach(function(diff) {
+//              console.log(JSON.stringify(diff));
 //              console.log(JSON.stringify(tree));
                 if (!dobj.applyVirtualDiff(tree, diff)) {
                     return false;
@@ -993,6 +994,10 @@
                 case REMOVE_ATTRIBUTE:
 
                     delete node[ATTRIBUTES][diff[NAME]];
+
+                    if (Object.keys(node[ATTRIBUTES]).length === 0) {
+                        delete node[ATTRIBUTES];
+                    }
 
                     if (diff[NAME] === 'checked') {
                         delete node[CHECKED];
