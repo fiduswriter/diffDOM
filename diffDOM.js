@@ -766,6 +766,7 @@
                         diffs = this.findInnerDiff(e1, e2, route.concat(i));
 
                         if (diffs.length > 0) {
+                            delete t1_child_nodes[i].outer_done;
                             return diffs;
                         } else {
                             t1_child_nodes[i].inner_done = true;
@@ -932,9 +933,11 @@
                 return true;
             }
             diffs.forEach(function(diff) {
+//              console.log(JSON.stringify(tree));
                 if (!dobj.applyVirtualDiff(tree, diff)) {
                     return false;
                 }
+//                console.log(JSON.stringify(tree));
             });
             return true;
         },
@@ -1044,7 +1047,7 @@
                     route = diff[ROUTE].slice();
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromVirtualRoute(tree, route).node;
-                    newNode = cloneObj(diff[ELEMENT]); //objToNode(diff[ELEMENT]);
+                    newNode = cloneObj(diff[ELEMENT]);
 
                     if (!node[CHILD_NODES]) {
                         node[CHILD_NODES] = [];
