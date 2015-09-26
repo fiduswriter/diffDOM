@@ -29,7 +29,7 @@
                 'modifyValue' = 10,
                 'modifyChecked' = 11,
                 'modifySelected' = 12,
-                'modifyData' = 13,
+                'modifyComment' = 13,
                 'action' = 14,
                 'route' = 15,
                 'oldValue' = 16,
@@ -84,14 +84,12 @@
 
     var findUniqueDescriptors = function(li) {
         var uniqueDescriptors = {},
-            duplicateDescriptors = {},
-            descriptors, inUnique, inDupes;
+            duplicateDescriptors = {};
 
         li.forEach(function(node) {
-            descriptors = elementDescriptors(node);
-            descriptors.forEach(function(descriptor) {
-                inUnique = descriptor in uniqueDescriptors;
-                inDupes = descriptor in duplicateDescriptors;
+            elementDescriptors(node).forEach(function(descriptor) {
+                var inUnique = descriptor in uniqueDescriptors,
+                    inDupes = descriptor in duplicateDescriptors;
                 if (!inUnique && !inDupes) {
                     uniqueDescriptors[descriptor] = true;
                 } else if (inUnique) {
@@ -108,10 +106,9 @@
     var uniqueInBoth = function(l1, l2) {
         var l1Unique = findUniqueDescriptors(l1),
             l2Unique = findUniqueDescriptors(l2),
-            inBoth = {},
-            key;
+            inBoth = {};
 
-        Object.keys(l1Unique).forEach(function() {
+        Object.keys(l1Unique).forEach(function(key) {
             if (l2Unique[key]) {
                 inBoth[key] = true;
             }
@@ -159,11 +156,13 @@
             if (e1Attributes.length != e2Attributes.length) {
                 return false;
             }
-            for (attribute in e1Attributes) {
-                if (e1.attributes[attribute] !== e2.attributes[attribute]) {
-                    return false;
-                }
-            }
+            if (!e1Attributes.every(function(attribute){
+              if (e1.attributes[attribute] !== e2.attributes[attribute]) {
+                  return false;
+              }
+            })) {
+                return false;
+            };
         }
 
         if (e1.childNodes) {
@@ -173,6 +172,7 @@
             if (!e1.childNodes.every(function(childNode, index) {
                     return isEqual(childNode, e2.childNodes[index]);
                 })) {
+
                 return false;
             }
 
@@ -551,9 +551,10 @@
                     // Somtimes a node can be marked as done, but the creation of subsequent diffs means that it has to be changed anyway.
                     if (!isEqual(t1, t2)) {
                         removeDone(t1);
-                        diffs = this.findNextDiff(t1, t2, []);
+                      diffs = this.findNextDiff(t1, t2, []);
                     }
                 }
+
                 if (diffs.length > 0) {
                     this.tracker.add(diffs);
                     this.applyVirtual(t1, diffs);
@@ -568,6 +569,7 @@
             if (!t1.outerDone) {
                 diffs = this.findOuterDiff(t1, t2, route);
                 if (diffs.length > 0) {
+                    t1.outerDone = true;
                     return diffs;
                 } else {
                     t1.outerDone = true;
@@ -588,6 +590,7 @@
                 diffs = this.findValueDiff(t1, t2, route);
 
                 if (diffs.length > 0) {
+                    t1.valueDone = true;
                     return diffs;
                 } else {
                     t1.valueDone = true;
@@ -599,7 +602,7 @@
         },
         findOuterDiff: function(t1, t2, route) {
 
-            var diffs = [];
+            var diffs = [], attr1, attr2;
 
             if (t1.nodeName !== t2.nodeName) {
                 return [new Diff({
@@ -610,21 +613,32 @@
                 })];
             }
 
+            if (t1.data !== t2.data) {
+                // Comment or text node.
+                if (t1.nodeName === '#text') {
+                  return [new Diff({
+                      action: 'modifyComment',
+                      route: route,
+                      oldValue: t1.data,
+                      newValue: t2.data
+                  })];
+                } else {
+                  return [new Diff({
+                      action: 'modifyTextElement',
+                      route: route,
+                      oldValue: t1.data,
+                      newValue: t2.data
+                  })];
+                }
 
-            var attr1 = t1.attributes ? Object.keys(t1.attributes).sort() : [],
-                attr2 = t2.attributes ? Object.keys(t2.attributes).sort() : [],
-                find = function(attr, list) {
-                    var j, last = list.length;
-                    for (j = 0; j < last; j += 1) {
-                        if (list[j] === attr) {
-                            return j;
-                        }
-                    }
-                    return -1;
-                };
+            }
+
+
+            attr1 = t1.attributes ? Object.keys(t1.attributes).sort() : [];
+            attr2 = t2.attributes ? Object.keys(t2.attributes).sort() : [];
 
             attr1.forEach(function(attr) {
-                var pos = find(attr, attr2);
+                var pos = attr2.indexOf(attr);
                 if (pos === -1) {
                     diffs.push(new Diff({
                         action: 'removeAttribute',
@@ -632,30 +646,22 @@
                         name: attr,
                         value: t1.attributes[attr]
                     }));
-                    return diffs;
+                } else {
+                    attr2.splice(pos, 1);
+                    if (t1.attributes[attr] !== t2.attributes[attr]) {
+                        diffs.push(new Diff({
+                            action: 'modifyAttribute',
+                            route: route,
+                            name: attr,
+                            oldValue: t1.attributes[attr],
+                            newValue: t2.attributes[attr]
+                        }));
+                    }
                 }
-                attr2.splice(pos, 1);
-                if (t1.attributes[attr] !== t2.attributes[attr]) {
-                    diffs.push(new Diff({
-                        action: 'modifyAttribute',
-                        route: route,
-                        name: attr,
-                        oldValue: t1.attributes[attr],
-                        newValue: t2.attributes[attr]
-                    }));
-                }
+
             });
-            if (!t1.attributes && t1.data !== t2.data) {
-                diffs.push(new Diff({
-                    action: 'modifyData',
-                    route: route,
-                    oldValue: t1.data,
-                    newValue: t2.data
-                }));
-            }
-            if (diffs.length > 0) {
-                return diffs;
-            }
+
+
             attr2.forEach(function(attr) {
                 diffs.push(new Diff({
                     action: 'addAttribute',
@@ -961,7 +967,7 @@
                 case 'modifyValue':
                     node.value = diff.newValue;
                     break;
-                case 'modifyData':
+                case 'modifyComment':
                     node.data = diff.newValue;
                     break;
                 case 'modifyChecked':
@@ -971,7 +977,11 @@
                     node.selected = diff.newValue;
                     break;
                 case 'replaceElement':
-                    parentNode.childNodes[nodeIndex] = cloneObj(diff.newValue);
+                    newNode = cloneObj(diff.newValue);
+                    newNode.outerDone = true;
+                    newNode.innerDone = true;
+                    newNode.valueDone = true;
+                    parentNode.childNodes[nodeIndex] = newNode;
                     break;
                 case 'relocateGroup':
                     group = diff.group;
@@ -996,6 +1006,9 @@
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromVirtualRoute(tree, route).node;
                     newNode = cloneObj(diff.element);
+                    newNode.outerDone = true;
+                    newNode.innerDone = true;
+                    newNode.valueDone = true;
 
                     if (!node.childNodes) {
                         node.childNodes = [];
@@ -1052,8 +1065,6 @@
                 return true;
             }
             diffs.forEach(function(diff) {
-                //                console.log(tree.outerHTML);
-                //                console.log(diff);
                 if (!dobj.applyDiff(tree, diff)) {
                     return false;
                 }
@@ -1107,7 +1118,7 @@
                     }
                     node.value = diff.newValue;
                     break;
-                case 'modifyData':
+                case 'modifyComment':
                     if (!node || typeof node.data === 'undefined') {
                         return false;
                     }
@@ -1228,7 +1239,7 @@
                     swap(diff, 'oldValue', 'newValue');
                     this.applyDiff(tree, diff);
                     break;
-                case 'modifyData':
+                case 'modifyComment':
                     swap(diff, 'oldValue', 'newValue');
                     this.applyDiff(tree, diff);
                     break;
