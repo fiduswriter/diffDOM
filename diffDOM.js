@@ -121,6 +121,69 @@
         return inBoth;
     };
 
+    var removeDone = function(tree) {
+        delete tree.outerDone;
+        delete tree.innerDone;
+        delete tree.valueDone;
+        if (tree.childNodes) {
+            return tree.childNodes.every(removeDone);
+        } else {
+            return true;
+        }
+    }
+
+    var isEqual = function(e1, e2) {
+
+      var e1Attributes, e2Attributes, attribute;
+
+      if (!['nodeName', 'value', 'checked', 'selected', 'data'].every(function (element) {
+        if (e1[element] !== e2[element]) {
+            return false;
+        }
+        return true;
+      })) {
+          return false;
+      }
+
+      if (Boolean(e1.attributes) !== Boolean(e2.attributes)) {
+          return false;
+      }
+
+      if (Boolean(e1.childNodes) !== Boolean(e2.childNodes)) {
+          return false;
+      }
+
+      if (e1.attributes) {
+          e1Attributes = Object.keys(e1.attributes);
+          e2Attributes = Object.keys(e2.attributes);
+
+          if (e1Attributes.length != e2Attributes.length) {
+              return false;
+          }
+          for (attribute in e1Attributes) {
+              if (e1.attributes[attribute] !== e2.attributes[attribute]) {
+                  return false;
+              }
+          }
+      }
+
+      if (e1.childNodes) {
+          if (e1.childNodes.length !== e2.childNodes.length) {
+              return false;
+          }
+          if (!e1.childNodes.every(function(childNode,index) {
+              return isEqual(childNode, e2.childNodes[index]);
+          })) {
+              return false;
+          }
+
+      }
+
+      return true;
+
+    };
+
+
     var roughlyEqual = function (e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
         var childUniqueDescriptors, nodeList1, nodeList2;
 
@@ -480,12 +543,20 @@
                 if (this.debug) {
                     diffcount += 1;
                     if (diffcount > this.diffcap) {
-                        console.log(diffs);
                         window.diffError = [this.t1Orig, this.t2Orig];
                         throw new Error("surpassed diffcap:" + JSON.stringify(this.t1Orig) + " -> " + JSON.stringify(this.t2Orig));
                     }
                 }
-                diffs = this.findFirstDiff(t1, t2, []);
+                diffs = this.findNextDiff(t1, t2, []);
+                if (diffs.length === 0 || !diffs) {
+                      // Last check if the elements really are the same now.
+                      // If not, remove all info about being done and start over.
+                      // Somtimes a node can be marked as done, but the creation of subsequent diffs means that it has to be changed anyway.
+                      if (!isEqual(t1,t2)) {
+                          removeDone(t1);
+                          diffs = this.findNextDiff(t1, t2, []);
+                      }
+                }
                 if (diffs.length > 0) {
                     this.tracker.add(diffs);
                     this.applyVirtual(t1, diffs);
@@ -493,7 +564,7 @@
             } while (diffs);
             return this.tracker.list;
         },
-        findFirstDiff: function(t1, t2, route) {
+        findNextDiff: function(t1, t2, route) {
             var diffs;
 
             // outer differences?
@@ -633,7 +704,7 @@
                 for (i = 0; i < last; i += 1) {
                     e1 = t1_child_nodes[i];
                     e2 = t2_child_nodes[i];
-                    // This is a similar code path to the one
+                    // TODO: This is a similar code path to the one
                     //       in findFirstInnerDiff. Can we unify these?
                     if (e1 && !e2) {
                         if (e1.nodeName === '#text') {
@@ -667,38 +738,12 @@
                         diff = new Diff(k);
                         return [diff];
                     }
-                    if (e1.nodeName !== '#text' || e2.nodeName !== '#text') {
-                        if (!t1_child_nodes[i].outerDone) {
-                            diffs = this.findOuterDiff(e1, e2, route.concat(i));
-                            if (diffs.length > 0) {
-                                return diffs;
-                            } else {
-                                t1_child_nodes[i].outerDone = true;
-                            }
-                        }
-                    }
-                    if (!t1_child_nodes[i].innerDone) {
-                        diffs = this.findInnerDiff(e1, e2, route.concat(i));
 
-                        if (diffs.length > 0) {
-                            delete t1_child_nodes[i].outerDone;
-                            return diffs;
-                        } else {
-                            t1_child_nodes[i].innerDone = true;
-                        }
+                    diffs = this.findNextDiff(e1, e2, route.concat(i));
+                    if (diffs && diffs.length > 0) {
+                        return diffs;
                     }
 
-
-
-
-                    if (this.valueDiffing && !t1_child_nodes[i].valueDone) {
-                        diffs = this.findValueDiff(e1, e2, route.concat(i));
-                        if (diffs.length > 0) {
-                            return diffs;
-                        } else {
-                            t1_child_nodes[i].valueDone = true;
-                        }
-                    }
                 }
             }
 
@@ -855,6 +900,7 @@
                     return false;
                 }
 //                console.log(JSON.stringify(tree));
+//                console.log(objToNode(tree).outerHTML);
             });
             return true;
         },
@@ -978,7 +1024,6 @@
                         node.childNodes.push(newNode);
                     } else {
                         node.childNodes.splice(c, 0, newNode);
-
                     }
                     break;
                 case 'removeTextElement':
