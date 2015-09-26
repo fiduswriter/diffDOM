@@ -382,13 +382,13 @@
                 }
             });
         });
-
         if (lcsSize === 0) {
             return false;
         }
         origin = [index[0] - lcsSize, index[1] - lcsSize];
         ret = new SubsetMapping(origin[0], origin[1]);
         ret.length = lcsSize;
+
         return ret;
     };
 
@@ -405,6 +405,21 @@
      * Generate arrays that indicate which node belongs to which subset,
      * or whether it's actually an orphan node, existing in only one
      * of the two trees, rather than somewhere in both.
+     *
+     * So if t1 = <img><canvas><br>, t2 = <canvas><br><img>.
+     * The longest subset is "<canvas><br>" (length 2), so it will group 0.
+     * The second longest is "<img>" (length 1), so it will be group 1.
+     * gaps1 will therefore be [1,0,0] and gaps2 [0,0,1].
+     *
+     * If an element is not part of any group, it will stay being 'true', which
+     * is the initial value. For example:
+     * t1 = <img><p></p><br><canvas>, t2 = <b></b><br><canvas><img>
+     *
+     * The "<p></p>" and "<b></b>" do only show up in one of the two and will
+     * therefore be marked by "true". The remaining parts are parts of the
+     * groups 0 and 1:
+     * gaps1 = [1, true, 0, 0], gaps2 = [true, 0, 0, 1]
+     *
      */
     var getGapInformation = function(t1, t2, stable) {
 
@@ -850,6 +865,8 @@
                 if (gaps1[i] !== gaps2[i]) {
                     group = subtrees[gaps1[i]];
                     toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
+                    //var fromGroup = group.old;
+                    console.log([toGroup,group,gaps1,gaps2,i])
                     if (toGroup !== i) {
                         // Check whether destination nodes are different than originating ones.
                         destinationDifferent = false;
@@ -880,19 +897,19 @@
                 return true;
             }
             diffs.forEach(function(diff) {
-                //              console.log(JSON.stringify(diff));
-                //              console.log(JSON.stringify(tree));
-                //              console.log(objToNode(tree).outerHTML);
+                              console.log(JSON.stringify(diff));
+                              console.log(JSON.stringify(tree));
+                              console.log(objToNode(tree).outerHTML);
                 dobj.applyVirtualDiff(tree, diff);
-                //                console.log(JSON.stringify(tree));
-                //                console.log(objToNode(tree).outerHTML);
+                                console.log(JSON.stringify(tree));
+                                console.log(objToNode(tree).outerHTML);
             });
             return true;
         },
         getFromVirtualRoute: function(tree, route) {
             var node = tree,
                 parentNode, nodeIndex;
-                
+
             route = route.slice();
             while (route.length > 0) {
                 if (!node.childNodes) {
@@ -992,7 +1009,9 @@
                         }
                     } else {
                         for (i = 0; i < group.length; i += 1) {
-                            node.childNodes.splice((to + i), 0, node.childNodes.splice((from + i), 1)[0]);
+                            newNode = node.childNodes.splice((from + i), 1)[0];
+                            console.log([i,from+i,newNode])
+                            node.childNodes.splice((to + i), 0, newNode);
                         }
                     }
                     break;
