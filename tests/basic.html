@@ -536,7 +536,7 @@
         t1 = divs[i].cloneNode(true);
         dd.apply(t1, diffs);
 
-        if (t1.isEqualNode(divs[i + 1])) {
+        if (t1.isEqualNode(divs[i + 1]) || t1.innerHTML === divs[i + 1].innerHTML) {
           print('...success!');
         } else {
           testFailure();
@@ -549,7 +549,7 @@
         print("undoing...");
         dd.undo(t1, diffs);
 
-        if (t1.isEqualNode(divs[i])) {
+        if (t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML) {
           print('...success!');
           testSuccess();
         } else {
