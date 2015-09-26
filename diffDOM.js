@@ -883,26 +883,24 @@
                 //              console.log(JSON.stringify(diff));
                 //              console.log(JSON.stringify(tree));
                 //              console.log(objToNode(tree).outerHTML);
-                if (!dobj.applyVirtualDiff(tree, diff)) {
-                    return false;
-                }
+                dobj.applyVirtualDiff(tree, diff);
                 //                console.log(JSON.stringify(tree));
                 //                console.log(objToNode(tree).outerHTML);
             });
             return true;
         },
         getFromVirtualRoute: function(tree, route) {
-            route = route.slice();
-            var c, node = tree,
+            var node = tree,
                 parentNode, nodeIndex;
+                
+            route = route.slice();
             while (route.length > 0) {
                 if (!node.childNodes) {
                     return false;
                 }
-                c = route.splice(0, 1)[0];
+                nodeIndex = route.splice(0, 1)[0];
                 parentNode = node;
-                node = node.childNodes[c];
-                nodeIndex = c;
+                node = node.childNodes[nodeIndex];
             }
             return {
                 node: node,
@@ -1050,7 +1048,7 @@
                     console.log('unknown action');
             }
 
-            return true;
+            return;
         },
 
 
