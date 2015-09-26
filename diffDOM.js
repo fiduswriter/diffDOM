@@ -144,11 +144,7 @@
             return true;
         }
 
-        if(Boolean(e1.attributes) != Boolean(e2.attributes)) {
-            return false;
-        }
-
-        if (e1.attributes) {
+        if (e1.attributes && e2.attributes) {
 
             if (e1.attributes.id && e1.attributes.id === e2.attributes.id) {
                 var idDescriptor = e1.nodeName + '#' + e1.attributes.id;
