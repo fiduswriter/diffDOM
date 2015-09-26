@@ -70,12 +70,12 @@
         if (el.nodeName != '#text' && el.nodeName != '#comment') {
             output.push(el.nodeName);
             if (el.attributes) {
-              if (el.attributes.class) {
-                  output.push(el.nodeName + '.' + el.attributes.class.replace(/ /g, '.'));
-              }
-              if (el.attributes.id) {
-                  output.push(el.nodeName + '#' + el.attributes.id);
-              }
+                if (el.attributes.class) {
+                    output.push(el.nodeName + '.' + el.attributes.class.replace(/ /g, '.'));
+                }
+                if (el.attributes.id) {
+                    output.push(el.nodeName + '#' + el.attributes.id);
+                }
             }
 
         }
@@ -133,57 +133,57 @@
 
     var isEqual = function(e1, e2) {
 
-      var e1Attributes, e2Attributes, attribute;
+        var e1Attributes, e2Attributes, attribute;
 
-      if (!['nodeName', 'value', 'checked', 'selected', 'data'].every(function (element) {
-        if (e1[element] !== e2[element]) {
+        if (!['nodeName', 'value', 'checked', 'selected', 'data'].every(function(element) {
+                if (e1[element] !== e2[element]) {
+                    return false;
+                }
+                return true;
+            })) {
             return false;
         }
+
+        if (Boolean(e1.attributes) !== Boolean(e2.attributes)) {
+            return false;
+        }
+
+        if (Boolean(e1.childNodes) !== Boolean(e2.childNodes)) {
+            return false;
+        }
+
+        if (e1.attributes) {
+            e1Attributes = Object.keys(e1.attributes);
+            e2Attributes = Object.keys(e2.attributes);
+
+            if (e1Attributes.length != e2Attributes.length) {
+                return false;
+            }
+            for (attribute in e1Attributes) {
+                if (e1.attributes[attribute] !== e2.attributes[attribute]) {
+                    return false;
+                }
+            }
+        }
+
+        if (e1.childNodes) {
+            if (e1.childNodes.length !== e2.childNodes.length) {
+                return false;
+            }
+            if (!e1.childNodes.every(function(childNode, index) {
+                    return isEqual(childNode, e2.childNodes[index]);
+                })) {
+                return false;
+            }
+
+        }
+
         return true;
-      })) {
-          return false;
-      }
-
-      if (Boolean(e1.attributes) !== Boolean(e2.attributes)) {
-          return false;
-      }
-
-      if (Boolean(e1.childNodes) !== Boolean(e2.childNodes)) {
-          return false;
-      }
-
-      if (e1.attributes) {
-          e1Attributes = Object.keys(e1.attributes);
-          e2Attributes = Object.keys(e2.attributes);
-
-          if (e1Attributes.length != e2Attributes.length) {
-              return false;
-          }
-          for (attribute in e1Attributes) {
-              if (e1.attributes[attribute] !== e2.attributes[attribute]) {
-                  return false;
-              }
-          }
-      }
-
-      if (e1.childNodes) {
-          if (e1.childNodes.length !== e2.childNodes.length) {
-              return false;
-          }
-          if (!e1.childNodes.every(function(childNode,index) {
-              return isEqual(childNode, e2.childNodes[index]);
-          })) {
-              return false;
-          }
-
-      }
-
-      return true;
 
     };
 
 
-    var roughlyEqual = function (e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
+    var roughlyEqual = function(e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
         var childUniqueDescriptors, nodeList1, nodeList2;
 
         if (!e1 || !e2) {
@@ -306,7 +306,7 @@
                 node = document.createElement(objNode.nodeName);
             }
             if (objNode.attributes) {
-                Object.keys(objNode.attributes).forEach(function(attribute){
+                Object.keys(objNode.attributes).forEach(function(attribute) {
                     node.setAttribute(attribute, objNode.attributes[attribute]);
                 });
             }
@@ -546,13 +546,13 @@
                 }
                 diffs = this.findNextDiff(t1, t2, []);
                 if (diffs.length === 0 || !diffs) {
-                      // Last check if the elements really are the same now.
-                      // If not, remove all info about being done and start over.
-                      // Somtimes a node can be marked as done, but the creation of subsequent diffs means that it has to be changed anyway.
-                      if (!isEqual(t1,t2)) {
-                          removeDone(t1);
-                          diffs = this.findNextDiff(t1, t2, []);
-                      }
+                    // Last check if the elements really are the same now.
+                    // If not, remove all info about being done and start over.
+                    // Somtimes a node can be marked as done, but the creation of subsequent diffs means that it has to be changed anyway.
+                    if (!isEqual(t1, t2)) {
+                        removeDone(t1);
+                        diffs = this.findNextDiff(t1, t2, []);
+                    }
                 }
                 if (diffs.length > 0) {
                     this.tracker.add(diffs);
@@ -603,10 +603,10 @@
 
             if (t1.nodeName !== t2.nodeName) {
                 return [new Diff({
-                  action: 'replaceElement',
-                  oldValue: cloneObj(t1),
-                  newValue: cloneObj(t2),
-                  route: route
+                    action: 'replaceElement',
+                    oldValue: cloneObj(t1),
+                    newValue: cloneObj(t2),
+                    route: route
                 })];
             }
 
@@ -627,30 +627,30 @@
                 var pos = find(attr, attr2);
                 if (pos === -1) {
                     diffs.push(new Diff({
-                      action: 'removeAttribute',
-                      route: route,
-                      name: attr,
-                      value: t1.attributes[attr]
+                        action: 'removeAttribute',
+                        route: route,
+                        name: attr,
+                        value: t1.attributes[attr]
                     }));
                     return diffs;
                 }
                 attr2.splice(pos, 1);
                 if (t1.attributes[attr] !== t2.attributes[attr]) {
                     diffs.push(new Diff({
-                      action: 'modifyAttribute',
-                      route: route,
-                      name: attr,
-                      oldValue: t1.attributes[attr],
-                      newValue: t2.attributes[attr]
+                        action: 'modifyAttribute',
+                        route: route,
+                        name: attr,
+                        oldValue: t1.attributes[attr],
+                        newValue: t2.attributes[attr]
                     }));
                 }
             });
             if (!t1.attributes && t1.data !== t2.data) {
                 diffs.push(new Diff({
-                  action: 'modifyData',
-                  route: route,
-                  oldValue: t1.data,
-                  newValue: t2.data
+                    action: 'modifyData',
+                    route: route,
+                    oldValue: t1.data,
+                    newValue: t2.data
                 }));
             }
             if (diffs.length > 0) {
@@ -658,10 +658,10 @@
             }
             attr2.forEach(function(attr) {
                 diffs.push(new Diff({
-                  action: 'addAttribute',
-                  route: route,
-                  name: attr,
-                  value: t2.attributes[attr]
+                    action: 'addAttribute',
+                    route: route,
+                    name: attr,
+                    value: t2.attributes[attr]
                 }));
 
             });
@@ -683,10 +683,10 @@
             if (mappings === 0) {
                 if (t1.nodeName === '#text' && t2.nodeName === '#text' && t1.data !== t2.data) {
                     return [new Diff({
-                      action: 'modiFyTextElement',
-                      oldValue: t1.data,
-                      newValue: t2.data,
-                      route: route
+                        action: 'modiFyTextElement',
+                        oldValue: t1.data,
+                        newValue: t2.data,
+                        route: route
                     })];
                 }
             }
@@ -700,30 +700,30 @@
                     //       in findFirstInnerDiff. Can we unify these?
                     if (e1 && !e2) {
                         if (e1.nodeName === '#text') {
-                          return [new Diff({
-                            action: 'removeTextElement',
-                            route: route.concat(i),
-                            value: e1.data
-                          })];
+                            return [new Diff({
+                                action: 'removeTextElement',
+                                route: route.concat(i),
+                                value: e1.data
+                            })];
                         }
                         return [new Diff({
-                          action: 'removeElement',
-                          route: route.concat(i),
-                          element: cloneObj(e1)
+                            action: 'removeElement',
+                            route: route.concat(i),
+                            element: cloneObj(e1)
                         })];
                     }
                     if (e2 && !e1) {
                         if (e2.nodeName === '#text') {
                             return [new Diff({
-                              action: 'addTextElement',
-                              route: route.concat(i),
-                              value: e2.data
+                                action: 'addTextElement',
+                                route: route.concat(i),
+                                value: e2.data
                             })];
                         }
                         return [new Diff({
-                          action: 'addElement',
-                          route: route.concat(i),
-                          element: cloneObj(e2)
+                            action: 'addElement',
+                            route: route.concat(i),
+                            element: cloneObj(e2)
                         })];
                     }
 
@@ -747,27 +747,27 @@
 
             if (t1.selected !== t2.selected) {
                 diffs.push(new Diff({
-                  action: 'modifySelected',
-                  oldValue: t1.selected,
-                  newValue: t2.selected,
-                  route: route
+                    action: 'modifySelected',
+                    oldValue: t1.selected,
+                    newValue: t2.selected,
+                    route: route
                 }));
             }
 
             if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
                 diffs.push(new Diff({
-                  action: 'modifyValue',
-                  oldValue: t1.value,
-                  newValue: t2.value,
-                  route: route
+                    action: 'modifyValue',
+                    oldValue: t1.value,
+                    newValue: t2.value,
+                    route: route
                 }));
             }
             if (t1.checked !== t2.checked) {
                 diffs.push(new Diff({
-                  action: 'modifyChecked',
-                  oldValue: t1.checked,
-                  newValue: t2.checked,
-                  route: route
+                    action: 'modifyChecked',
+                    oldValue: t1.checked,
+                    newValue: t2.checked,
+                    route: route
                 }));
             }
 
@@ -807,38 +807,38 @@
                             }
                             if (!similarNode) {
                                 return [new Diff({
-                                  action: 'modifyTextElement',
-                                  route: route.concat(i),
-                                  oldValue: node.data,
-                                  newValue: t2.childNodes[i].data
+                                    action: 'modifyTextElement',
+                                    route: route.concat(i),
+                                    oldValue: node.data,
+                                    newValue: t2.childNodes[i].data
                                 })];
                             }
                         }
                         return [new Diff({
-                          action: 'removeTextElement',
-                          route: route.concat(i),
-                          value: node.data
+                            action: 'removeTextElement',
+                            route: route.concat(i),
+                            value: node.data
                         })];
                     }
                     return [new Diff({
-                      action: 'removeElement',
-                      route: route.concat(i),
-                      element: cloneObj(node)
+                        action: 'removeElement',
+                        route: route.concat(i),
+                        element: cloneObj(node)
                     })];
                 }
                 if (gaps2[i] === true) {
                     node = t2.childNodes[i];
                     if (node.nodeName === '#text') {
                         return [new Diff({
-                          action: 'addTextElement',
-                          route: route.concat(i),
-                          value: node.data
+                            action: 'addTextElement',
+                            route: route.concat(i),
+                            value: node.data
                         })];
                     }
                     return [new Diff({
-                      action: 'addElement',
-                      route: route.concat(i),
-                      element: cloneObj(node)
+                        action: 'addElement',
+                        route: route.concat(i),
+                        element: cloneObj(node)
                     })];
                 }
                 if (gaps1[i] !== gaps2[i]) {
@@ -848,17 +848,17 @@
                         // Check whether destination nodes are different than originating ones.
                         destinationDifferent = false;
                         for (j = 0; j < group.length; j += 1) {
-                            if (!roughlyEqual(t1.childNodes[toGroup + j], t1.childNodes[i + j],[],false,true)) {
+                            if (!roughlyEqual(t1.childNodes[toGroup + j], t1.childNodes[i + j], [], false, true)) {
                                 destinationDifferent = true;
                             }
                         }
                         if (destinationDifferent) {
                             return [new Diff({
-                              action: 'relocateGroup',
-                              group: group,
-                              from: i,
-                              to: toGroup,
-                              route: route
+                                action: 'relocateGroup',
+                                group: group,
+                                from: i,
+                                to: toGroup,
+                                route: route
                             })];
                         }
                     }
@@ -874,14 +874,14 @@
                 return true;
             }
             diffs.forEach(function(diff) {
-//              console.log(JSON.stringify(diff));
-//              console.log(JSON.stringify(tree));
-//              console.log(objToNode(tree).outerHTML);
+                //              console.log(JSON.stringify(diff));
+                //              console.log(JSON.stringify(tree));
+                //              console.log(objToNode(tree).outerHTML);
                 if (!dobj.applyVirtualDiff(tree, diff)) {
                     return false;
                 }
-//                console.log(JSON.stringify(tree));
-//                console.log(objToNode(tree).outerHTML);
+                //                console.log(JSON.stringify(tree));
+                //                console.log(objToNode(tree).outerHTML);
             });
             return true;
         },
@@ -1052,8 +1052,8 @@
                 return true;
             }
             diffs.forEach(function(diff) {
-//                console.log(tree.outerHTML);
-//                console.log(diff);
+                //                console.log(tree.outerHTML);
+                //                console.log(diff);
                 if (!dobj.applyDiff(tree, diff)) {
                     return false;
                 }
