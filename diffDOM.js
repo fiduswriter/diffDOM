@@ -130,7 +130,7 @@
 
     var isEqual = function(e1, e2) {
 
-        var e1Attributes, e2Attributes, attribute;
+        var e1Attributes, e2Attributes;
 
         if (!['nodeName', 'value', 'checked', 'selected', 'data'].every(function(element) {
                 if (e1[element] !== e2[element]) {
@@ -162,7 +162,7 @@
               }
             })) {
                 return false;
-            };
+            }
         }
 
         if (e1.childNodes) {
@@ -865,21 +865,19 @@
                 if (gaps1[i] !== gaps2[i]) {
                     group = subtrees[gaps1[i]];
                     toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
-                    //var fromGroup = group.old;
-                    console.log([toGroup,group,gaps1,gaps2,i])
-                    if (toGroup !== i) {
+                    if (toGroup !== group.old) {
                         // Check whether destination nodes are different than originating ones.
                         destinationDifferent = false;
                         for (j = 0; j < group.length; j += 1) {
-                            if (!roughlyEqual(t1.childNodes[toGroup + j], t1.childNodes[i + j], [], false, true)) {
+                            if (!roughlyEqual(t1.childNodes[toGroup + j], t1.childNodes[group.old + j], [], false, true)) {
                                 destinationDifferent = true;
                             }
                         }
                         if (destinationDifferent) {
                             return [new Diff({
                                 action: 'relocateGroup',
-                                group: group,
-                                from: i,
+                                groupLength: group.length,
+                                from: group.old,
                                 to: toGroup,
                                 route: route
                             })];
@@ -897,12 +895,12 @@
                 return true;
             }
             diffs.forEach(function(diff) {
-                              console.log(JSON.stringify(diff));
-                              console.log(JSON.stringify(tree));
-                              console.log(objToNode(tree).outerHTML);
+//                              console.log(JSON.stringify(diff));
+//                              console.log(JSON.stringify(tree));
+//                              console.log(objToNode(tree).outerHTML);
                 dobj.applyVirtualDiff(tree, diff);
-                                console.log(JSON.stringify(tree));
-                                console.log(objToNode(tree).outerHTML);
+//                                console.log(JSON.stringify(tree));
+//                                console.log(objToNode(tree).outerHTML);
             });
             return true;
         },
@@ -930,7 +928,7 @@
                 node = routeInfo.node,
                 parentNode = routeInfo.parentNode,
                 nodeIndex = routeInfo.nodeIndex,
-                newNode, route, group, from, to, c, i;
+                newNode, route, c;
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -999,21 +997,10 @@
                     parentNode.childNodes[nodeIndex] = newNode;
                     break;
                 case 'relocateGroup':
-                    group = diff.group;
-                    from = diff.from;
-                    to = diff.to;
-                    if (from < to) {
-                        for (i = 0; i < group.length; i += 1) {
-                            newNode = node.childNodes.splice(from, 1)[0];
-                            node.childNodes.splice((to + group.length - 1), 0, newNode);
-                        }
-                    } else {
-                        for (i = 0; i < group.length; i += 1) {
-                            newNode = node.childNodes.splice((from + i), 1)[0];
-                            console.log([i,from+i,newNode])
-                            node.childNodes.splice((to + i), 0, newNode);
-                        }
-                    }
+                    node.childNodes.splice(diff.from, diff.groupLength).reverse()
+                        .forEach(function(movedNode){
+                            node.childNodes.splice(diff.to, 0, movedNode);
+                    });
                     break;
                 case 'removeElement':
                     parentNode.childNodes.splice(nodeIndex, 1);
@@ -1102,7 +1089,7 @@
         },
         applyDiff: function(tree, diff) {
             var node = this.getFromRoute(tree, diff.route),
-                newNode, reference, route, group, from, to, child, c, i;
+                newNode, reference, route, groupLength, from, to, child, c, i;
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -1158,20 +1145,20 @@
                     node.parentNode.replaceChild(newNode, node);
                     break;
                 case 'relocateGroup':
-                    group = diff.group;
+                    groupLength = diff.groupLength;
                     from = diff.from;
                     to = diff.to;
-                    reference = node.childNodes[to + group.length];
+                    reference = node.childNodes[to + groupLength];
                     // slide elements up
                     if (from < to) {
-                        for (i = 0; i < group.length; i += 1) {
+                        for (i = 0; i < groupLength; i += 1) {
                             child = node.childNodes[from];
                             node.insertBefore(child, reference);
                         }
                     } else {
                         // slide elements down
                         reference = node.childNodes[to];
-                        for (i = 0; i < group.length; i += 1) {
+                        for (i = 0; i < groupLength; i += 1) {
                             child = node.childNodes[from + i];
                             node.insertBefore(child, reference);
                         }
