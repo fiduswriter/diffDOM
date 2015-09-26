@@ -855,7 +855,7 @@
                         // Check whether destination nodes are different than originating ones.
                         destinationDifferent = false;
                         for (j = 0; j < group.length; j += 1) {
-                            if (!roughlyEqual(t1[CHILD_NODES][toGroup + j], t1[CHILD_NODES][i + j],[],true,true)) {
+                            if (!roughlyEqual(t1[CHILD_NODES][toGroup + j], t1[CHILD_NODES][i + j],[],false,true)) {
                                 destinationDifferent = true;
                             }
                         }
