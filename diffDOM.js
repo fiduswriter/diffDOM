@@ -1044,7 +1044,7 @@
                     route = diff[ROUTE].slice();
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromVirtualRoute(tree, route).node;
-                    newNode = diff[ELEMENT]; //objToNode(diff[ELEMENT]);
+                    newNode = cloneObj(diff[ELEMENT]); //objToNode(diff[ELEMENT]);
 
                     if (!node[CHILD_NODES]) {
                         node[CHILD_NODES] = [];
