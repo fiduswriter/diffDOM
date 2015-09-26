@@ -99,6 +99,7 @@
           print("applying...");
           var t1 = divs[i].cloneNode(true);
           dd.apply(t1, diffs);
+          console.log(diffs);
 
           if (t1.isEqualNode(divs[i + 1])) {
             print('...success!');
@@ -131,6 +132,8 @@
           throw e;
         }
       }
+      // No errors so far, we reload the page to see if there are more errors next time
+      location.reload();
     }
   </script>
 </head>

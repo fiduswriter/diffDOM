@@ -23,7 +23,57 @@
   <h1>Test for diffDOM</h1>
 
   <!-- Add all divs to be compared here two by two -->
+  <div><img><img><i></i></div>
+  <div><i></i><img><img></div>
 
+  <div><span><b></b><img></span><img><span class="a"></span></div>
+  <div><i></i><p id="a"></p><p class="a"></p><img><span class="a"></span></div>
+
+  <div><img><i></i><img></div>
+  <div><i></i><img><img></div>
+
+  <div class="TBXm2"><p data-id="KVMfZ" class="Isz"></p><b data-id="5c" class="3" data-fisher="7WKUUC5"></b></div>
+  <div data-fisher="qXQ" data-test="KD"><img><b data-id="tuKDPH6" data-test="mEHEJ0">OYVPhua9JA1ZE</b><b class="2pM" data-id="POh">b4Q</b>Qf61yc</div>
+
+  <div><i><p></p><i></i>a</i><p></p><img></div>
+  <div><i><p></p></i><i><p class="a"></p>a</i><img></div>
+
+  <div><span><b></b><img></span><img><span class="a"></span></div>
+  <div><i></i><p id="a"></p><p class="a"></p><img><span class="a"></span></div>
+
+  <div><span></span><b class="a"></b><b class="a"><img></b></div>
+  <div><b class="a"><img></b><b data-id="a" class="b"></b></div>
+
+  <div><b class="a" data-one="a"></b><b class="a"></b><img></div>
+  <div><img><b class="a"></b></div>
+
+  <div><img><span></span><p></p><p class="a">b</p></div>
+  <div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"></span></p></div>
+
+  <div><b>a</b><img><span></span><p>b</p></div>
+  <div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"></span></p></div>
+
+  <div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"><span></span</span></p></div>
+  <div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"></span></p></div>
+
+  <div><i class="a"></i></div>
+  <div><i></i><span></span>b</div>
+
+  <div><b></b><span></span><b class="a"></b></div>
+  <div><b></b><span></span><b><img></b><b class="b"><img></b></div>
+
+  <div><i></i><b></b><b class="a"></b></div>
+  <div><b></b><span></span><b><img></b><b class="b"><img></b></div>
+
+  <div><b></b><span></span><b><img></b><b><img></b></div>
+  <div><b></b><span></span><b><img></b><b class="b"><img></b></div>
+
+  <div><p></p><p></p><img></div>
+  <div><img><p></p></div>
+
+
+  <div><i></i><i><img></i><img>1</div>
+  <div><img><i></i><b></b>1</div>
 
   <div>lol<span>ydew<i>hey</i>de</span>
   </div>
@@ -116,30 +166,6 @@
     <img>
     <p>Z</p>b
     <p></p>7f9</div>
-
-  <div>
-    <p></p>
-    <p><i></i>
-    </p>
-    <p></p><i><img><span><b></b></span><img></i>
-    <p></p><i><img><span></span></i>
-    <p><i></i>
-    </p>
-    <p></p>
-    <img><span><span></span></span>
-    <img>
-  </div>
-  <div>
-    <img><i></i>
-    <p><span><span><b></b></span></span>
-    </p>
-    <p></p><b><img><span></span></b>
-    <p><b></b>
-    </p>
-    <p></p>
-    <p></p>
-    <p>wg</p><i><p></p></i>2nJ<i><img></i>
-    <p></p><i><img></i>zV87J1UU3Ex</div>
 
   <div><span><b><p></p></b>pGy<p></p></span><span><span><span></span></span><i></i><i></i>
     </span><span></span>
@@ -514,7 +540,7 @@
       divNodeList, divs = [],
       diffs, t1, i;
 
-    divNodeList = document.querySelectorAll('div');
+    divNodeList = document.querySelectorAll('body > div');
 
     for (i = 0; i < divNodeList.length; i++) {
       divs[i] = divNodeList[i];
@@ -535,18 +561,17 @@
 
     for (i = 0; i < divs.length; i = i + 2) {
 
-
       try {
         reportDiv();
         print("diff operations for div #" + i + " → div #" + (i + 1));
         diffs = dd.diff(divs[i], divs[i + 1]);
-        console.log(diffs);
+      //  console.log(diffs);
 
         print("applying...");
         t1 = divs[i].cloneNode(true);
         dd.apply(t1, diffs);
 
-        if (t1.innerHTML === divs[i + 1].innerHTML) {
+        if (t1.isEqualNode(divs[i + 1]) || t1.innerHTML === divs[i + 1].innerHTML) {
           print('...success!');
         } else {
           testFailure();
@@ -559,7 +584,7 @@
         print("undoing...");
         dd.undo(t1, diffs);
 
-        if (t1.innerHTML === divs[i].innerHTML) {
+        if (t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML) {
           print('...success!');
           testSuccess();
         } else {
