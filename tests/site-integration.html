@@ -212,7 +212,7 @@
     $.fn.superHtml = $.fn.html;
     function applyDiff(){
       var start = new Date().getTime();
-      this._VDiff = this._VDD.diff(this[0], this._VDOM, {levelsDeep: 3});
+      this._VDiff = this._VDD.diff(this[0], this._VDOM);
       AMF = this._VDiff;
       this.eq(0).trigger('virtualdomrendered');
       console.log(AMF);

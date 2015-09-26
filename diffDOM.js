@@ -249,7 +249,7 @@
 
 
     var cloneObj = function(obj) {
-        // 'to'DO: Do we really need to clone here? Is it not enough to just return the original object?
+        //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
         return JSON.parse(JSON.stringify(obj));
         //return obj;
     };
@@ -507,7 +507,8 @@
 
         var defaults = {
                 debug: false,
-                diffcap: 10,
+                diffcap: 10, // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
+                maxDepth: false, // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
                 valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
                 // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
                 textDiff: function() {
@@ -580,6 +581,9 @@
         findNextDiff: function(t1, t2, route) {
             var diffs;
 
+            if (this.maxDepth && route.length > this.maxDepth) {
+                return [];
+            }
             // outer differences?
             if (!t1.outerDone) {
                 diffs = this.findOuterDiff(t1, t2, route);
