@@ -935,6 +935,7 @@
             diffs.forEach(function(diff) {
 //              console.log(JSON.stringify(diff));
 //              console.log(JSON.stringify(tree));
+//              console.log(objToNode(tree).outerHTML);
                 if (!dobj.applyVirtualDiff(tree, diff)) {
                     return false;
                 }
@@ -1028,7 +1029,7 @@
                     node[SELECTED] = diff[NEW_VALUE];
                     break;
                 case REPLACE_ELEMENT:
-                    parentNode[CHILD_NODES][nodeIndex] = diff[NEW_VALUE];
+                    parentNode[CHILD_NODES][nodeIndex] = cloneObj(diff[NEW_VALUE]);
                     break;
                 case RELOCATE_GROUP:
                     group = diff[GROUP];
@@ -1110,6 +1111,8 @@
                 return true;
             }
             diffs.forEach(function(diff) {
+//                console.log(tree.outerHTML);
+//                console.log(diff);
                 if (!dobj.applyDiff(tree, diff)) {
                     return false;
                 }
