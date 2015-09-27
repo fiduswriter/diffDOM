@@ -1093,7 +1093,7 @@
         },
         applyDiff: function(tree, diff) {
             var node = this.getFromRoute(tree, diff.route),
-                newNode, reference, route, groupLength, from, to, child, c, i;
+                newNode, reference, route, c;
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -1145,28 +1145,17 @@
                     node.selected = diff.newValue;
                     break;
                 case 'replaceElement':
-                    newNode = objToNode(diff.newValue);
-                    node.parentNode.replaceChild(newNode, node);
+                    node.parentNode.replaceChild(objToNode(diff.newValue), node);
                     break;
                 case 'relocateGroup':
-                    groupLength = diff.groupLength;
-                    from = diff.from;
-                    to = diff.to;
-                    reference = node.childNodes[to + groupLength];
-                    // slide elements up
-                    if (from < to) {
-                        for (i = 0; i < groupLength; i += 1) {
-                            child = node.childNodes[from];
-                            node.insertBefore(child, reference);
+                    Array.apply(null, new Array(diff.groupLength)).map(function() {
+                        return node.removeChild(node.childNodes[diff.from]);
+                    }).forEach(function(childNode, index){
+                        if(index===0) {
+                            reference = node.childNodes[diff.to];
                         }
-                    } else {
-                        // slide elements down
-                        reference = node.childNodes[to];
-                        for (i = 0; i < groupLength; i += 1) {
-                            child = node.childNodes[from + i];
-                            node.insertBefore(child, reference);
-                        }
-                    }
+                        node.insertBefore(childNode,reference);
+                    });
                     break;
                 case 'removeElement':
                     node.parentNode.removeChild(node);
@@ -1175,13 +1164,7 @@
                     route = diff.route.slice();
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromRoute(tree, route);
-                    newNode = objToNode(diff.element);
-                    if (c >= node.childNodes.length) {
-                        node.appendChild(newNode);
-                    } else {
-                        reference = node.childNodes[c];
-                        node.insertBefore(newNode, reference);
-                    }
+                    node.insertBefore(objToNode(diff.element), node.childNodes[c]);
                     break;
                 case 'removeTextElement':
                     if (!node || node.nodeType !== 3) {
@@ -1197,12 +1180,7 @@
                     if (!node || !node.childNodes) {
                         return false;
                     }
-                    if (c >= node.childNodes.length) {
-                        node.appendChild(newNode);
-                    } else {
-                        reference = node.childNodes[c];
-                        node.insertBefore(newNode, reference);
-                    }
+                    node.insertBefore(newNode, node.childNodes[c]);
                     break;
                 default:
                     console.log('unknown action');
