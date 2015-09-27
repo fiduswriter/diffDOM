@@ -695,59 +695,83 @@
         },
         findInnerDiff: function(t1, t2, route) {
 
-            var subtrees = markSubTrees(t1, t2),
-                mappings = subtrees.length,
+            var subtrees = (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : [],
                 t1_child_nodes = t1.childNodes ? t1.childNodes : [],
                 t2_child_nodes = t2.childNodes ? t2.childNodes : [],
-                diffs, i, last, e1, e2;
+                childNodesLengthDifference, diffs, i, last, e1, e2;
 
-            // no correspondence whatsoever
-            if (mappings === 0) {
-                // two text nodes with differences
-                if (t1.nodeName === '#text' && t2.nodeName === '#text' && t1.data !== t2.data) {
-                    return [new Diff({
-                        action: 'modiFyTextElement',
-                        oldValue: t1.data,
-                        newValue: t2.data,
-                        route: route
-                    })];
-                }
+            if (subtrees.length > 1) {
+                /* Two or more groups have been identified among the childnodes of t1
+                * and t2.
+                */
+                return this.attemptGroupRelocation(t1, t2, subtrees, route);
             }
-            // possibly identical content: verify
-            if (mappings < 2) {
+
+              /* 0 or 1 groups of similar child nodes have been found
+               * for t1 and t2. 1 If there is 1, it could be a sign that the
+               * contents are the same. When the number of groups is below 2,
+               * t1 and t2 are made to have the same length and each of the
+               * pairs of child nodes are diffed.
+              */
+
+              /*  if (subtrees.length === 0) {
+                    // No subtrees - could text nodes as they won't have any childNodes.
+                    //
+                    if (t1.nodeName === '#text' && t2.nodeName === '#text' && t1.data !== t2.data) {
+                        return [new Diff({
+                            action: 'modiFyTextElement',
+                            oldValue: t1.data,
+                            newValue: t2.data,
+                            route: route
+                        })];
+                    }
+                } */
+
+
                 last = Math.max(t1_child_nodes.length, t2_child_nodes.length);
+                if (t1_child_nodes.length !== t2_child_nodes.length) {
+                    childNodesLengthDifference = true;
+                }
+
                 for (i = 0; i < last; i += 1) {
                     e1 = t1_child_nodes[i];
                     e2 = t2_child_nodes[i];
 
-                    if (e1 && !e2) {
-                        if (e1.nodeName === '#text') {
+                    if (childNodesLengthDifference) {
+                        /* t1 and t2 have different amounts of childNodes. Add
+                         * and remove as necessary to obtain the same length */
+                        if (e1 && !e2) {
+                            if (e1.nodeName === '#text') {
+                                return [new Diff({
+                                    action: 'removeTextElement',
+                                    route: route.concat(i),
+                                    value: e1.data
+                                })];
+                            }
                             return [new Diff({
-                                action: 'removeTextElement',
+                                action: 'removeElement',
                                 route: route.concat(i),
-                                value: e1.data
+                                element: cloneObj(e1)
                             })];
                         }
-                        return [new Diff({
-                            action: 'removeElement',
-                            route: route.concat(i),
-                            element: cloneObj(e1)
-                        })];
-                    }
-                    if (e2 && !e1) {
-                        if (e2.nodeName === '#text') {
+                        if (e2 && !e1) {
+                            if (e2.nodeName === '#text') {
+                                return [new Diff({
+                                    action: 'addTextElement',
+                                    route: route.concat(i),
+                                    value: e2.data
+                                })];
+                            }
                             return [new Diff({
-                                action: 'addTextElement',
+                                action: 'addElement',
                                 route: route.concat(i),
-                                value: e2.data
+                                element: cloneObj(e2)
                             })];
                         }
-                        return [new Diff({
-                            action: 'addElement',
-                            route: route.concat(i),
-                            element: cloneObj(e2)
-                        })];
                     }
+                     /* We are now guaranteed that childNodes e1 and e2 exist,
+                      * and that they can be diffed.
+                     */
 
                     diffs = this.findNextDiff(e1, e2, route.concat(i));
                     if (diffs && diffs.length > 0) {
@@ -755,29 +779,30 @@
                     }
 
                 }
-            }
 
-            // one or more differences: find first diff
-            return this.attemptGroupRelocation(t1, t2, subtrees, route);
+            return [];
+
         },
 
         attemptGroupRelocation: function(t1, t2, subtrees, route) {
-            /* Once t1.childNodes and t2.childNodes have the same length,
-            * attempts are made at equalizing the two. First all initial elements
-            * with no group affiliation (gaps=true) are removed (if in t1) or
-            * added (if in t2). Then the creation of a group relocation diff is
-            * attempted.
+            /* Either t1.childNodes and t2.childNodes have the same length, or
+            * there are at least two groups of similar elements can be found.
+            * attempts are made at equalizing t1 with t2. First all initial
+            * elements with no group affiliation (gaps=true) are removed (if
+            * only in t1) or added (if only in t2). Then the creation of a group
+            * relocation diff is attempted.
             */
 
             var gapInformation = getGapInformation(t1, t2, subtrees),
                 gaps1 = gapInformation.gaps1,
                 gaps2 = gapInformation.gaps2,
+                shortest = Math.min(gaps1.length, gaps2.length),
                 destinationDifferent, toGroup,
                 group, node, similarNode, testI,
                 i, j;
 
             // group relocation
-            for (i = 0; i < gaps1.length; i += 1) {
+            for (i = 0; i < shortest; i += 1) {
                 if (gaps1[i] === true) {
                     node = t1.childNodes[i];
                     if (node.nodeName === '#text') {
