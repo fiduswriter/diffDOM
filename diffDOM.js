@@ -702,10 +702,8 @@
                 diffs, i, last, e1, e2;
 
             // no correspondence whatsoever
-            // if t1 or t2 contain differences that are not text nodes, return a diff.
-
-            // two text nodes with differences
             if (mappings === 0) {
+                // two text nodes with differences
                 if (t1.nodeName === '#text' && t2.nodeName === '#text' && t1.data !== t2.data) {
                     return [new Diff({
                         action: 'modiFyTextElement',
@@ -721,8 +719,7 @@
                 for (i = 0; i < last; i += 1) {
                     e1 = t1_child_nodes[i];
                     e2 = t2_child_nodes[i];
-                    // TODO: This is a similar code path to the one
-                    //       in findFirstInnerDiff. Can we unify these?
+
                     if (e1 && !e2) {
                         if (e1.nodeName === '#text') {
                             return [new Diff({
@@ -761,63 +758,26 @@
             }
 
             // one or more differences: find first diff
-            return this.findFirstInnerDiff(t1, t2, subtrees, route);
+            return this.attemptGroupRelocation(t1, t2, subtrees, route);
         },
 
-        findValueDiff: function(t1, t2, route) {
-            // Differences of value. Only useful if the value/selection/checked value
-            // differs from what is represented in the DOM. For example in the case
-            // of filled out forms, etc.
-            var diffs = [];
-
-            if (t1.selected !== t2.selected) {
-                diffs.push(new Diff({
-                    action: 'modifySelected',
-                    oldValue: t1.selected,
-                    newValue: t2.selected,
-                    route: route
-                }));
-            }
-
-            if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
-                diffs.push(new Diff({
-                    action: 'modifyValue',
-                    oldValue: t1.value,
-                    newValue: t2.value,
-                    route: route
-                }));
-            }
-            if (t1.checked !== t2.checked) {
-                diffs.push(new Diff({
-                    action: 'modifyChecked',
-                    oldValue: t1.checked,
-                    newValue: t2.checked,
-                    route: route
-                }));
-            }
-
-            return diffs;
-        },
-
-
-        findFirstInnerDiff: function(t1, t2, subtrees, route) {
-            if (subtrees.length === 0) {
-                return [];
-            }
+        attemptGroupRelocation: function(t1, t2, subtrees, route) {
+            /* Once t1.childNodes and t2.childNodes have the same length,
+            * attempts are made at equalizing the two. First all initial elements
+            * with no group affiliation (gaps=true) are removed (if in t1) or
+            * added (if in t2). Then the creation of a group relocation diff is
+            * attempted.
+            */
 
             var gapInformation = getGapInformation(t1, t2, subtrees),
                 gaps1 = gapInformation.gaps1,
-                gl1 = gaps1.length,
                 gaps2 = gapInformation.gaps2,
-                gl2 = gaps1.length,
                 destinationDifferent, toGroup,
+                group, node, similarNode, testI,
                 i, j;
 
-            // Check for correct submap sequencing (irrespective of gaps) first:
-            var group, node, similarNode, testI, shortest = gl1 < gl2 ? gaps1 : gaps2;
-
             // group relocation
-            for (i = 0; i < shortest.length; i += 1) {
+            for (i = 0; i < gaps1.length; i += 1) {
                 if (gaps1[i] === true) {
                     node = t1.childNodes[i];
                     if (node.nodeName === '#text') {
@@ -891,6 +851,42 @@
             }
             return [];
         },
+
+        findValueDiff: function(t1, t2, route) {
+            // Differences of value. Only useful if the value/selection/checked value
+            // differs from what is represented in the DOM. For example in the case
+            // of filled out forms, etc.
+            var diffs = [];
+
+            if (t1.selected !== t2.selected) {
+                diffs.push(new Diff({
+                    action: 'modifySelected',
+                    oldValue: t1.selected,
+                    newValue: t2.selected,
+                    route: route
+                }));
+            }
+
+            if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
+                diffs.push(new Diff({
+                    action: 'modifyValue',
+                    oldValue: t1.value,
+                    newValue: t2.value,
+                    route: route
+                }));
+            }
+            if (t1.checked !== t2.checked) {
+                diffs.push(new Diff({
+                    action: 'modifyChecked',
+                    oldValue: t1.checked,
+                    newValue: t2.checked,
+                    route: route
+                }));
+            }
+
+            return diffs;
+        },
+
         // ===== Apply a virtual diff =====
 
         applyVirtual: function(tree, diffs) {
