@@ -156,11 +156,11 @@
             if (e1Attributes.length != e2Attributes.length) {
                 return false;
             }
-            if (!e1Attributes.every(function(attribute){
-              if (e1.attributes[attribute] !== e2.attributes[attribute]) {
-                  return false;
-              }
-            })) {
+            if (!e1Attributes.every(function(attribute) {
+                    if (e1.attributes[attribute] !== e2.attributes[attribute]) {
+                        return false;
+                    }
+                })) {
                 return false;
             }
         }
@@ -561,13 +561,13 @@
                     }
                 }
                 diffs = this.findNextDiff(t1, t2, []);
-                if (diffs.length === 0 || !diffs) {
+                if (diffs.length === 0) {
                     // Last check if the elements really are the same now.
                     // If not, remove all info about being done and start over.
                     // Somtimes a node can be marked as done, but the creation of subsequent diffs means that it has to be changed anyway.
                     if (!isEqual(t1, t2)) {
                         removeDone(t1);
-                      diffs = this.findNextDiff(t1, t2, []);
+                        diffs = this.findNextDiff(t1, t2, []);
                     }
                 }
 
@@ -575,7 +575,7 @@
                     this.tracker.add(diffs);
                     this.applyVirtual(t1, diffs);
                 }
-            } while (diffs);
+            } while (diffs.length > 0);
             return this.tracker.list;
         },
         findNextDiff: function(t1, t2, route) {
@@ -617,11 +617,12 @@
             }
 
             // no differences
-            return false;
+            return [];
         },
         findOuterDiff: function(t1, t2, route) {
 
-            var diffs = [], attr1, attr2;
+            var diffs = [],
+                attr1, attr2;
 
             if (t1.nodeName !== t2.nodeName) {
                 return [new Diff({
@@ -635,19 +636,19 @@
             if (t1.data !== t2.data) {
                 // Comment or text node.
                 if (t1.nodeName === '#text') {
-                  return [new Diff({
-                      action: 'modifyComment',
-                      route: route,
-                      oldValue: t1.data,
-                      newValue: t2.data
-                  })];
+                    return [new Diff({
+                        action: 'modifyComment',
+                        route: route,
+                        oldValue: t1.data,
+                        newValue: t2.data
+                    })];
                 } else {
-                  return [new Diff({
-                      action: 'modifyTextElement',
-                      route: route,
-                      oldValue: t1.data,
-                      newValue: t2.data
-                  })];
+                    return [new Diff({
+                        action: 'modifyTextElement',
+                        route: route,
+                        oldValue: t1.data,
+                        newValue: t2.data
+                    })];
                 }
 
             }
@@ -698,100 +699,93 @@
             var subtrees = (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : [],
                 t1_child_nodes = t1.childNodes ? t1.childNodes : [],
                 t2_child_nodes = t2.childNodes ? t2.childNodes : [],
-                childNodesLengthDifference, diffs, i, last, e1, e2;
+                childNodesLengthDifference, diffs = [],
+                i, last, e1, e2;
 
             if (subtrees.length > 1) {
                 /* Two or more groups have been identified among the childnodes of t1
-                * and t2.
-                */
+                 * and t2.
+                 */
                 return this.attemptGroupRelocation(t1, t2, subtrees, route);
             }
 
-              /* 0 or 1 groups of similar child nodes have been found
-               * for t1 and t2. 1 If there is 1, it could be a sign that the
-               * contents are the same. When the number of groups is below 2,
-               * t1 and t2 are made to have the same length and each of the
-               * pairs of child nodes are diffed.
-              */
-
-              /*  if (subtrees.length === 0) {
-                    // No subtrees - could text nodes as they won't have any childNodes.
-                    //
-                    if (t1.nodeName === '#text' && t2.nodeName === '#text' && t1.data !== t2.data) {
-                        return [new Diff({
-                            action: 'modiFyTextElement',
-                            oldValue: t1.data,
-                            newValue: t2.data,
-                            route: route
-                        })];
-                    }
-                } */
+            /* 0 or 1 groups of similar child nodes have been found
+             * for t1 and t2. 1 If there is 1, it could be a sign that the
+             * contents are the same. When the number of groups is below 2,
+             * t1 and t2 are made to have the same length and each of the
+             * pairs of child nodes are diffed.
+             */
 
 
-                last = Math.max(t1_child_nodes.length, t2_child_nodes.length);
-                if (t1_child_nodes.length !== t2_child_nodes.length) {
-                    childNodesLengthDifference = true;
-                }
+            last = Math.max(t1_child_nodes.length, t2_child_nodes.length);
+            if (t1_child_nodes.length !== t2_child_nodes.length) {
+                childNodesLengthDifference = true;
+            }
 
-                for (i = 0; i < last; i += 1) {
-                    e1 = t1_child_nodes[i];
-                    e2 = t2_child_nodes[i];
+            for (i = 0; i < last; i += 1) {
+                e1 = t1_child_nodes[i];
+                e2 = t2_child_nodes[i];
 
-                    if (childNodesLengthDifference) {
-                        /* t1 and t2 have different amounts of childNodes. Add
-                         * and remove as necessary to obtain the same length */
-                        if (e1 && !e2) {
-                            if (e1.nodeName === '#text') {
-                                return [new Diff({
-                                    action: 'removeTextElement',
-                                    route: route.concat(i),
-                                    value: e1.data
-                                })];
-                            }
-                            return [new Diff({
-                                action: 'removeElement',
+                if (childNodesLengthDifference) {
+                    /* t1 and t2 have different amounts of childNodes. Add
+                     * and remove as necessary to obtain the same length */
+                    if (e1 && !e2) {
+                        if (e1.nodeName === '#text') {
+                            diffs.push(new Diff({
+                                action: 'removeTextElement',
                                 route: route.concat(i),
-                                element: cloneObj(e1)
-                            })];
+                                value: e1.data
+                            }));
+                            return diffs;
                         }
-                        if (e2 && !e1) {
-                            if (e2.nodeName === '#text') {
-                                return [new Diff({
-                                    action: 'addTextElement',
-                                    route: route.concat(i),
-                                    value: e2.data
-                                })];
-                            }
-                            return [new Diff({
-                                action: 'addElement',
-                                route: route.concat(i),
-                                element: cloneObj(e2)
-                            })];
-                        }
-                    }
-                     /* We are now guaranteed that childNodes e1 and e2 exist,
-                      * and that they can be diffed.
-                     */
-
-                    diffs = this.findNextDiff(e1, e2, route.concat(i));
-                    if (diffs && diffs.length > 0) {
+                        diffs.push(new Diff({
+                            action: 'removeElement',
+                            route: route.concat(i),
+                            element: cloneObj(e1)
+                        }));
                         return diffs;
                     }
-
+                    if (e2 && !e1) {
+                        if (e2.nodeName === '#text') {
+                            diffs.push(new Diff({
+                                action: 'addTextElement',
+                                route: route.concat(i),
+                                value: e2.data
+                            }));
+                            return diffs;
+                        }
+                        diffs.push(new Diff({
+                            action: 'addElement',
+                            route: route.concat(i),
+                            element: cloneObj(e2)
+                        }));
+                        return diffs;
+                    }
                 }
+                /* We are now guaranteed that childNodes e1 and e2 exist,
+                 * and that they can be diffed.
+                 */
+                diffs = diffs.concat(this.findNextDiff(e1, e2, route.concat(i)));
 
-            return [];
+                /* Diffs in child nodes should not affect the parent node,
+                 * so we let these diffs be submitted together with other
+                 * diffs.
+                 */
+
+            }
+
+            return diffs;
 
         },
 
         attemptGroupRelocation: function(t1, t2, subtrees, route) {
             /* Either t1.childNodes and t2.childNodes have the same length, or
-            * there are at least two groups of similar elements can be found.
-            * attempts are made at equalizing t1 with t2. First all initial
-            * elements with no group affiliation (gaps=true) are removed (if
-            * only in t1) or added (if only in t2). Then the creation of a group
-            * relocation diff is attempted.
-            */
+             * there are at least two groups of similar elements can be found.
+             * attempts are made at equalizing t1 with t2. First all initial
+             * elements with no group affiliation (gaps=true) are removed (if
+             * only in t1) or added (if only in t2). Then the creation of a group
+             * relocation diff is attempted.
+             */
 
             var gapInformation = getGapInformation(t1, t2, subtrees),
                 gaps1 = gapInformation.gaps1,
@@ -920,12 +914,12 @@
                 return true;
             }
             diffs.forEach(function(diff) {
-//                              console.log(JSON.stringify(diff));
-//                              console.log(JSON.stringify(tree));
-//                              console.log(objToNode(tree).outerHTML);
+                //                              console.log(JSON.stringify(diff));
+                //                              console.log(JSON.stringify(tree));
+                //                              console.log(objToNode(tree).outerHTML);
                 dobj.applyVirtualDiff(tree, diff);
-//                                console.log(JSON.stringify(tree));
-//                                console.log(objToNode(tree).outerHTML);
+                //                                console.log(JSON.stringify(tree));
+                //                                console.log(objToNode(tree).outerHTML);
             });
             return true;
         },
@@ -1023,9 +1017,9 @@
                     break;
                 case 'relocateGroup':
                     node.childNodes.splice(diff.from, diff.groupLength).reverse()
-                        .forEach(function(movedNode){
+                        .forEach(function(movedNode) {
                             node.childNodes.splice(diff.to, 0, movedNode);
-                    });
+                        });
                     break;
                 case 'removeElement':
                     parentNode.childNodes.splice(nodeIndex, 1);
@@ -1171,11 +1165,11 @@
                 case 'relocateGroup':
                     Array.apply(null, new Array(diff.groupLength)).map(function() {
                         return node.removeChild(node.childNodes[diff.from]);
-                    }).forEach(function(childNode, index){
-                        if(index===0) {
+                    }).forEach(function(childNode, index) {
+                        if (index === 0) {
                             reference = node.childNodes[diff.to];
                         }
-                        node.insertBefore(childNode,reference);
+                        node.insertBefore(childNode, reference);
                     });
                     break;
                 case 'removeElement':
