@@ -373,7 +373,7 @@
             c2.forEach(function(c2Element, c2Index) {
                 if (!marked1[c1Index] && !marked2[c2Index] && roughlyEqual(c1Element, c2Element, uniqueDescriptors, subsetsSame)) {
                     matches[c1Index + 1][c2Index + 1] = (matches[c1Index][c2Index] ? matches[c1Index][c2Index] + 1 : 1);
-                    if (matches[c1Index + 1][c2Index + 1] > lcsSize) {
+                    if (matches[c1Index + 1][c2Index + 1] >= lcsSize) {
                         lcsSize = matches[c1Index + 1][c2Index + 1];
                         index = [c1Index + 1, c2Index + 1];
                     }
