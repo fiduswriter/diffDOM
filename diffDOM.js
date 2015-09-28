@@ -830,7 +830,6 @@
                             value: node.data
                         }));
                         index -= 1;
-                        return diffs;
                     } else {
                         diffs.push(new Diff({
                             action: 'removeElement',
@@ -881,7 +880,7 @@
                                 to: toGroup,
                                 route: route
                             })];
-                        } 
+                        }
                     }
                 }
                 index += 1;
