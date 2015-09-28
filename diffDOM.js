@@ -700,7 +700,8 @@
                 t1_child_nodes = t1.childNodes ? t1.childNodes : [],
                 t2_child_nodes = t2.childNodes ? t2.childNodes : [],
                 childNodesLengthDifference, diffs = [],
-                index = 0, last, e1, e2, i;
+                index = 0,
+                last, e1, e2, i;
 
             if (subtrees.length > 1) {
                 /* Two or more groups have been identified among the childnodes of t1
@@ -738,12 +739,12 @@
                             }));
                             index -= 1;
                         } else {
-                          diffs.push(new Diff({
-                              action: 'removeElement',
-                              route: route.concat(index),
-                              element: cloneObj(e1)
-                          }));
-                          index -= 1;
+                            diffs.push(new Diff({
+                                action: 'removeElement',
+                                route: route.concat(index),
+                                element: cloneObj(e1)
+                            }));
+                            index -= 1;
                         }
 
                     } else if (e2 && !e1) {
@@ -754,21 +755,21 @@
                                 value: e2.data
                             }));
                         } else {
-                          diffs.push(new Diff({
-                              action: 'addElement',
-                              route: route.concat(index),
-                              element: cloneObj(e2)
-                          }));
+                            diffs.push(new Diff({
+                                action: 'addElement',
+                                route: route.concat(index),
+                                element: cloneObj(e2)
+                            }));
                         }
                     }
                 }
                 /* We are now guaranteed that childNodes e1 and e2 exist,
                  * and that they can be diffed.
                  */
-                 /* Diffs in child nodes should not affect the parent node,
-                  * so we let these diffs be submitted together with other
-                  * diffs.
-                  */
+                /* Diffs in child nodes should not affect the parent node,
+                 * so we let these diffs be submitted together with other
+                 * diffs.
+                 */
 
                 if (e1 && e2) {
                     diffs = diffs.concat(this.findNextDiff(e1, e2, route.concat(index)));
@@ -796,10 +797,11 @@
                 gaps2 = gapInformation.gaps2,
                 shortest = Math.min(gaps1.length, gaps2.length),
                 destinationDifferent, toGroup,
-                group, node, similarNode, testI,
+                group, node, similarNode, testI, diffs = [],
+                index = 0,
                 i, j;
 
-            // group relocation
+
             for (i = 0; i < shortest; i += 1) {
                 if (gaps1[i] === true) {
                     node = t1.childNodes[i];
@@ -814,42 +816,53 @@
                                 }
                             }
                             if (!similarNode) {
-                                return [new Diff({
+                                diffs.push(new Diff({
                                     action: 'modifyTextElement',
-                                    route: route.concat(i),
+                                    route: route.concat(index),
                                     oldValue: node.data,
                                     newValue: t2.childNodes[i].data
-                                })];
+                                }));
                             }
                         }
-                        return [new Diff({
+                        diffs.push(new Diff({
                             action: 'removeTextElement',
-                            route: route.concat(i),
+                            route: route.concat(index),
                             value: node.data
-                        })];
+                        }));
+                        index -= 1;
+                        return diffs;
+                    } else {
+                        diffs.push(new Diff({
+                            action: 'removeElement',
+                            route: route.concat(index),
+                            element: cloneObj(node)
+                        }));
+                        index -= 1;
                     }
-                    return [new Diff({
-                        action: 'removeElement',
-                        route: route.concat(i),
-                        element: cloneObj(node)
-                    })];
-                }
-                if (gaps2[i] === true) {
+
+                } else if (gaps2[i] === true) {
                     node = t2.childNodes[i];
                     if (node.nodeName === '#text') {
-                        return [new Diff({
+                        diffs.push(new Diff({
                             action: 'addTextElement',
-                            route: route.concat(i),
+                            route: route.concat(index),
                             value: node.data
-                        })];
+                        }));
+                        index += 1;
+                    } else {
+                        diffs.push(new Diff({
+                            action: 'addElement',
+                            route: route.concat(index),
+                            element: cloneObj(node)
+                        }));
+                        index += 1;
                     }
-                    return [new Diff({
-                        action: 'addElement',
-                        route: route.concat(i),
-                        element: cloneObj(node)
-                    })];
-                }
-                if (gaps1[i] !== gaps2[i]) {
+
+                } else if (gaps1[i] !== gaps2[i]) {
+                    if (diffs.length > 0) {
+                        return diffs;
+                    }
+                    // group relocation
                     group = subtrees[gaps1[i]];
                     toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
                     if (toGroup !== group.old) {
@@ -868,11 +881,12 @@
                                 to: toGroup,
                                 route: route
                             })];
-                        }
+                        } 
                     }
                 }
+                index += 1;
             }
-            return [];
+            return diffs;
         },
 
         findValueDiff: function(t1, t2, route) {
