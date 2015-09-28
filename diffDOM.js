@@ -254,82 +254,6 @@
         //return obj;
     };
 
-    var nodeToObj = function(node) {
-        var objNode = {};
-        objNode.nodeName = node.nodeName;
-        if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {
-            objNode.data = node.data;
-        } else {
-            if (node.attributes && node.attributes.length > 0) {
-                objNode.attributes = {};
-                Array.prototype.slice.call(node.attributes).forEach(
-                    function(attribute) {
-                        objNode.attributes[attribute.name] = attribute.value;
-                    }
-                );
-            }
-            if (node.childNodes && node.childNodes.length > 0) {
-                objNode.childNodes = [];
-                Array.prototype.slice.call(node.childNodes).forEach(
-                    function(childNode) {
-                        objNode.childNodes.push(nodeToObj(childNode));
-                    }
-                );
-            }
-            if (node.value) {
-                objNode.value = node.value;
-            }
-            if (node.checked) {
-                objNode.checked = node.checked;
-            }
-            if (node.selected) {
-                objNode.selected = node.selected;
-            }
-        }
-
-        return objNode;
-    };
-
-
-    var objToNode = function(objNode, insideSvg) {
-        var node;
-        if (objNode.nodeName === '#text') {
-            node = document.createTextNode(objNode.data);
-
-        } else if (objNode.nodeName === '#comment') {
-            node = document.createComment(objNode.data);
-        } else {
-            if (objNode.nodeName === 'svg' || insideSvg) {
-                node = document.createElementNS('http://www.w3.org/2000/svg', objNode.nodeName);
-                insideSvg = true;
-            } else {
-                node = document.createElement(objNode.nodeName);
-            }
-            if (objNode.attributes) {
-                Object.keys(objNode.attributes).forEach(function(attribute) {
-                    node.setAttribute(attribute, objNode.attributes[attribute]);
-                });
-            }
-            if (objNode.childNodes) {
-                objNode.childNodes.forEach(function(childNode) {
-                    node.appendChild(objToNode(childNode, insideSvg));
-                });
-            }
-            if (objNode.value) {
-                node.value = objNode.value;
-            }
-            if (objNode.checked) {
-                node.checked = objNode.checked;
-            }
-            if (objNode.selected) {
-                node.selected = objNode.selected;
-            }
-        }
-        return node;
-    };
-
-
-
     /**
      * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
      */
@@ -537,14 +461,14 @@
 
         diff: function(t1Node, t2Node) {
 
-            var t1 = nodeToObj(t1Node),
-                t2 = nodeToObj(t2Node);
+            var t1 = this.nodeToObj(t1Node),
+                t2 = this.nodeToObj(t2Node);
 
             diffcount = 0;
 
             if (this.debug) {
-                this.t1Orig = nodeToObj(t1Node);
-                this.t2Orig = nodeToObj(t2Node);
+                this.t1Orig = this.nodeToObj(t1Node);
+                this.t2Orig = this.nodeToObj(t2Node);
             }
 
             this.tracker = new DiffTracker();
@@ -693,6 +617,81 @@
             });
 
             return diffs;
+        },
+        nodeToObj: function(node) {
+            var objNode = {}, dobj = this;
+            objNode.nodeName = node.nodeName;
+            if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {
+                objNode.data = node.data;
+            } else {
+                if (node.attributes && node.attributes.length > 0) {
+                    objNode.attributes = {};
+                    Array.prototype.slice.call(node.attributes).forEach(
+                        function(attribute) {
+                            objNode.attributes[attribute.name] = attribute.value;
+                        }
+                    );
+                }
+                if (node.childNodes && node.childNodes.length > 0) {
+                    objNode.childNodes = [];
+                    Array.prototype.slice.call(node.childNodes).forEach(
+                        function(childNode) {
+                            objNode.childNodes.push(dobj.nodeToObj(childNode));
+                        }
+                    );
+                }
+                if (this.valueDiffing) {
+                    if (node.value) {
+                        objNode.value = node.value;
+                    }
+                    if (node.checked) {
+                        objNode.checked = node.checked;
+                    }
+                    if (node.selected) {
+                        objNode.selected = node.selected;
+                    }
+                }
+            }
+
+            return objNode;
+        },
+        objToNode: function(objNode, insideSvg) {
+            var node, dobj = this;
+            if (objNode.nodeName === '#text') {
+                node = document.createTextNode(objNode.data);
+
+            } else if (objNode.nodeName === '#comment') {
+                node = document.createComment(objNode.data);
+            } else {
+                if (objNode.nodeName === 'svg' || insideSvg) {
+                    node = document.createElementNS('http://www.w3.org/2000/svg', objNode.nodeName);
+                    insideSvg = true;
+                } else {
+                    node = document.createElement(objNode.nodeName);
+                }
+                if (objNode.attributes) {
+                    Object.keys(objNode.attributes).forEach(function(attribute) {
+                        node.setAttribute(attribute, objNode.attributes[attribute]);
+                    });
+                }
+                if (objNode.childNodes) {
+                    objNode.childNodes.forEach(function(childNode) {
+                        node.appendChild(dobj.objToNode(childNode, insideSvg));
+                    });
+                }
+                if (this.valueDiffing) {
+                    if (objNode.value) {
+                        node.value = objNode.value;
+                    }
+                    if (objNode.checked) {
+                        node.checked = objNode.checked;
+                    }
+                    if (objNode.selected) {
+                        node.selected = objNode.selected;
+                    }
+                }
+            }
+            return node;
         },
         findInnerDiff: function(t1, t2, route) {
 
@@ -933,10 +932,10 @@
             diffs.forEach(function(diff) {
                 //                              console.log(JSON.stringify(diff));
                 //                              console.log(JSON.stringify(tree));
-                //                              console.log(objToNode(tree).outerHTML);
+                //                              console.log(this.objToNode(tree).outerHTML);
                 dobj.applyVirtualDiff(tree, diff);
                 //                                console.log(JSON.stringify(tree));
-                //                                console.log(objToNode(tree).outerHTML);
+                //                                console.log(this.objToNode(tree).outerHTML);
             });
             return true;
         },
@@ -1177,7 +1176,7 @@
                     node.selected = diff.newValue;
                     break;
                 case 'replaceElement':
-                    node.parentNode.replaceChild(objToNode(diff.newValue), node);
+                    node.parentNode.replaceChild(this.objToNode(diff.newValue), node);
                     break;
                 case 'relocateGroup':
                     Array.apply(null, new Array(diff.groupLength)).map(function() {
@@ -1196,7 +1195,7 @@
                     route = diff.route.slice();
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromRoute(tree, route);
-                    node.insertBefore(objToNode(diff.element), node.childNodes[c]);
+                    node.insertBefore(this.objToNode(diff.element), node.childNodes[c]);
                     break;
                 case 'removeTextElement':
                     if (!node || node.nodeType !== 3) {
