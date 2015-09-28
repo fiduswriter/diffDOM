@@ -700,7 +700,7 @@
                 t1_child_nodes = t1.childNodes ? t1.childNodes : [],
                 t2_child_nodes = t2.childNodes ? t2.childNodes : [],
                 childNodesLengthDifference, diffs = [],
-                i, last, e1, e2;
+                index = 0, last, e1, e2, i;
 
             if (subtrees.length > 1) {
                 /* Two or more groups have been identified among the childnodes of t1
@@ -733,44 +733,48 @@
                         if (e1.nodeName === '#text') {
                             diffs.push(new Diff({
                                 action: 'removeTextElement',
-                                route: route.concat(i),
+                                route: route.concat(index),
                                 value: e1.data
                             }));
-                            return diffs;
+                            index -= 1;
+                        } else {
+                          diffs.push(new Diff({
+                              action: 'removeElement',
+                              route: route.concat(index),
+                              element: cloneObj(e1)
+                          }));
+                          index -= 1;
                         }
-                        diffs.push(new Diff({
-                            action: 'removeElement',
-                            route: route.concat(i),
-                            element: cloneObj(e1)
-                        }));
-                        return diffs;
-                    }
-                    if (e2 && !e1) {
+
+                    } else if (e2 && !e1) {
                         if (e2.nodeName === '#text') {
                             diffs.push(new Diff({
                                 action: 'addTextElement',
-                                route: route.concat(i),
+                                route: route.concat(index),
                                 value: e2.data
                             }));
-                            return diffs;
+                        } else {
+                          diffs.push(new Diff({
+                              action: 'addElement',
+                              route: route.concat(index),
+                              element: cloneObj(e2)
+                          }));
                         }
-                        diffs.push(new Diff({
-                            action: 'addElement',
-                            route: route.concat(i),
-                            element: cloneObj(e2)
-                        }));
-                        return diffs;
                     }
                 }
                 /* We are now guaranteed that childNodes e1 and e2 exist,
                  * and that they can be diffed.
                  */
-                diffs = diffs.concat(this.findNextDiff(e1, e2, route.concat(i)));
+                 /* Diffs in child nodes should not affect the parent node,
+                  * so we let these diffs be submitted together with other
+                  * diffs.
+                  */
 
-                /* Diffs in child nodes should not affect the parent node,
-                 * so we let these diffs be submitted together with other
-                 * diffs.
-                 */
+                if (e1 && e2) {
+                    diffs = diffs.concat(this.findNextDiff(e1, e2, route.concat(index)));
+                }
+
+                index += 1;
 
             }
 
