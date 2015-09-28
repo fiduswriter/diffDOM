@@ -697,8 +697,8 @@
         findInnerDiff: function(t1, t2, route) {
 
             var subtrees = (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : [],
-                t1_child_nodes = t1.childNodes ? t1.childNodes : [],
-                t2_child_nodes = t2.childNodes ? t2.childNodes : [],
+                t1ChildNodes = t1.childNodes ? t1.childNodes : [],
+                t2ChildNodes = t2.childNodes ? t2.childNodes : [],
                 childNodesLengthDifference, diffs = [],
                 index = 0,
                 last, e1, e2, i;
@@ -718,14 +718,14 @@
              */
 
 
-            last = Math.max(t1_child_nodes.length, t2_child_nodes.length);
-            if (t1_child_nodes.length !== t2_child_nodes.length) {
+            last = Math.max(t1ChildNodes.length, t2ChildNodes.length);
+            if (t1ChildNodes.length !== t2ChildNodes.length) {
                 childNodesLengthDifference = true;
             }
 
             for (i = 0; i < last; i += 1) {
-                e1 = t1_child_nodes[i];
-                e2 = t2_child_nodes[i];
+                e1 = t1ChildNodes[i];
+                e2 = t2ChildNodes[i];
 
                 if (childNodesLengthDifference) {
                     /* t1 and t2 have different amounts of childNodes. Add
@@ -778,7 +778,7 @@
                 index += 1;
 
             }
-
+            t1.innerDone = true;
             return diffs;
 
         },
