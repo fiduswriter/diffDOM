@@ -28,6 +28,32 @@
         tl = new TraceLogger(dd),
         divs, diffs, t1, i, j, availableElements, testElement, textContent, mainDiv = document.createElement('div');
 
+
+      function nodeToObj(node) {
+        var objNode = {}, i;
+
+        if (node.nodeType === 3) {
+          objNode.t = node.data;
+        } else if (node.nodeType === 8) {
+          objNode.co = node.data;
+        } else {
+          objNode.nn = node.nodeName;
+          if (node.attributes && node.attributes.length > 0) {
+            objNode.a = [];
+            for (i = 0; i < node.attributes.length; i++) {
+              objNode.a.push([node.attributes[i].name, node.attributes[i].value]);
+            }
+          }
+          if (node.childNodes && node.childNodes.length > 0) {
+            objNode.c = [];
+            for (i = 0; i < node.childNodes.length; i++) {
+              objNode.c.push(nodeToObj(node.childNodes[i]));
+            }
+          }
+        }
+        return objNode;
+      }
+
       function reportDiv() {
         document.body.appendChild(document.createElement('div'));
       }
@@ -108,6 +134,8 @@
             print(diffs);
             print(t1.outerHTML);
             print(divs[i + 1].outerHTML);
+            print(JSON.stringify(nodeToObj(divs[i])));
+            print(JSON.stringify(nodeToObj(divs[i+1])));
             throw 'Outputs not matching';
           }
 
@@ -122,6 +150,8 @@
             print(diffs);
             print(t1.outerHTML);
             print(divs[i].outerHTML);
+            print(JSON.stringify(nodeToObj(divs[i])));
+            print(JSON.stringify(nodeToObj(divs[i+1])));
             throw 'Outputs not matching';
           }
           //try{

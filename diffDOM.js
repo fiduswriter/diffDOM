@@ -3,7 +3,7 @@
 
     var diffcount;
 
-    var Diff = function(options) {
+    var Diff = function (options) {
         var diff = this;
         Object.keys(options).forEach(function(option) {
             diff[option] = options[option];
@@ -67,7 +67,7 @@
 
     var elementDescriptors = function(el) {
         var output = [];
-        if (el.nodeName != '#text' && el.nodeName != '#comment') {
+        if (el.nodeName !== '#text' && el.nodeName !== '#comment') {
             output.push(el.nodeName);
             if (el.attributes) {
                 if (el.attributes.class) {
@@ -153,7 +153,7 @@
             e1Attributes = Object.keys(e1.attributes);
             e2Attributes = Object.keys(e2.attributes);
 
-            if (e1Attributes.length != e2Attributes.length) {
+            if (e1Attributes.length !== e2Attributes.length) {
                 return false;
             }
             if (!e1Attributes.every(function(attribute) {
@@ -821,6 +821,7 @@
                                     oldValue: node.data,
                                     newValue: t2.childNodes[i].data
                                 }));
+                                )
                             }
                         }
                         diffs.push(new Diff({
@@ -828,6 +829,8 @@
                             route: route.concat(index),
                             value: node.data
                         }));
+                        gaps1.splice(index, 1);
+                        shortest = Math.min(gaps1.length, gaps2.length);
                         index -= 1;
                     } else {
                         diffs.push(new Diff({
@@ -835,6 +838,8 @@
                             route: route.concat(index),
                             element: cloneObj(node)
                         }));
+                        gaps1.splice(index, 1);
+                        shortest = Math.min(gaps1.length, gaps2.length);
                         index -= 1;
                     }
 
