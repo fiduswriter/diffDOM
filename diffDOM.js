@@ -850,6 +850,7 @@
                             value: node.data
                         }));
                         gaps1.splice(index2, 0, true);
+                        shortest = Math.min(gaps1.length, gaps2.length);
                     } else {
                         diffs.push(new Diff({
                             action: 'addElement',
@@ -857,6 +858,7 @@
                             element: cloneObj(node)
                         }));
                         gaps1.splice(index2, 0, true);
+                        shortest = Math.min(gaps1.length, gaps2.length);
                     }
 
                 } else if (gaps1[index2] !== gaps2[index2]) {
