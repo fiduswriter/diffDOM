@@ -797,19 +797,18 @@
                 shortest = Math.min(gaps1.length, gaps2.length),
                 destinationDifferent, toGroup,
                 group, node, similarNode, testI, diffs = [],
-                index = 0,
-                i, j;
+                index1, index2, j;
 
 
-            for (i = 0; i < shortest; i += 1) {
-                if (gaps1[i] === true) {
-                    node = t1.childNodes[i];
+            for (index2 = 0, index1 = 0; index2 < shortest; index1 += 1, index2 += 1) {
+                if (gaps1[index2] === true) {
+                    node = t1.childNodes[index1];
                     if (node.nodeName === '#text') {
-                        if (t2.childNodes[i].nodeName === '#text' && node.data !== t2.childNodes[i].data) {
-                            testI = i;
+                        if (t2.childNodes[index2].nodeName === '#text' && node.data !== t2.childNodes[index2].data) {
+                            testI = index1;
                             while (t1.childNodes.length > testI + 1 && t1.childNodes[testI + 1].nodeName === '#text') {
                                 testI += 1;
-                                if (t2.childNodes[i].data === t1.childNodes[testI].data) {
+                                if (t2.childNodes[index2].data === t1.childNodes[testI].data) {
                                     similarNode = true;
                                     break;
                                 }
@@ -817,55 +816,55 @@
                             if (!similarNode) {
                                 diffs.push(new Diff({
                                     action: 'modifyTextElement',
-                                    route: route.concat(index),
+                                    route: route.concat(index2),
                                     oldValue: node.data,
-                                    newValue: t2.childNodes[i].data
+                                    newValue: t2.childNodes[index2].data
                                 }));
                             }
                         }
                         diffs.push(new Diff({
                             action: 'removeTextElement',
-                            route: route.concat(index),
+                            route: route.concat(index2),
                             value: node.data
                         }));
-                        gaps1.splice(index, 1);
+                        gaps1.splice(index2, 1);
                         shortest = Math.min(gaps1.length, gaps2.length);
-                        index -= 1;
+                        index2 -= 1;
                     } else {
                         diffs.push(new Diff({
                             action: 'removeElement',
-                            route: route.concat(index),
+                            route: route.concat(index2),
                             element: cloneObj(node)
                         }));
-                        gaps1.splice(index, 1);
+                        gaps1.splice(index2, 1);
                         shortest = Math.min(gaps1.length, gaps2.length);
-                        index -= 1;
+                        index2 -= 1;
                     }
 
-                } else if (gaps2[i] === true) {
-                    node = t2.childNodes[i];
+                } else if (gaps2[index2] === true) {
+                    node = t2.childNodes[index2];
                     if (node.nodeName === '#text') {
                         diffs.push(new Diff({
                             action: 'addTextElement',
-                            route: route.concat(index),
+                            route: route.concat(index2),
                             value: node.data
                         }));
-                        index += 1;
+                        gaps1.splice(index2, 0, true);
                     } else {
                         diffs.push(new Diff({
                             action: 'addElement',
-                            route: route.concat(index),
+                            route: route.concat(index2),
                             element: cloneObj(node)
                         }));
-                        index += 1;
+                        gaps1.splice(index2, 0, true);
                     }
 
-                } else if (gaps1[i] !== gaps2[i]) {
+                } else if (gaps1[index2] !== gaps2[index2]) {
                     if (diffs.length > 0) {
                         return diffs;
                     }
                     // group relocation
-                    group = subtrees[gaps1[i]];
+                    group = subtrees[gaps1[index2]];
                     toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
                     if (toGroup !== group.old) {
                         // Check whether destination nodes are different than originating ones.
@@ -886,7 +885,6 @@
                         }
                     }
                 }
-                index += 1;
             }
             return diffs;
         },
