@@ -821,7 +821,6 @@
                                     oldValue: node.data,
                                     newValue: t2.childNodes[i].data
                                 }));
-                                )
                             }
                         }
                         diffs.push(new Diff({
