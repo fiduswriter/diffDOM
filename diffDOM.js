@@ -851,6 +851,7 @@
                         }));
                         gaps1.splice(index2, 0, true);
                         shortest = Math.min(gaps1.length, gaps2.length);
+                        index1 -= 1;
                     } else {
                         diffs.push(new Diff({
                             action: 'addElement',
@@ -859,6 +860,7 @@
                         }));
                         gaps1.splice(index2, 0, true);
                         shortest = Math.min(gaps1.length, gaps2.length);
+                        index1 -= 1;
                     }
 
                 } else if (gaps1[index2] !== gaps2[index2]) {
