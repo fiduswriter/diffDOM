@@ -1182,7 +1182,7 @@
                     node.selected = diff.newValue;
                     break;
                 case 'replaceElement':
-                    node.parentNode.replaceChild(this.objToNode(diff.newValue), node);
+                    node.parentNode.replaceChild(this.objToNode(diff.newValue, node.namespaceURI === 'http://www.w3.org/2000/svg'), node);
                     break;
                 case 'relocateGroup':
                     Array.apply(null, new Array(diff.groupLength)).map(function() {
@@ -1201,7 +1201,7 @@
                     route = diff.route.slice();
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromRoute(tree, route);
-                    node.insertBefore(this.objToNode(diff.element), node.childNodes[c]);
+                    node.insertBefore(this.objToNode(diff.element, node.namespaceURI === 'http://www.w3.org/2000/svg'), node.childNodes[c]);
                     break;
                 case 'removeTextElement':
                     if (!node || node.nodeType !== 3) {
