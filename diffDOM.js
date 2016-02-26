@@ -448,12 +448,12 @@
             },
             i;
 
-        if (typeof options == "undefined") {
+        if (typeof options === "undefined") {
             options = {};
         }
 
         for (i in defaults) {
-            if (typeof options[i] == "undefined") {
+            if (typeof options[i] === "undefined") {
                 this[i] = defaults[i];
             } else {
                 this[i] = options[i];
