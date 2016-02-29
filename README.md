@@ -97,6 +97,41 @@ dd = new diffDOM({
   });
 ```
 
+#### Pre and post diff hooks
+
+diffDOM provides extension points before and after virtual and actual diffs, exposing some of the internals of the diff algorithm, and allowing you to make additional decisions based on that information.
+
+```
+dd = new diffDOM({
+    preVirtualDiffApply: function (info) {
+        console.log(info);
+    },
+    postVirtualDiffApply: function (info) {
+        console.log(info);
+    },
+    preDiffApply: function (info) {
+        console.log(info);
+    },
+    postDiffApply: function (info) {
+        console.log(info);
+    }
+  });
+```
+
+Additionally, the _pre_ hooks allow you to shortcircuit the standard behaviour of the diff by returning 'true' from this callback. This will cause the diffApply functions to return prematurely, skipping their standard behaviour.
+
+```
+dd = new diffDOM({
+    // prevent removal of attributes
+    preDiffApply: function (info) {
+        if (info.diff.action === 'removeAttribute') {
+            console.log("preventing attribute removal");
+            return true;
+        }
+    }
+  });
+```
+
 #### Debugging
 
 For debugging you might want to set a max number of diff changes between two elements before diffDOM gives up. To allow for a maximum of 500 differences between elements when diffing, initialize diffDOM like this:
