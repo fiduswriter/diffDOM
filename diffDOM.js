@@ -983,7 +983,7 @@
                 node: node
             };
 
-            this.preVirtualDiffApply(info);
+            if (this.preVirtualDiffApply(info)) { return true; }
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -1156,7 +1156,7 @@
                 node: node
             };
 
-            this.preDiffApply(info);
+            if (this.preDiffApply(info)) { return true; }
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -1250,6 +1250,7 @@
             }
 
             // if a new node was created, we might be interested in it
+            // post diff hook
             info.newNode = newNode;
             this.postDiffApply(info);
 
