@@ -438,16 +438,22 @@
                 textDiff: function() {
                     arguments[0].data = arguments[3];
                     return;
-                }
+                },
+                // empty functions were benchmarked as running faster than both
+                // `f && f()` and `if (f) { f(); }`
+                preVirtualDiffApply: function () {},
+                postVirtualDiffApply: function () {},
+                preDiffApply: function () {},
+                postDiffApply: function () {}
             },
             i;
 
-        if (typeof options == "undefined") {
+        if (typeof options === "undefined") {
             options = {};
         }
 
         for (i in defaults) {
-            if (typeof options[i] == "undefined") {
+            if (typeof options[i] === "undefined") {
                 this[i] = defaults[i];
             } else {
                 this[i] = options[i];
@@ -971,6 +977,14 @@
                 nodeIndex = routeInfo.nodeIndex,
                 newNode, route, c;
 
+            // pre-diff hook
+            var info = {
+                diff: diff,
+                node: node
+            };
+
+            if (this.preVirtualDiffApply(info)) { return true; }
+
             switch (diff.action) {
                 case 'addAttribute':
                     if (!node.attributes) {
@@ -1095,6 +1109,10 @@
                     console.log('unknown action');
             }
 
+            // capture newNode for the callback
+            info.newNode = newNode;
+            this.postVirtualDiffApply(info);
+
             return;
         },
 
@@ -1131,6 +1149,14 @@
         applyDiff: function(tree, diff) {
             var node = this.getFromRoute(tree, diff.route),
                 newNode, reference, route, c;
+
+            // pre-diff hook
+            var info = {
+                diff: diff,
+                node: node
+            };
+
+            if (this.preDiffApply(info)) { return true; }
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -1222,6 +1248,11 @@
                 default:
                     console.log('unknown action');
             }
+
+            // if a new node was created, we might be interested in it
+            // post diff hook
+            info.newNode = newNode;
+            this.postDiffApply(info);
 
             return true;
         },
