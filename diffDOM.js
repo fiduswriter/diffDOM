@@ -1193,7 +1193,7 @@
                     if (!node || typeof node.data === 'undefined') {
                         return false;
                     }
-                    node.data = diff.newValue;
+                    this.textDiff(node, node.data, diff.oldValue, diff.newValue);
                     break;
                 case 'modifyChecked':
                     if (!node || typeof node.checked === 'undefined') {
