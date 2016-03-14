@@ -50,18 +50,18 @@
 
     var SubsetMapping = function SubsetMapping(a, b) {
         this.old = a;
-        this.new = b;
+        this['new'] = b;
     };
 
     SubsetMapping.prototype = {
         contains: function contains(subset) {
             if (subset.length < this.length) {
-                return subset.new >= this.new && subset.new < this.new + this.length;
+                return subset['new'] >= this['new'] && subset['new'] < this['new'] + this.length;
             }
             return false;
         },
         toString: function toString() {
-            return this.length + " element subset, first mapping: old " + this.old + " → new " + this.new;
+            return this.length + " element subset, first mapping: old " + this.old + " → new " + this['new'];
         }
     };
 
@@ -70,8 +70,8 @@
         if (el.nodeName !== '#text' && el.nodeName !== '#comment') {
             output.push(el.nodeName);
             if (el.attributes) {
-                if (el.attributes.class) {
-                    output.push(el.nodeName + '.' + el.attributes.class.replace(/ /g, '.'));
+                if (el.attributes['class']) {
+                    output.push(el.nodeName + '.' + el.attributes['class'].replace(/ /g, '.'));
                 }
                 if (el.attributes.id) {
                     output.push(el.nodeName + '#' + el.attributes.id);
@@ -214,8 +214,8 @@
                     return true;
                 }
             }
-            if (e1.attributes.class && e1.attributes.class === e2.attributes.class) {
-                var classDescriptor = e1.nodeName + '.' + e1.attributes.class.replace(/ /g, '.');
+            if (e1.attributes['class'] && e1.attributes['class'] === e2.attributes['class']) {
+                var classDescriptor = e1.nodeName + '.' + e1.attributes['class'].replace(/ /g, '.');
                 if (classDescriptor in uniqueDescriptors) {
                     return true;
                 }
@@ -354,11 +354,11 @@
         // give elements from the same subset the same group number
         stable.forEach(function(subset) {
             var i, endOld = subset.old + subset.length,
-                endNew = subset.new + subset.length;
+                endNew = subset['new'] + subset.length;
             for (i = subset.old; i < endOld; i += 1) {
                 gaps1[i] = group;
             }
-            for (i = subset.new; i < endNew; i += 1) {
+            for (i = subset['new']; i < endNew; i += 1) {
                 gaps2[i] = group;
             }
             group += 1;
@@ -386,7 +386,7 @@
             },
             markBoth = function(i) {
                 marked1[subset.old + i] = true;
-                marked2[subset.new + i] = true;
+                marked2[subset['new'] + i] = true;
             };
 
         while (subset) {
@@ -875,7 +875,7 @@
                     }
                     // group relocation
                     group = subtrees[gaps1[index2]];
-                    toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
+                    toGroup = Math.min(group['new'], (t1.childNodes.length - group.length));
                     if (toGroup !== group.old) {
                         // Check whether destination nodes are different than originating ones.
                         destinationDifferent = false;
