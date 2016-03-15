@@ -49,19 +49,19 @@
     };
 
     var SubsetMapping = function SubsetMapping(a, b) {
-        this.old = a;
-        this.new = b;
+        this.oldValue = a;
+        this.newValue = b;
     };
 
     SubsetMapping.prototype = {
         contains: function contains(subset) {
             if (subset.length < this.length) {
-                return subset.new >= this.new && subset.new < this.new + this.length;
+                return subset.newValue >= this.newValue && subset.newValue < this.newValue + this.length;
             }
             return false;
         },
         toString: function toString() {
-            return this.length + " element subset, first mapping: old " + this.old + " → new " + this.new;
+            return this.length + " element subset, first mapping: old " + this.oldValue + " → new " + this.newValue;
         }
     };
 
@@ -70,8 +70,8 @@
         if (el.nodeName !== '#text' && el.nodeName !== '#comment') {
             output.push(el.nodeName);
             if (el.attributes) {
-                if (el.attributes.class) {
-                    output.push(el.nodeName + '.' + el.attributes.class.replace(/ /g, '.'));
+                if (el.attributes['class']) {
+                    output.push(el.nodeName + '.' + el.attributes['class'].replace(/ /g, '.'));
                 }
                 if (el.attributes.id) {
                     output.push(el.nodeName + '#' + el.attributes.id);
@@ -214,8 +214,8 @@
                     return true;
                 }
             }
-            if (e1.attributes.class && e1.attributes.class === e2.attributes.class) {
-                var classDescriptor = e1.nodeName + '.' + e1.attributes.class.replace(/ /g, '.');
+            if (e1.attributes['class'] && e1.attributes['class'] === e2.attributes['class']) {
+                var classDescriptor = e1.nodeName + '.' + e1.attributes['class'].replace(/ /g, '.');
                 if (classDescriptor in uniqueDescriptors) {
                     return true;
                 }
@@ -353,12 +353,12 @@
 
         // give elements from the same subset the same group number
         stable.forEach(function(subset) {
-            var i, endOld = subset.old + subset.length,
-                endNew = subset.new + subset.length;
-            for (i = subset.old; i < endOld; i += 1) {
+            var i, endOld = subset.oldValue + subset.length,
+                endNew = subset.newValue + subset.length;
+            for (i = subset.oldValue; i < endOld; i += 1) {
                 gaps1[i] = group;
             }
-            for (i = subset.new; i < endNew; i += 1) {
+            for (i = subset.newValue; i < endNew; i += 1) {
                 gaps2[i] = group;
             }
             group += 1;
@@ -385,8 +385,8 @@
                 return arguments[1];
             },
             markBoth = function(i) {
-                marked1[subset.old + i] = true;
-                marked2[subset.new + i] = true;
+                marked1[subset.oldValue + i] = true;
+                marked2[subset.newValue + i] = true;
             };
 
         while (subset) {
@@ -875,12 +875,12 @@
                     }
                     // group relocation
                     group = subtrees[gaps1[index2]];
-                    toGroup = Math.min(group.new, (t1.childNodes.length - group.length));
-                    if (toGroup !== group.old) {
+                    toGroup = Math.min(group.newValue, (t1.childNodes.length - group.length));
+                    if (toGroup !== group.oldValue) {
                         // Check whether destination nodes are different than originating ones.
                         destinationDifferent = false;
                         for (j = 0; j < group.length; j += 1) {
-                            if (!roughlyEqual(t1.childNodes[toGroup + j], t1.childNodes[group.old + j], [], false, true)) {
+                            if (!roughlyEqual(t1.childNodes[toGroup + j], t1.childNodes[group.oldValue + j], [], false, true)) {
                                 destinationDifferent = true;
                             }
                         }
@@ -888,7 +888,7 @@
                             return [new Diff({
                                 action: 'relocateGroup',
                                 groupLength: group.length,
-                                from: group.old,
+                                from: group.oldValue,
                                 to: toGroup,
                                 route: route
                             })];
