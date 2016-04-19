@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<script src="../diffDOM.js">
+</script>
+<script>
+
+document.addEventListener("DOMContentLoaded", function(event) {
+    // ------------- Testing the issue -------------------- //
+    // ---------------------------------------------------- //
+
+    var dd = new diffDOM();
+
+    // create two sets of identical html
+    var element1 = document.createElement('form');
+
+    var input = document.createElement('input');
+    input.setAttribute('type', 'text');
+    input.setAttribute('value', 'testing');
+
+    var submit = document.createElement('input');
+    submit.setAttribute('type', 'submit');
+
+    var instructions = document.createElement('div');
+    instructions.innerHTML = '<p>1. Change the text<br>2. Click "submit" once<br>\
+        3. Check if the input field value stays the same<br>4. Click "submit" a\
+        second time<br>5. Check if input field is empty.</p>';
+
+    document.body.appendChild(instructions);
+
+    element1.appendChild(input);
+    element1.appendChild(submit);
+
+    document.body.appendChild(element1);
+
+    // element2 will remain virtual, and we will diff element1 with element2
+    // to determine if we actually need to update the DOM or not.
+    var element2 = element1.cloneNode(true);
+
+    // event listener for when the input value changes
+    element1.addEventListener('input', function(e){
+        // update the virtual element, then diff and see if there needs to be updates
+        element2.firstChild.setAttribute('value', e.target.value);
+
+        var diff = dd.diff(element1, element2);
+        dd.apply(element1, diff);
+
+        console.log(diff);
+    });
+
+    // event listener for pressing the submit button
+    element1.addEventListener('submit', function(e){
+        e.preventDefault();
+
+         // update the virtual element, then diff and see if there needs to be updates
+        element2.firstChild.setAttribute('value', '');
+
+        var diff = dd.diff(element1, element2);
+        dd.apply(element1, diff);
+
+        console.log(diff);
+    });
+
+});
+</script>
+</head>
+<body>
+</body>
+</html>

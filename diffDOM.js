@@ -647,13 +647,13 @@
                     );
                 }
                 if (this.valueDiffing) {
-                    if (node.value) {
+                    if (node.value !== undefined) {
                         objNode.value = node.value;
                     }
-                    if (node.checked) {
+                    if (node.checked !== undefined) {
                         objNode.checked = node.checked;
                     }
-                    if (node.selected) {
+                    if (node.selected !== undefined) {
                         objNode.selected = node.selected;
                     }
                 }
@@ -942,12 +942,7 @@
                 return true;
             }
             diffs.forEach(function(diff) {
-                //                              console.log(JSON.stringify(diff));
-                //                              console.log(JSON.stringify(tree));
-                //                              console.log(this.objToNode(tree).outerHTML);
                 dobj.applyVirtualDiff(tree, diff);
-                //                                console.log(JSON.stringify(tree));
-                //                                console.log(this.objToNode(tree).outerHTML);
             });
             return true;
         },
