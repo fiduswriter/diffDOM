@@ -567,14 +567,14 @@
                 // Comment or text node.
                 if (t1.nodeName === '#text') {
                     return [new Diff({
-                        action: 'modifyComment',
+                        action: 'modifyTextElement',
                         route: route,
                         oldValue: t1.data,
                         newValue: t2.data
                     })];
                 } else {
                     return [new Diff({
-                        action: 'modifyTextElement',
+                        action: 'modifyComment',
                         route: route,
                         oldValue: t1.data,
                         newValue: t2.data
