@@ -444,7 +444,8 @@
                 preVirtualDiffApply: function () {},
                 postVirtualDiffApply: function () {},
                 preDiffApply: function () {},
-                postDiffApply: function () {}
+                postDiffApply: function () {},
+                filterOuterDiff: null
             },
             i;
 
@@ -512,7 +513,7 @@
             return this.tracker.list;
         },
         findNextDiff: function(t1, t2, route) {
-            var diffs;
+            var diffs, fdiffs;
 
             if (this.maxDepth && route.length > this.maxDepth) {
                 return [];
@@ -520,6 +521,10 @@
             // outer differences?
             if (!t1.outerDone) {
                 diffs = this.findOuterDiff(t1, t2, route);
+                if (this.filterOuterDiff) {
+                    fdiffs = this.filterOuterDiff(t1, t2, diffs);
+                    if (fdiffs) diffs = fdiffs;
+                }
                 if (diffs.length > 0) {
                     t1.outerDone = true;
                     return diffs;

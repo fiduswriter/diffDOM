@@ -132,6 +132,23 @@ dd = new diffDOM({
   });
 ```
 
+#### Outer and Inner diff hooks
+
+diffDOM also provides a way to filter outer diff
+
+```
+dd = new diffDOM({
+    filterOuterDiff: function(t1, t2, diffs) {
+        // can change current outer diffs by returning a new array,
+        // or by mutating outerDiffs.
+        if (!diffs.length && t1.nodeName == "my-component" && t2.nodeName == t1.nodeName) {
+            // will not diff childNodes
+            t1.innerDone = true;
+        }
+    }
+});
+```
+
 #### Debugging
 
 For debugging you might want to set a max number of diff changes between two elements before diffDOM gives up. To allow for a maximum of 500 differences between elements when diffing, initialize diffDOM like this:
