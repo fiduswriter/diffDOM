@@ -461,6 +461,9 @@
         }
 
     };
+
+    diffDOM.Diff = Diff;
+
     diffDOM.prototype = {
 
         // ===== Create a diff =====
