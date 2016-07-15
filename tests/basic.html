@@ -23,6 +23,9 @@
   <h1>Test for diffDOM</h1>
 
   <!-- Add all divs to be compared here two by two -->
+  <div><p><b>Foo</b> Bar <b>Baz</b></p></div>
+  <div><p><b>Foo</b> Car <b>Baz</b></p></div>
+
   <div data-fisher="K7hI" data-test="u6" class="y"><i class="zCLG"><img><b class="78q0" data-fisher="fpn"><img>zSK</b><i class="H" data-id="GGQkeN1p" data-fisher="EcM"><span data-id="r3" data-test="MZDE"><img><span class="aUR2AC" data-id="psHs" data-fisher="DJF">xl</span></span><p data-test="dzBl"></p>X</i><span class="v28"></span>LuLrHE</i><span class="DP">F3gw</span><img><b data-test="xDlb" class="uLuSt" data-id="zJJW"><img></b><span data-test="Rrmt"><img>5GCo</span><img>nzt</div>
   <div data-fisher="87EDX" class="I1RIevCe" data-id="gsDiU"><span data-id="qRvl" data-test="Bd2Jx" class="Fme"><p class="Q3b" data-fisher="ejS"><span data-id="p"></span><img><i><i class="lK9">hjGWF</i>DvXS</i><b class="l8y3" data-test="kb" data-fisher="3iHP"></b><b data-id="1hBIDR" data-test="iPEF" data-fisher="J"></b></p><p data-id="Y" data-test="XV"><p class="Tl"><b data-test="v6lT" class="tSi" data-fisher="DG"><b class="SS"><b data-test="Qhm"><img>jtH1</b></b><img><i data-fisher="4d" class="ZXxT2"><i data-test="Fpvw" data-id="itc"></i>Z5FN</i></b><img><img></p><span data-fisher="Y1Ynt" class="Di"><i data-id="p7Xz" data-test="PUaR" class="mwuE3"><span></span><img>UqzVsH</i></span></p><b data-fisher="ZlPA"><span class="gmjEL"><p data-fisher="Fdxh" data-id="t"><i data-id="0y3a"></i></p></span>TeQ</b><p></p><span data-id="zMRoXQU" class="eE2R"><img></span></span><i data-test="bPl" data-fisher="AZBctZN"><b data-fisher="XDZNp"><p data-fisher="wz4d"><img></p><p data-fisher="SJb" data-test="8odH" class="yABhu0"></p></b><span data-fisher="Z1PHn" class="r" data-test="jj"><img><img></span><p></p>3nG</i><img>I3mrG</div>
 
@@ -578,7 +581,7 @@
     divs = divs.concat([
       objToNode(JSON.parse('{"nn":"DIV","a":[["data-id","gAt"]],"c":[{"nn":"P","a":[["data-test","3ttAmk"]],"c":[{"nn":"P","a":[["data-fisher","63"],["class","VmApr"]],"c":[{"nn":"SPAN","a":[["data-fisher","ZnGp7vp"],["class","BbS"],["data-id","ON3d"]]}]},{"nn":"IMG"},{"nn":"B"}]},{"nn":"B","a":[["data-fisher","c91"]],"c":[{"nn":"I","a":[["data-test","1"]]},{"nn":"B","a":[["data-fisher","L7IMPg6"]],"c":[{"nn":"I","a":[["data-fisher","57"],["data-test","4QjWEV"]],"c":[{"nn":"B","c":[{"nn":"IMG"},{"nn":"IMG"}]}]},{"nn":"P","a":[["data-id","SHGK"],["data-test","UyJ"]]},{"t":"f3YsY"}]}]},{"nn":"IMG"},{"nn":"SPAN","a":[["class","jD9"]]},{"nn":"SPAN","a":[["class","HpZ2KsY"],["data-id","WY"]]},{"t":""}]}')),
       objToNode(JSON.parse('{"nn":"DIV","a":[["class","Pe0"],["data-fisher","LQ"]],"c":[{"nn":"P","a":[["data-fisher","KEkVN"]],"c":[{"nn":"I","a":[["data-id","0eS"],["data-fisher","YV"],["class","1y"]],"c":[{"nn":"B","a":[["data-fisher","lZR0Zbs"],["data-test","E"]],"c":[{"nn":"I","a":[["data-test","tS"],["data-id","HEY"]]}]}]},{"nn":"P","a":[["data-test","RhB"],["data-fisher","sALzSq0bZ"]],"c":[{"nn":"SPAN","c":[{"nn":"P","c":[{"nn":"SPAN","a":[["class","WbJLr1"],["data-id","xACUb"],["data-fisher","MlfVRw"]]}]},{"nn":"IMG"}]},{"nn":"IMG"}]},{"t":""}]},{"t":""},{"t":"j"}]}')),
-    ]);
+  ]);
 
 
 
@@ -588,7 +591,7 @@
         reportDiv();
         print("diff operations for div #" + i + " → div #" + (i + 1));
         diffs = dd.diff(divs[i], divs[i + 1]);
-      //  console.log(diffs);
+        console.log(diffs);
 
         print("applying...");
         t1 = divs[i].cloneNode(true);

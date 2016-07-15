@@ -834,6 +834,7 @@
                                     oldValue: node.data,
                                     newValue: t2.childNodes[index2].data
                                 }));
+                                return diffs;
                             }
                         }
                         diffs.push(new Diff({
@@ -931,6 +932,7 @@
                 }));
             }
             if (t1.checked !== t2.checked) {
+                console.log([t1.checked,t2.checked])
                 diffs.push(new Diff({
                     action: 'modifyChecked',
                     oldValue: t1.checked,
@@ -1020,7 +1022,7 @@
                     }
 
                     if (diff.name === 'checked') {
-                        delete node.checked;
+                        node.checked = false;
                     } else if (diff.name === 'selected') {
                         delete node.selected;
                     } else if (node.nodeName === 'INPUT' && diff.name === 'value') {
