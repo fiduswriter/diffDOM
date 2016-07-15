@@ -932,7 +932,6 @@
                 }));
             }
             if (t1.checked !== t2.checked) {
-                console.log([t1.checked,t2.checked])
                 diffs.push(new Diff({
                     action: 'modifyChecked',
                     oldValue: t1.checked,
