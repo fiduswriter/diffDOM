@@ -716,11 +716,14 @@
                 index = 0,
                 last, e1, e2, i;
 
-            if (subtrees.length > 1) {
-                /* Two or more groups have been identified among the childnodes of t1
+            if (subtrees.length > 0) {
+                /* One or more groups have been identified among the childnodes of t1
                  * and t2.
                  */
-                return this.attemptGroupRelocation(t1, t2, subtrees, route);
+                 diffs = this.attemptGroupRelocation(t1, t2, subtrees, route);
+                 if (diffs.length > 0) {
+                     return diffs;
+                 }
             }
 
             /* 0 or 1 groups of similar child nodes have been found

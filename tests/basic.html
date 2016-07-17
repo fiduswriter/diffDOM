@@ -23,6 +23,9 @@
   <h1>Test for diffDOM</h1>
 
   <!-- Add all divs to be compared here two by two -->
+  <div><p>first paragraph</p><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>
+  <div><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>
+
   <div><h1>Foo</h1><h2>Bar</h2><h3>Baz</h3></div>
   <div><h1>Foo</h1><h2>Bar</h2></div>
 
@@ -594,7 +597,7 @@
         reportDiv();
         print("diff operations for div #" + i + " → div #" + (i + 1));
         diffs = dd.diff(divs[i], divs[i + 1]);
-        console.log(diffs);
+        console.log(JSON.stringify(diffs));
 
         print("applying...");
         t1 = divs[i].cloneNode(true);
@@ -604,7 +607,7 @@
           print('...success!');
         } else {
           testFailure();
-          console.log(diffs);
+          console.log(JSON.stringify(diffs));
           console.log(t1.outerHTML);
           console.log(divs[i + 1].outerHTML);
           throw 'Outputs not matching';
@@ -618,7 +621,7 @@
           testSuccess();
         } else {
           testFailure();
-          console.log(diffs);
+          console.log(JSON.stringify(diffs));
           console.log(t1.outerHTML);
           console.log(divs[i].outerHTML);
           throw 'Outputs not matching';
