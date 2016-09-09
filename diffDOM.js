@@ -3,7 +3,7 @@
 
     var diffcount;
 
-    var Diff = function (options) {
+    var Diff = function(options) {
         var diff = this;
         Object.keys(options).forEach(function(option) {
             diff[option] = options[option];
@@ -441,10 +441,10 @@
                 },
                 // empty functions were benchmarked as running faster than both
                 // `f && f()` and `if (f) { f(); }`
-                preVirtualDiffApply: function () {},
-                postVirtualDiffApply: function () {},
-                preDiffApply: function () {},
-                postDiffApply: function () {},
+                preVirtualDiffApply: function() {},
+                postVirtualDiffApply: function() {},
+                preDiffApply: function() {},
+                postDiffApply: function() {},
                 filterOuterDiff: null
             },
             i;
@@ -616,9 +616,7 @@
                         }));
                     }
                 }
-
             });
-
 
             attr2.forEach(function(attr) {
                 diffs.push(new Diff({
@@ -627,13 +625,13 @@
                     name: attr,
                     value: t2.attributes[attr]
                 }));
-
             });
 
             return diffs;
         },
         nodeToObj: function(node) {
-            var objNode = {}, dobj = this;
+            var objNode = {},
+                dobj = this;
             objNode.nodeName = node.nodeName;
             if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {
                 objNode.data = node.data;
@@ -720,10 +718,10 @@
                 /* One or more groups have been identified among the childnodes of t1
                  * and t2.
                  */
-                 diffs = this.attemptGroupRelocation(t1, t2, subtrees, route);
-                 if (diffs.length > 0) {
-                     return diffs;
-                 }
+                diffs = this.attemptGroupRelocation(t1, t2, subtrees, route);
+                if (diffs.length > 0) {
+                    return diffs;
+                }
             }
 
             /* 0 or 1 groups of similar child nodes have been found
@@ -910,7 +908,6 @@
             }
             return diffs;
         },
-
         findValueDiff: function(t1, t2, route) {
             // Differences of value. Only useful if the value/selection/checked value
             // differs from what is represented in the DOM. For example in the case
@@ -990,7 +987,9 @@
                 node: node
             };
 
-            if (this.preVirtualDiffApply(info)) { return true; }
+            if (this.preVirtualDiffApply(info)) {
+                return true;
+            }
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -1016,7 +1015,6 @@
                     }
                     break;
                 case 'removeAttribute':
-
                     delete node.attributes[diff.name];
 
                     if (Object.keys(node.attributes).length === 0) {
@@ -1115,16 +1113,11 @@
                 default:
                     console.log('unknown action');
             }
-
             // capture newNode for the callback
             info.newNode = newNode;
             this.postVirtualDiffApply(info);
-
             return;
         },
-
-
-
 
         // ===== Apply a diff =====
 
@@ -1163,7 +1156,9 @@
                 node: node
             };
 
-            if (this.preDiffApply(info)) { return true; }
+            if (this.preDiffApply(info)) {
+                return true;
+            }
 
             switch (diff.action) {
                 case 'addAttribute':
@@ -1278,7 +1273,6 @@
             });
         },
         undoDiff: function(tree, diff) {
-
             switch (diff.action) {
                 case 'addAttribute':
                     diff.action = 'removeAttribute';
