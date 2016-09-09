@@ -1,7 +1,7 @@
 {
   "name": "diff-dom",
   "main": "diffDOM.js",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "homepage": "https://github.com/fiduswriter/diffDOM",
   "authors": [
     "Johannes Wilm <mail@johanneswilm.org>"
