@@ -1211,7 +1211,7 @@
         },
         applyDiff: function(tree, diff) {
             var node = this.getFromRoute(tree, diff[this._const.route]),
-                newNode, reference, route, nodeArray, length, childeNode, index, c;
+                newNode, reference, route, nodeArray, length, childNode, index, c;
 
             var t = this;
             // pre-diff hook
@@ -1329,13 +1329,12 @@
         // ===== Undo a diff =====
 
         undo: function(tree, diffs) {
-            diffs = diffs.slice(), diff, length, i;
-            var dobj = this;
-            if (!diffs.length) {
+            var dobj = this, diff, length = diffs.length, i;
+            diffs = diffs.slice();
+            if (!length) {
                 diffs = [diffs];
             }
             diffs.reverse();
-            length = diffs.length;
             for (i = 0; i < length; i++) {
                 diff = diffs[i];
                 dobj.undoDiff(tree, diff);
