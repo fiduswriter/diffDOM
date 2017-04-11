@@ -730,8 +730,8 @@
                     }
                 }
                 if (objNode.childNodes) {
-                    childNodeArray = objNode.childNodes
-                    length = childNodeArray.length
+                    childNodeArray = objNode.childNodes;
+                    length = childNodeArray.length;
                     for (i = 0; i < length; i++) {
                         childNode = childNodeArray[i];
                         node.appendChild(dobj.objToNode(childNode, insideSvg));
