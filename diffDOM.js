@@ -1157,7 +1157,7 @@
             route = route.slice();
             var c, node = tree;
             while (route.length > 0) {
-                if (!node.childNodes) {
+                if (!node.childNodes || node.childNodes.length === 0) {
                     return false;
                 }
                 c = route.splice(0, 1)[0];
