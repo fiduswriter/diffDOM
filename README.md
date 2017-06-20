@@ -31,7 +31,7 @@ Then create an instance of diffDOM within the javascript code:
 dd = new diffDOM();
 ```
 
-Now you can create a diff to get from dom elementA to dom elementB like this:
+Now you can create a diff to get from dom `elementA` to dom `elementB` like this:
 ```js
 diff = dd.diff(elementA, elementB);
 ```
@@ -40,7 +40,7 @@ You can now apply this diff like this:
 ```js
 dd.apply(elementA, diff);
 ```
-Now elementA will have been changed to be structurally equal to elementB.
+Now `elementA` will have been changed to be structurally equal to `elementB`.
 
 ### Advanced uses
 
@@ -54,7 +54,7 @@ Now elementA will be what it was like before applying the diff.
 
 #### Remote changes
 
-If you need to move diffs from one machine to another one, you will likely want to send the diffs through a websocket connection or as part of a form submit. In both cases you need to convert the diff to a json string.
+If you need to move diffs from one machine to another one, you will likely want to send the diffs through a websocket connection or as part of a form submit. In both cases you need to convert the diff to a json `string`.
 
 To convert a diff to a json string which you can send over the network, do:
 ```js
@@ -68,7 +68,7 @@ diff = JSON.parse(diffJson);
 
 #### Error handling when patching/applying
 
-Sometimes one may try to patch an elment without knowing whether the patch actually will apply cleanly. This should not be a problem. If diffDOM determines that a patch cannot be executed, it will simple return false. Else it will return true:
+Sometimes one may try to patch an elment without knowing whether the patch actually will apply cleanly. This should not be a problem. If diffDOM determines that a patch cannot be executed, it will simple return `false`. Else it will return `true`:
 ```js
 result = dd.apply(element, diff);
 
@@ -80,7 +80,7 @@ if (result) {
 ```
 #### Advanced merging of text node changes
 
-diffDOM does not include merging for changes to text nodes. However, it includes hooks so that you can add more advanced handling. Simple overwrite the textDiff function of the diffDOM instance. The functions TEXTDIFF and TEXTPATCH need to be defined in the code:
+diffDOM does not include merging for changes to text nodes. However, it includes hooks so that you can add more advanced handling. Simple overwrite the `textDiff` function of the `diffDOM` instance. The functions TEXTDIFF and TEXTPATCH need to be defined in the code:
 ```js
 dd = new diffDOM({
     textDiff: function (node, currentValue, expectedValue, newValue) {
@@ -118,7 +118,7 @@ dd = new diffDOM({
   });
 ```
 
-Additionally, the _pre_ hooks allow you to shortcircuit the standard behaviour of the diff by returning 'true' from this callback. This will cause the diffApply functions to return prematurely, skipping their standard behaviour.
+Additionally, the _pre_ hooks allow you to shortcircuit the standard behaviour of the diff by returning `true` from this callback. This will cause the `diffApply` functions to return prematurely, skipping their standard behaviour.
 
 ```js
 dd = new diffDOM({
