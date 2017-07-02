@@ -20,9 +20,12 @@
     var Diff = function(options) {
         var diff = this;
         if (options) {
-            Object.keys(options).forEach(function(option) {
-                diff[option] = options[option];
-            });
+            var keys = Object.keys(options),
+                length = keys.length,
+                i;
+            for (i = 0; i < length; i++) {
+                diff[keys[i]] = options[keys[i]];
+            }
         }
 
     };
@@ -73,21 +76,26 @@
 
     var findUniqueDescriptors = function(li) {
         var uniqueDescriptors = {},
-            duplicateDescriptors = {};
+            duplicateDescriptors = {},
+            liLength = li.length,
+            nodeLength, node, descriptors, descriptor, inUnique, inDupes, i, j;
 
-        li.forEach(function(node) {
-            elementDescriptors(node).forEach(function(descriptor) {
-                var inUnique = descriptor in uniqueDescriptors,
-                    inDupes = descriptor in duplicateDescriptors;
+        for (i = 0; i < liLength; i++) {
+            node = li[i];
+            nodeLength = node.length;
+            descriptors = elementDescriptors(node);
+            for (j = 0; j < nodeLength; j++) {
+                descriptor = descriptors[j];
+                inUnique = descriptor in uniqueDescriptors;
+                inDupes = descriptor in duplicateDescriptors;
                 if (!inUnique && !inDupes) {
                     uniqueDescriptors[descriptor] = true;
                 } else if (inUnique) {
                     delete uniqueDescriptors[descriptor];
                     duplicateDescriptors[descriptor] = true;
                 }
-            });
-
-        });
+            }
+        }
 
         return uniqueDescriptors;
     };
@@ -95,13 +103,18 @@
     var uniqueInBoth = function(l1, l2) {
         var l1Unique = findUniqueDescriptors(l1),
             l2Unique = findUniqueDescriptors(l2),
-            inBoth = {};
+            inBoth = {},
+            keys = Object.keys(l1Unique),
+            length = keys.length,
+            key,
+            i;
 
-        Object.keys(l1Unique).forEach(function(key) {
+        for (i = 0; i < length; i++) {
+            key = keys[i];
             if (l2Unique[key]) {
                 inBoth[key] = true;
             }
-        });
+        }
 
         return inBoth;
     };
@@ -240,7 +253,6 @@
     var cloneObj = function(obj) {
         //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
         return JSON.parse(JSON.stringify(obj));
-        //return obj;
     };
 
     /**
@@ -249,15 +261,17 @@
     var findCommonSubsets = function(c1, c2, marked1, marked2) {
         var lcsSize = 0,
             index = [],
-            matches = Array.apply(null, new Array(c1.length + 1)).map(function() {
+            c1Length = c1.length,
+            c2Length = c2.length,
+            matches = Array.apply(null, new Array(c1Length + 1)).map(function() {
                 return [];
             }), // set up the matching table
             uniqueDescriptors = uniqueInBoth(c1, c2),
             // If all of the elements are the same tag, id and class, then we can
             // consider them roughly the same even if they have a different number of
             // children. This will reduce removing and re-adding similar elements.
-            subsetsSame = c1.length === c2.length,
-            origin, ret;
+            subsetsSame = c1Length === c2Length,
+            origin, ret, c1Index, c2Index, c1Element, c2Element;
 
         if (subsetsSame) {
 
@@ -282,8 +296,10 @@
         }
 
         // fill the matches with distance values
-        c1.forEach(function(c1Element, c1Index) {
-            c2.forEach(function(c2Element, c2Index) {
+        for (c1Index = 0; c1Index < c1Length; c1Index++) {
+            c1Element = c1[c1Index];
+            for (c2Index = 0; c2Index < c2Length; c2Index++) {
+                c2Element = c2[c2Index];
                 if (!marked1[c1Index] && !marked2[c2Index] && roughlyEqual(c1Element, c2Element, uniqueDescriptors, subsetsSame)) {
                     matches[c1Index + 1][c2Index + 1] = (matches[c1Index][c2Index] ? matches[c1Index][c2Index] + 1 : 1);
                     if (matches[c1Index + 1][c2Index + 1] >= lcsSize) {
@@ -293,8 +309,9 @@
                 } else {
                     matches[c1Index + 1][c2Index + 1] = 0;
                 }
-            });
-        });
+            }
+        }
+
         if (lcsSize === 0) {
             return false;
         }
@@ -338,20 +355,23 @@
 
         var gaps1 = t1.childNodes ? makeArray(t1.childNodes.length, true) : [],
             gaps2 = t2.childNodes ? makeArray(t2.childNodes.length, true) : [],
-            group = 0;
+            group = 0,
+            length = stable.length,
+            i, j, endOld, endNew, subset;
 
         // give elements from the same subset the same group number
-        stable.forEach(function(subset) {
-            var i, endOld = subset.oldValue + subset.length,
-                endNew = subset.newValue + subset.length;
-            for (i = subset.oldValue; i < endOld; i += 1) {
-                gaps1[i] = group;
+        for (i = 0; i < length; i++) {
+            subset = stable[i];
+            endOld = subset.oldValue + subset.length;
+            endNew = subset.newValue + subset.length;
+            for (j = subset.oldValue; j < endOld; j += 1) {
+                gaps1[j] = group;
             }
-            for (i = subset.newValue; i < endNew; i += 1) {
-                gaps2[i] = group;
+            for (j = subset.newValue; j < endNew; j += 1) {
+                gaps2[j] = group;
             }
             group += 1;
-        });
+        }
 
         return {
             gaps1: gaps1,
@@ -376,15 +396,18 @@
             markBoth = function(i) {
                 marked1[subset.oldValue + i] = true;
                 marked2[subset.newValue + i] = true;
-            };
+            },
+            length, subsetArray, i;
 
         while (subset) {
             subset = findCommonSubsets(oldChildren, newChildren, marked1, marked2);
             if (subset) {
                 subsets.push(subset);
-
-                Array.apply(null, new Array(subset.length)).map(returnIndex).forEach(markBoth);
-
+                subsetArray = Array.apply(null, new Array(subset.length)).map(returnIndex);
+                length = subsetArray.length;
+                for (i = 0; i < length; i++) {
+                    markBoth(subsetArray[i]);
+                }
             }
         }
         return subsets;
@@ -392,10 +415,9 @@
 
 
     function swap(obj, p1, p2) {
-        (function(_) {
-            obj[p1] = obj[p2];
-            obj[p2] = _;
-        }(obj[p1]));
+        var tmp = obj[p1];
+        obj[p1] = obj[p2];
+        obj[p2] = tmp;
     }
 
 
@@ -406,13 +428,14 @@
     DiffTracker.prototype = {
         list: false,
         add: function(diffs) {
-            var list = this.list;
-            diffs.forEach(function(diff) {
-                list.push(diff);
-            });
+            this.list.push.apply(this.list, diffs);
         },
         forEach: function(fn) {
-            this.list.forEach(fn);
+            var length = this.list.length,
+                i;
+            for (i = 0; i < length; i++) {
+                fn(this.list[i]);
+            }
         }
     };
 
@@ -434,9 +457,10 @@
                 postVirtualDiffApply: function() {},
                 preDiffApply: function() {},
                 postDiffApply: function() {},
-                filterOuterDiff: null
+                filterOuterDiff: null,
+                compress: false // Whether to work with compressed diffs
             },
-            i;
+            varNames, i, j;
 
         if (typeof options === "undefined") {
             options = {};
@@ -450,38 +474,49 @@
             }
         }
 
-        this._const = {
-            addAttribute: 0,
-            modifyAttribute: 1,
-            removeAttribute: 2,
-            modifyTextElement: 3,
-            relocateGroup: 4,
-            removeElement: 5,
-            addElement: 6,
-            removeTextElement: 7,
-            addTextElement: 8,
-            replaceElement: 9,
-            modifyValue: 10,
-            modifyChecked: 11,
-            modifySelected: 12,
-            modifyComment: 13,
-            action: 'a',
-            route: 'r',
-            oldValue: 'o',
-            newValue: 'n',
-            element: 'e',
-            'group': 'g',
-            from: 'f',
-            to: 't',
-            name: 'na',
-            value: 'v',
-            'data': 'd',
-            'attributes': 'at',
-            'nodeName': 'nn',
-            'childNodes': 'c',
-            'checked': 'ch',
-            'selected': 's'
+        var varNames = {
+            'addAttribute': 'addAttribute',
+            'modifyAttribute': 'modifyAttribute',
+            'removeAttribute': 'removeAttribute',
+            'modifyTextElement': 'modifyTextElement',
+            'relocateGroup': 'relocateGroup',
+            'removeElement': 'removeElement',
+            'addElement': 'addElement',
+            'removeTextElement': 'removeTextElement',
+            'addTextElement': 'addTextElement',
+            'replaceElement': 'replaceElement',
+            'modifyValue': 'modifyValue',
+            'modifyChecked': 'modifyChecked',
+            'modifySelected': 'modifySelected',
+            'modifyComment': 'modifyComment',
+            'action': 'action',
+            'route': 'route',
+            'oldValue': 'oldValue',
+            'newValue': 'newValue',
+            'element': 'element',
+            'group': 'group',
+            'from': 'from',
+            'to': 'to',
+            'name': 'name',
+            'value': 'value',
+            'data': 'data',
+            'attributes': 'attributes',
+            'nodeName': 'nodeName',
+            'childNodes': 'childNodes',
+            'checked': 'checked',
+            'selected': 'selected'
         };
+
+        if (this.compress) {
+            j = 0;
+            this._const = {};
+            for (i in varNames) {
+                this._const[i] = j;
+                j++;
+            }
+        } else {
+            this._const = varNames;
+        }
     };
 
     diffDOM.Diff = Diff;
@@ -581,7 +616,8 @@
         findOuterDiff: function(t1, t2, route) {
             var t = this;
             var diffs = [],
-                attr1, attr2;
+                attr,
+                attr1, attr2, attrLength, pos, i;
 
             if (t1.nodeName !== t2.nodeName) {
                 return [new Diff()
@@ -616,8 +652,10 @@
             attr1 = t1.attributes ? Object.keys(t1.attributes).sort() : [];
             attr2 = t2.attributes ? Object.keys(t2.attributes).sort() : [];
 
-            attr1.forEach(function(attr) {
-                var pos = attr2.indexOf(attr);
+            attrLength = attr1.length;
+            for (i = 0; i < attrLength; i++) {
+                attr = attr1[i];
+                pos = attr2.indexOf(attr);
                 if (pos === -1) {
                     diffs.push(new Diff()
                         .setValue(t._const.action, t._const.removeAttribute)
@@ -637,44 +675,46 @@
                         );
                     }
                 }
+            }
 
-            });
-
-
-            attr2.forEach(function(attr) {
+            attrLength = attr2.length;
+            for (i = 0; i < attrLength; i++) {
+                attr = attr2[i];
                 diffs.push(new Diff()
                     .setValue(t._const.action, t._const.addAttribute)
                     .setValue(t._const.route, route)
                     .setValue(t._const.name, attr)
                     .setValue(t._const.value, t2.attributes[attr])
                 );
-
-            });
+            }
 
             return diffs;
         },
         nodeToObj: function(aNode) {
             var objNode = {},
-                dobj = this;
+                dobj = this,
+                nodeArray, childNode, length, attribute, i;
             objNode.nodeName = aNode.nodeName;
             if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {
                 objNode.data = aNode.data;
             } else {
                 if (aNode.attributes && aNode.attributes.length > 0) {
                     objNode.attributes = {};
-                    Array.prototype.slice.call(aNode.attributes).forEach(
-                        function(attribute) {
-                            objNode.attributes[attribute.name] = attribute.value;
-                        }
-                    );
+                    nodeArray = Array.prototype.slice.call(aNode.attributes);
+                    length = nodeArray.length;
+                    for (i = 0; i < length; i++) {
+                        attribute = nodeArray[i];
+                        objNode.attributes[attribute.name] = attribute.value;
+                    }
                 }
                 if (aNode.childNodes && aNode.childNodes.length > 0) {
                     objNode.childNodes = [];
-                    Array.prototype.slice.call(aNode.childNodes).forEach(
-                        function(childNode) {
-                            objNode.childNodes.push(dobj.nodeToObj(childNode));
-                        }
-                    );
+                    nodeArray = Array.prototype.slice.call(aNode.childNodes);
+                    length = nodeArray.length;
+                    for (i = 0; i < length; i++) {
+                        childNode = nodeArray[i];
+                        objNode.childNodes.push(dobj.nodeToObj(childNode));
+                    }
                 }
                 if (this.valueDiffing) {
                     if (aNode.value !== undefined) {
@@ -688,11 +728,11 @@
                     }
                 }
             }
-
             return objNode;
         },
         objToNode: function(objNode, insideSvg) {
-            var node, dobj = this;
+            var node, dobj = this,
+                attribute, attributeArray, childNode, childNodeArray, length, i;
             if (objNode.nodeName === '#text') {
                 node = document.createTextNode(objNode.data);
 
@@ -706,14 +746,20 @@
                     node = document.createElement(objNode.nodeName);
                 }
                 if (objNode.attributes) {
-                    Object.keys(objNode.attributes).forEach(function(attribute) {
+                    attributeArray = Object.keys(objNode.attributes);
+                    length = attributeArray.length;
+                    for (i = 0; i < length; i++) {
+                        attribute = attributeArray[i];
                         node.setAttribute(attribute, objNode.attributes[attribute]);
-                    });
+                    }
                 }
                 if (objNode.childNodes) {
-                    objNode.childNodes.forEach(function(childNode) {
+                    childNodeArray = objNode.childNodes;
+                    length = childNodeArray.length;
+                    for (i = 0; i < length; i++) {
+                        childNode = childNodeArray[i];
                         node.appendChild(dobj.objToNode(childNode, insideSvg));
-                    });
+                    }
                 }
                 if (this.valueDiffing) {
                     if (objNode.value) {
@@ -972,13 +1018,16 @@
         // ===== Apply a virtual diff =====
 
         applyVirtual: function(tree, diffs) {
-            var dobj = this;
-            if (diffs.length === 0) {
+            var dobj = this,
+                length = diffs.length,
+                diff, i;
+            if (length === 0) {
                 return true;
             }
-            diffs.forEach(function(diff) {
+            for (i = 0; i < length; i++) {
+                diff = diffs[i];
                 dobj.applyVirtualDiff(tree, diff);
-            });
+            }
             return true;
         },
         getFromVirtualRoute: function(tree, route) {
@@ -1005,7 +1054,7 @@
                 node = routeInfo.node,
                 parentNode = routeInfo.parentNode,
                 nodeIndex = routeInfo.nodeIndex,
-                newNode, route, c;
+                newNode, movedNode, nodeArray, route, length, c, i;
 
             var t = this;
             // pre-diff hook
@@ -1085,10 +1134,12 @@
                     parentNode.childNodes[nodeIndex] = newNode;
                     break;
                 case this._const.relocateGroup:
-                    node.childNodes.splice(diff[this._const.from], diff.groupLength).reverse()
-                        .forEach(function(movedNode) {
-                            node.childNodes.splice(diff[t._const.to], 0, movedNode);
-                        });
+                    nodeArray = node.childNodes.splice(diff[this._const.from], diff.groupLength).reverse();
+                    length = nodeArray.length;
+                    for (i = 0; i < length; i++) {
+                        movedNode = nodeArray[i];
+                        node.childNodes.splice(diff[t._const.to], 0, movedNode);
+                    }
                     break;
                 case this._const.removeElement:
                     parentNode.childNodes.splice(nodeIndex, 1);
@@ -1155,16 +1206,19 @@
         // ===== Apply a diff =====
 
         apply: function(tree, diffs) {
-            var dobj = this;
+            var dobj = this,
+                length = diffs.length,
+                diff, i;
 
-            if (diffs.length === 0) {
+            if (length === 0) {
                 return true;
             }
-            diffs.forEach(function(diff) {
+            for (i = 0; i < length; i++) {
+                diff = diffs[i];
                 if (!dobj.applyDiff(tree, diff)) {
                     return false;
                 }
-            });
+            }
             return true;
         },
         getFromRoute: function(tree, route) {
@@ -1181,7 +1235,7 @@
         },
         applyDiff: function(tree, diff) {
             var node = this.getFromRoute(tree, diff[this._const.route]),
-                newNode, reference, route, c;
+                newNode, reference, route, nodeArray, length, childNode, index, c;
 
             var t = this;
             // pre-diff hook
@@ -1247,14 +1301,17 @@
                     node.parentNode.replaceChild(this.objToNode(diff[this._const.newValue], node.namespaceURI === 'http://www.w3.org/2000/svg'), node);
                     break;
                 case this._const.relocateGroup:
-                    Array.apply(null, new Array(diff.groupLength)).map(function() {
+                    nodeArray = Array.apply(null, new Array(diff.groupLength)).map(function() {
                         return node.removeChild(node.childNodes[diff[t._const.from]]);
-                    }).forEach(function(childNode, index) {
+                    });
+                    length = nodeArray.length;
+                    for (index = 0; index < length; index++) {
+                        childNode = nodeArray[index];
                         if (index === 0) {
                             reference = node.childNodes[diff[t._const.to]];
                         }
                         node.insertBefore(childNode, reference);
-                    });
+                    }
                     break;
                 case this._const.removeElement:
                     node.parentNode.removeChild(node);
@@ -1296,15 +1353,16 @@
         // ===== Undo a diff =====
 
         undo: function(tree, diffs) {
+            var dobj = this, diff, length = diffs.length, i;
             diffs = diffs.slice();
-            var dobj = this;
-            if (!diffs.length) {
+            if (!length) {
                 diffs = [diffs];
             }
             diffs.reverse();
-            diffs.forEach(function(diff) {
+            for (i = 0; i < length; i++) {
+                diff = diffs[i];
                 dobj.undoDiff(tree, diff);
-            });
+            }
         },
         undoDiff: function(tree, diff) {
 
