@@ -1,4 +1,18 @@
-(function() {
+(function(root, factory) {
+    if (typeof exports !== 'undefined') {
+        if (typeof module !== 'undefined' && module.exports) {
+            exports = module.exports = factory();
+        } else {
+            exports.diffDOM = factory();
+        }
+    } else if (typeof define === 'function') {
+        // AMD loader
+        define(factory);
+    } else {
+        // `window` in the browser, or `exports` on the server
+        root.diffDOM = factory();
+    }
+})(this, function() {
     "use strict";
 
     var diffcount;
@@ -1358,14 +1372,5 @@
         }
     };
 
-    if (typeof exports !== 'undefined') {
-        if (typeof module !== 'undefined' && module.exports) {
-            exports = module.exports = diffDOM;
-        }
-        exports.diffDOM = diffDOM;
-    } else {
-        // `window` in the browser, or `exports` on the server
-        this.diffDOM = diffDOM;
-    }
-
-}.call(this));
+    return diffDOM;
+});
