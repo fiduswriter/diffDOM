@@ -239,7 +239,6 @@
     var cloneObj = function(obj) {
         //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
         return JSON.parse(JSON.stringify(obj));
-        //return obj;
     };
 
     /**
@@ -444,9 +443,10 @@
                 postVirtualDiffApply: function() {},
                 preDiffApply: function() {},
                 postDiffApply: function() {},
-                filterOuterDiff: null
+                filterOuterDiff: null,
+                compress: false // Whether to work with compressed diffs
             },
-            i;
+            varNames, i, j;
 
         if (typeof options === "undefined") {
             options = {};
@@ -460,38 +460,49 @@
             }
         }
 
-        this._const = {
-            addAttribute: 0,
-            modifyAttribute: 1,
-            removeAttribute: 2,
-            modifyTextElement: 3,
-            relocateGroup: 4,
-            removeElement: 5,
-            addElement: 6,
-            removeTextElement: 7,
-            addTextElement: 8,
-            replaceElement: 9,
-            modifyValue: 10,
-            modifyChecked: 11,
-            modifySelected: 12,
-            modifyComment: 13,
-            action: 'a',
-            route: 'r',
-            oldValue: 'o',
-            newValue: 'n',
-            element: 'e',
-            'group': 'g',
-            from: 'f',
-            to: 't',
-            name: 'na',
-            value: 'v',
-            'data': 'd',
-            'attributes': 'at',
-            'nodeName': 'nn',
-            'childNodes': 'c',
-            'checked': 'ch',
-            'selected': 's'
+        var varNames = {
+            'addAttribute': 'addAttribute',
+            'modifyAttribute': 'modifyAttribute',
+            'removeAttribute': 'removeAttribute',
+            'modifyTextElement': 'modifyTextElement',
+            'relocateGroup': 'relocateGroup',
+            'removeElement': 'removeElement',
+            'addElement': 'addElement',
+            'removeTextElement': 'removeTextElement',
+            'addTextElement': 'addTextElement',
+            'replaceElement': 'replaceElement',
+            'modifyValue': 'modifyValue',
+            'modifyChecked': 'modifyChecked',
+            'modifySelected': 'modifySelected',
+            'modifyComment': 'modifyComment',
+            'action': 'action',
+            'route': 'route',
+            'oldValue': 'oldValue',
+            'newValue': 'newValue',
+            'element': 'element',
+            'group': 'group',
+            'from': 'from',
+            'to': 'to',
+            'name': 'name',
+            'value': 'value',
+            'data': 'data',
+            'attributes': 'attributes',
+            'nodeName': 'nodeName',
+            'childNodes': 'childNodes',
+            'checked': 'checked',
+            'selected': 'selected'
         };
+
+        if (this.compress) {
+            j = 0;
+            this._const = {};
+            for (i in varNames) {
+                this._const[i] = j;
+                j++;
+            }
+        } else {
+            this._const = varNames;
+        }
     };
 
     diffDOM.Diff = Diff;
@@ -703,7 +714,6 @@
                     }
                 }
             }
-
             return objNode;
         },
         objToNode: function(objNode, insideSvg) {
