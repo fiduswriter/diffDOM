@@ -717,7 +717,7 @@
                     }
                 }
                 if (this.valueDiffing) {
-                    if (aNode.checked !== undefined &&
+                    if (aNode.checked !== undefined && aNode.type &&
                         ['radio','checkbox'].indexOf(aNode.type.toLowerCase()) !== -1
                     ) {
                         objNode.checked = aNode.checked;
