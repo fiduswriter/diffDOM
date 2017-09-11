@@ -717,11 +717,12 @@
                     }
                 }
                 if (this.valueDiffing) {
-                    if (aNode.value !== undefined) {
-                        objNode.value = aNode.value;
-                    }
-                    if (aNode.checked !== undefined) {
+                    if (aNode.checked !== undefined &&
+                        ['radio','checkbox'].indexOf(aNode.type.toLowerCase()) !== -1
+                    ) {
                         objNode.checked = aNode.checked;
+                    } else if (aNode.value !== undefined) {
+                        objNode.value = aNode.value;
                     }
                     if (aNode.selected !== undefined) {
                         objNode.selected = aNode.selected;
