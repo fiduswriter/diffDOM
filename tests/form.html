@@ -171,7 +171,7 @@
       console.log(theDiff);
     }
 
-    second.value = 'Some text';
+    second.innerHTML = 'Some text';
 
     reportDiv();
 
@@ -192,7 +192,7 @@
 
     theDiff = dd.diff(first, second);
 
-    if (theDiff.length === 2) {
+    if (theDiff.length === 1) {
       success(theDiff);
     } else {
       testFailure();
