@@ -707,7 +707,9 @@
                         objNode.attributes[attribute.name] = attribute.value;
                     }
                 }
-                if (aNode.childNodes && aNode.childNodes.length > 0) {
+                if (objNode.nodeName === 'TEXTAREA') {
+                    objNode.value = aNode.value;
+                } else if (aNode.childNodes && aNode.childNodes.length > 0) {
                     objNode.childNodes = [];
                     nodeArray = Array.prototype.slice.call(aNode.childNodes);
                     length = nodeArray.length;
@@ -1110,10 +1112,6 @@
                     break;
                 case this._const.modifyTextElement:
                     node.data = diff[this._const.newValue];
-
-                    if (parentNode.nodeName === 'TEXTAREA') {
-                        parentNode.value = diff[this._const.newValue];
-                    }
                     break;
                 case this._const.modifyValue:
                     node.value = diff[this._const.newValue];
