@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>diffDOM</title>
+  <style>
+    .success {
+      background-color: LightGreen;
+    }
+    .failure {
+      background-color: Tomato;
+    }
+    .test-elements {
+      display: none;
+    }
+  </style>
+  <script src="TraceLogger.js">
+  </script>
+  <script src="../diffDOM.js">
+  </script>
+</head>
+
+<body>
+
+  <h1>Form element test for diffDOM</h1>
+
+
+  <div class="test-elements">
+      <ul id="list-1"><li id="item-1"></li><li id="item-2"></li><li id="item-3"></li></ul>
+      <ul id="list-2"><li id="item-1"></li><li id="item-3"></li></ul>
+  </div>
+
+
+
+  <script>
+
+    function reportDiv() {
+      document.body.appendChild(document.createElement('div'));
+    }
+
+    function testSuccess() {
+      document.body.lastChild.classList.add('success');
+    }
+
+    function success(theDiff) {
+      print('Number of diffs: ' + theDiff.length);
+      print('...success!');
+      testSuccess();
+    }
+
+    function testFailure() {
+      document.body.lastChild.classList.add('failure');
+    }
+
+    function print(text) {
+      var par = document.createElement('p');
+      par.textContent = text;
+      document.body.lastChild.appendChild(par);
+    }
+
+    function setSection(text) {
+      var header = document.createElement('h2');
+      header.textContent = text;
+      document.body.appendChild(header);
+    }
+
+    function reportDivDescription(element1, element2) {
+      var elTexts = [element1.outerHTML, element2.outerHTML], elements = [element1, element2], i;
+
+      for (i=0;i<elements.length;i++) {
+        if (elements[i].nodeName==='TEXTAREA' && elements[i].textContent !== elements[i].value) {
+          elTexts[i] += ', value = "' + elements[i].value + '"';
+        } else if (elements[i].nodeName === 'INPUT' && elements[i].type === 'text' && elements[i].value !== elements[i].getAttribute('value')) {
+          elTexts[i] += ', value = "' + elements[i].value + '"';
+        } else if (elements[i].nodeName === 'INPUT' && (elements[i].type === 'radio' || elements[i].type === 'checkbox')) {
+          elTexts[i] += ', checked = ' + elements[i].checked;
+        } else if (elements[i].nodeName === 'OPTION') {
+          elTexts[i] += ', selected = ' + elements[i].selected;
+        }
+      }
+
+      print("diff operations for " + elTexts[0] + " → " + elTexts[1]);
+    }
+
+    var dd = new diffDOM({
+        debug: true,
+        diffcap: 700,
+        valueDiffing: true
+      }),
+      tl = new TraceLogger(dd), elements, first, second, third, fourth, theDiff;
+
+    // Textarea
+
+    setSection('List');
+
+    first = document.getElementById('list-1');
+    second = document.getElementById('list-2');
+
+    first.removeAttribute('id');
+    second.removeAttribute('id');
+
+    reportDiv();
+
+    reportDivDescription(first, second);
+
+    theDiff = dd.diff(first, second);
+
+    if (theDiff.length === 1 && theDiff[0].action === 'removeElement') {
+      success(theDiff);
+    } else {
+      testFailure();
+      console.log(theDiff);
+    }
+
+  </script>
+
+</body>
+
+</html>
