@@ -1,6 +1,6 @@
 {
   "name": "diff-dom",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "description": "A diff for DOM elements, as client-side JavaScript code. Gets all modifications, insertions and removals between two DOM fragments.",
   "main": "diffDOM.js",
   "directories": {
