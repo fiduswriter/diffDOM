@@ -192,7 +192,29 @@
 
     theDiff = dd.diff(first, second);
 
-    if (theDiff.length === 2) {
+    if (theDiff.length === 1) {
+      success(theDiff);
+    } else {
+      testFailure();
+      console.log(theDiff);
+    }
+
+    reportDiv();
+
+    second.innerText = 'Some text';
+    third.innerText = 'Some other text';
+
+    reportDivDescription(first, second);
+
+    theDiff = dd.diff(first, second);
+
+    dd.apply(first, theDiff);
+
+    theDiff = dd.diff(first, third);
+
+    dd.apply(first, theDiff);
+
+    if (first.value === third.value) {
       success(theDiff);
     } else {
       testFailure();
