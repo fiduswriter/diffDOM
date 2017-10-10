@@ -210,10 +210,14 @@
 
         if (e1.attributes && e2.attributes) {
 
-            if (e1.attributes.id && e1.attributes.id === e2.attributes.id) {
-                var idDescriptor = e1.nodeName + '#' + e1.attributes.id;
-                if (idDescriptor in uniqueDescriptors) {
-                    return true;
+            if (e1.attributes.id) {
+                if (e1.attributes.id !== e2.attributes.id) {
+                    return false;
+                } else {
+                    var idDescriptor = e1.nodeName + '#' + e1.attributes.id;
+                    if (idDescriptor in uniqueDescriptors) {
+                        return true;
+                    }
                 }
             }
             if (e1.attributes['class'] && e1.attributes['class'] === e2.attributes['class']) {
