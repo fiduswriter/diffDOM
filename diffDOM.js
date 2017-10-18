@@ -1323,7 +1323,12 @@
                     route = diff[this._const.route].slice();
                     c = route.splice(route.length - 1, 1)[0];
                     node = this.getFromRoute(tree, route);
-                    node.insertBefore(this.objToNode(diff[this._const.element], node.namespaceURI === 'http://www.w3.org/2000/svg'), node.childNodes[c]);
+                    newNode = this.objToNode(diff[this._const.element], node.namespaceURI === 'http://www.w3.org/2000/svg');
+                    if (c < node.childNodes.length) {
+                        node.insertBefore(newNode, node.childNodes[c]);
+                    } else {
+                        node.appendChild(newNode);
+                    }
                     break;
                 case this._const.removeTextElement:
                     if (!node || node.nodeType !== 3) {
@@ -1339,7 +1344,11 @@
                     if (!node || !node.childNodes) {
                         return false;
                     }
-                    node.insertBefore(newNode, node.childNodes[c]);
+                    if (c < node.childNodes.length) {
+                        node.insertBefore(newNode, node.childNodes[c]);
+                    } else {
+                        node.appendChild(newNode);
+                    }
                     break;
                 default:
                     console.log('unknown action');
