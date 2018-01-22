@@ -15,7 +15,7 @@
 })(this, function() {
     "use strict";
 
-    var diffcount;
+    var diffcount, foundAll = false;
 
     var Diff = function(options) {
         var diff = this;
@@ -150,7 +150,6 @@
         if (Boolean(e1.childNodes) !== Boolean(e2.childNodes)) {
             return false;
         }
-
         if (e1.attributes) {
             e1Attributes = Object.keys(e1.attributes);
             e2Attributes = Object.keys(e2.attributes);
@@ -162,11 +161,11 @@
                     if (e1.attributes[attribute] !== e2.attributes[attribute]) {
                         return false;
                     }
+                    return true;
                 })) {
                 return false;
             }
         }
-
         if (e1.childNodes) {
             if (e1.childNodes.length !== e2.childNodes.length) {
                 return false;
@@ -449,6 +448,8 @@
                 debug: false,
                 diffcap: 10, // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
                 maxDepth: false, // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
+                maxChildCount: false, // False or a numeral. If set to a numeral, does not try to diff the contents of nodes with more children if there are more than maxChildCountDiffCount differences among child nodes.
+                maxChildCountDiffCount: 3, // Numeral. See maxChildCount.
                 valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
                 // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
                 textDiff: function() {
@@ -555,17 +556,24 @@
                     }
                 }
                 diffs = this.findNextDiff(t1, t2, []);
+
                 if (diffs.length === 0) {
                     // Last check if the elements really are the same now.
                     // If not, remove all info about being done and start over.
-                    // Somtimes a node can be marked as done, but the creation of subsequent diffs means that it has to be changed anyway.
+                    // Sometimes a node can be marked as done, but the creation of subsequent diffs means that it has to be changed again.
                     if (!isEqual(t1, t2)) {
-                        removeDone(t1);
-                        diffs = this.findNextDiff(t1, t2, []);
+                        if (foundAll) {
+                            console.error('Could not find remaining diffs!');
+                            console.log({t1, t2});
+                        } else {
+                            foundAll = true;
+                            removeDone(t1);
+                            diffs = this.findNextDiff(t1, t2, []);
+                        }
                     }
                 }
-
                 if (diffs.length > 0) {
+                    foundAll = false
                     this.tracker.add(diffs);
                     this.applyVirtual(t1, diffs);
                 }
@@ -630,6 +638,24 @@
                     .setValue(t._const.newValue, cloneObj(t2))
                     .setValue(t._const.route, route)
                 ];
+            }
+
+            if (this.maxChildCount && t1.childNodes && t2.childNodes && t1.childNodes.length >  this.maxChildCount && t2.childNodes.length > this.maxChildCount) {
+                var childNodesLength = t1.childNodes.length < t2.childNodes.length ? t1.childNodes.length : t2.childNodes.length, childDiffCount = 0,  j = 0;
+                while (childDiffCount < this.maxChildCountDiffCount && j < childNodesLength) {
+                    if (!isEqual(t1.childNodes[j], t2.childNodes[j])) {
+                        childDiffCount++;
+                    }
+                    j++;
+                }
+                if (childDiffCount === this.maxChildCountDiffCount) {
+                    return [new Diff()
+                        .setValue(t._const.action, t._const.replaceElement)
+                        .setValue(t._const.oldValue, cloneObj(t1))
+                        .setValue(t._const.newValue, cloneObj(t2))
+                        .setValue(t._const.route, route)
+                    ];
+                }
             }
 
             if (t1.data !== t2.data) {
