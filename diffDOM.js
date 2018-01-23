@@ -40,22 +40,7 @@
         }
     };
 
-    var SubsetMapping = function SubsetMapping(a, b) {
-        this.oldValue = a;
-        this.newValue = b;
-    };
 
-    SubsetMapping.prototype = {
-        contains: function contains(subset) {
-            if (subset.length < this.length) {
-                return subset.newValue >= this.newValue && subset.newValue < this.newValue + this.length;
-            }
-            return false;
-        },
-        toString: function toString() {
-            return this.length + " element subset, first mapping: old " + this.oldValue + " → new " + this.newValue;
-        }
-    };
 
     var elementDescriptors = function(el) {
         var output = [];
@@ -318,11 +303,12 @@
         if (lcsSize === 0) {
             return false;
         }
-        origin = [index[0] - lcsSize, index[1] - lcsSize];
-        ret = new SubsetMapping(origin[0], origin[1]);
-        ret.length = lcsSize;
 
-        return ret;
+        return {
+            oldValue: index[0] - lcsSize,
+            newValue: index[1] - lcsSize,
+            length: lcsSize
+        };
     };
 
     /**
@@ -413,6 +399,9 @@
                 }
             }
         }
+
+        oldTree.subsets = subsets;
+        oldTree.subsetsAge = 100;
         return subsets;
     };
 
@@ -809,12 +798,13 @@
             return node;
         },
         findInnerDiff: function(t1, t2, route) {
-            var t = this;
-            var subtrees = (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : [],
+            var oldSubsets = t1.subsets;
+            //var subtrees = (t1.childNodes && t2.childNodes) ?  markSubTrees(t1, t2) : [],
+            var subtrees = t1.subsets && t1.subsetsAge-- ? t1.subsets : (t1.childNodes && t2.childNodes) ?  markSubTrees(t1, t2) : [],
                 t1ChildNodes = t1.childNodes ? t1.childNodes : [],
                 t2ChildNodes = t2.childNodes ? t2.childNodes : [],
                 childNodesLengthDifference, diffs = [],
-                index = 0,
+                index = 0, t = this,
                 last, e1, e2, i;
 
             if (subtrees.length > 0) {
@@ -1087,6 +1077,7 @@
                 node = routeInfo.node,
                 parentNode = routeInfo.parentNode,
                 nodeIndex = routeInfo.nodeIndex,
+                newSubsets = [], splitLength,
                 newNode, movedNode, nodeArray, route, length, c, i;
 
             var t = this;
@@ -1169,9 +1160,71 @@
                         movedNode = nodeArray[i];
                         node.childNodes.splice(diff[t._const.to], 0, movedNode);
                     }
+                    if (node.subsets) {
+
+                        node.subsets.forEach(function(map) {
+                            if (diff[t._const.from] < diff[t._const.to] && map.oldValue <= diff[t._const.to] && map.oldValue > diff[t._const.from]) {
+                                map.oldValue -= diff.groupLength;
+                                splitLength = map.oldValue + map.length - diff[t._const.to];
+                                if (splitLength > 0) {
+                                    // new insertion splits map.
+                                    newSubsets.push({
+                                        oldValue: diff[t._const.to] + diff.groupLength,
+                                        newValue: map.newValue + map.length - splitLength,
+                                        length: splitLength
+                                    })
+                                    map.length -= splitLength;
+                                }
+                            } else if (diff[t._const.from] > diff[t._const.to] && map.oldValue > diff[t._const.to] && map.oldValue < diff[t._const.from]) {
+                                map.oldValue += diff.groupLength;
+                                splitLength = map.oldValue + map.length - diff[t._const.to];
+                                if (splitLength > 0) {
+                                    // new insertion splits map.
+                                    newSubsets.push({
+                                        oldValue: diff[t._const.to] + diff.groupLength,
+                                        newValue: map.newValue + map.length - splitLength,
+                                        length: splitLength
+                                    })
+                                    map.length -= splitLength;
+                                }
+                            } else if (map.oldValue === diff[t._const.from]) {
+                                map.oldValue = diff[t._const.to];
+                            }
+                        });
+                        if (node.subsets && newSubsets.length) {
+                            node.subsets = node.subsets.concat(newSubsets);
+                        }
+                    }
+
                     break;
                 case this._const.removeElement:
                     parentNode.childNodes.splice(nodeIndex, 1);
+                    if (parentNode.subsets) {
+                        parentNode.subsets.forEach(function(map) {
+                            if (map.oldValue > nodeIndex) {
+                                map.oldValue -= 1;
+                            } else if (map.oldValue === nodeIndex) {
+                                map.delete = true;
+                            } else if (map.oldValue < nodeIndex && (map.oldValue + map.length) > nodeIndex) {
+                                if (map.oldValue + map.length - 1 === nodeIndex) {
+                                    map.length--;
+                                } else {
+                                    newSubsets.push({
+                                        newValue: map.newValue + nodeIndex - map.oldValue,
+                                        oldValue: nodeIndex,
+                                        length: map.length - nodeIndex + map.oldValue - 1
+                                    })
+                                    map.length = nodeIndex - map.oldValue
+                                }
+                            }
+                        });
+                        parentNode.subsets = parentNode.subsets.filter(function(map) {
+                            return !map.delete;
+                        });
+                        if (newSubsets.length) {
+                            parentNode.subsets = parentNode.subsets.concat(newSubsets);
+                        }
+                    }
                     break;
                 case this._const.addElement:
                     route = diff[this._const.route].slice();
@@ -1191,11 +1244,52 @@
                     } else {
                         node.childNodes.splice(c, 0, newNode);
                     }
+                    if (node.subsets) {
+                        node.subsets.forEach(function(map) {
+                            if (map.oldValue >= c) {
+                                map.oldValue += 1;
+                            } if (map.oldValue < c && (map.oldValue + map.length) > c) {
+                                splitLength = map.oldValue + map.length - c
+                                newSubsets.push({
+                                    newValue: map.newValue + map.length - splitLength,
+                                    oldValue: c + 1,
+                                    length: splitLength
+                                })
+                                map.length -= splitLength
+                            }
+                        });
+                    }
                     break;
                 case this._const.removeTextElement:
                     parentNode.childNodes.splice(nodeIndex, 1);
                     if (parentNode.nodeName === 'TEXTAREA') {
                         delete parentNode.value;
+                    }
+                    if (parentNode.subsets) {
+                        parentNode.subsets.forEach(function(map) {
+                            if (map.oldValue > nodeIndex) {
+                                map.oldValue -= 1;
+                            } else if (map.oldValue === nodeIndex) {
+                                map.delete = true;
+                            } else if (map.oldValue < nodeIndex && (map.oldValue + map.length) > nodeIndex) {
+                                if (map.oldValue + map.length - 1 === nodeIndex) {
+                                    map.length--;
+                                } else {
+                                    newSubsets.push({
+                                        newValue: map.newValue + nodeIndex - map.oldValue,
+                                        oldValue: nodeIndex,
+                                        length: map.length - nodeIndex + map.oldValue - 1
+                                    })
+                                    map.length = nodeIndex - map.oldValue
+                                }
+                            }
+                        });
+                        parentNode.subsets = parentNode.subsets.filter(function(map) {
+                            return !map.delete;
+                        });
+                        if (newSubsets.length) {
+                            parentNode.subsets = parentNode.subsets.concat(newSubsets);
+                        }
                     }
                     break;
                 case this._const.addTextElement:
@@ -1216,6 +1310,21 @@
                     }
                     if (node.nodeName === 'TEXTAREA') {
                         node.value = diff[this._const.newValue];
+                    }
+                    if (node.subsets) {
+                        node.subsets.forEach(function(map) {
+                            if (map.oldValue >= c) {
+                                map.oldValue += 1;
+                            } if (map.oldValue < c && (map.oldValue + map.length) > c) {
+                                splitLength = map.oldValue + map.length - c
+                                newSubsets.push({
+                                    newValue: map.newValue + map.length - splitLength,
+                                    oldValue: c + 1,
+                                    length: splitLength
+                                })
+                                map.length -= splitLength
+                            }
+                        });
                     }
                     break;
                 default:
