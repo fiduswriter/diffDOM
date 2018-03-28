@@ -33,9 +33,8 @@
 <script>
     var dd = new diffDOM({
         debug: true,
-        diffcap: 100,
-        valueDiffing: false,
-        maxChildCount: 50
+        diffcap: 1000,
+        valueDiffing: false
       }),
       tl = new TraceLogger(dd), elements, first, second, third, fourth, theDiff;
 
@@ -43,8 +42,8 @@
 
 
     let diffs = dd.diff(divs[0], divs[1])
-    console.log(diffs)
     dd.apply(divs[0], diffs)
+    console.log(diffs)
 </script>
 
 </body>
