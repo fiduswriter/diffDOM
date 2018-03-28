@@ -437,8 +437,8 @@
                 debug: false,
                 diffcap: 10, // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
                 maxDepth: false, // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
-                maxChildCount: false, // False or a numeral. If set to a numeral, does not try to diff the contents of nodes with more children if there are more than maxChildCountDiffCount differences among child nodes.
-                maxChildCountDiffCount: 3, // Numeral. See maxChildCount.
+                maxChildCount: false, // False or a numeral. If set to a numeral, does not try to diff the contents of nodes with more children if there are more than maxChildDiffCount differences among child nodes.
+                maxChildDiffCount: 3, // Numeral. See maxChildCount.
                 valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
                 // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
                 textDiff: function() {
@@ -631,13 +631,13 @@
 
             if (this.maxChildCount && t1.childNodes && t2.childNodes && t1.childNodes.length >  this.maxChildCount && t2.childNodes.length > this.maxChildCount) {
                 var childNodesLength = t1.childNodes.length < t2.childNodes.length ? t1.childNodes.length : t2.childNodes.length, childDiffCount = 0,  j = 0;
-                while (childDiffCount < this.maxChildCountDiffCount && j < childNodesLength) {
+                while (childDiffCount < this.maxChildDiffCount && j < childNodesLength) {
                     if (!isEqual(t1.childNodes[j], t2.childNodes[j])) {
                         childDiffCount++;
                     }
                     j++;
                 }
-                if (childDiffCount === this.maxChildCountDiffCount) {
+                if (childDiffCount === this.maxChildDiffCount) {
                     return [new Diff()
                         .setValue(t._const.action, t._const.replaceElement)
                         .setValue(t._const.oldValue, cloneObj(t1))
