@@ -1191,9 +1191,6 @@
                                 map.oldValue = diff[t._const.to];
                             }
                         });
-                        if (node.subsets && newSubsets.length) {
-                            node.subsets = node.subsets.concat(newSubsets);
-                        }
                     }
 
                     break;
@@ -1218,13 +1215,8 @@
                                 }
                             }
                         });
-                        parentNode.subsets = parentNode.subsets.filter(function(map) {
-                            return !map.delete;
-                        });
-                        if (newSubsets.length) {
-                            parentNode.subsets = parentNode.subsets.concat(newSubsets);
-                        }
                     }
+                    node = parentNode;
                     break;
                 case this._const.addElement:
                     route = diff[this._const.route].slice();
@@ -1248,7 +1240,7 @@
                         node.subsets.forEach(function(map) {
                             if (map.oldValue >= c) {
                                 map.oldValue += 1;
-                            } if (map.oldValue < c && (map.oldValue + map.length) > c) {
+                            } else if (map.oldValue < c && (map.oldValue + map.length) > c) {
                                 splitLength = map.oldValue + map.length - c
                                 newSubsets.push({
                                     newValue: map.newValue + map.length - splitLength,
@@ -1284,13 +1276,8 @@
                                 }
                             }
                         });
-                        parentNode.subsets = parentNode.subsets.filter(function(map) {
-                            return !map.delete;
-                        });
-                        if (newSubsets.length) {
-                            parentNode.subsets = parentNode.subsets.concat(newSubsets);
-                        }
                     }
+                    node = parentNode;
                     break;
                 case this._const.addTextElement:
                     route = diff[this._const.route].slice();
@@ -1329,6 +1316,15 @@
                     break;
                 default:
                     console.log('unknown action');
+            }
+
+            if (node.subsets) {
+                node.subsets = node.subsets.filter(function(map) {
+                    return !map.delete && map.oldValue !== map.newValue;
+                });
+                if (newSubsets.length) {
+                    node.subsets = node.subsets.concat(newSubsets);
+                }
             }
 
             // capture newNode for the callback
