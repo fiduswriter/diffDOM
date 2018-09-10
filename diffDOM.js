@@ -713,7 +713,7 @@
             var objNode = {},
                 dobj = this,
                 nodeArray, childNode, length, attribute, i;
-            objNode.nodeName = aNode.nodeName;
+            objNode.nodeName = aNode.nodeName.toLowerCase();
             if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {
                 objNode.data = aNode.data;
             } else {
