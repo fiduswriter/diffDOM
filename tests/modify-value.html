@@ -4,7 +4,7 @@
 <script src="../diffDOM.js">
 </script>
 <script>
-
+'use strict';
 document.addEventListener("DOMContentLoaded", function(event) {
     // ------------- Testing the issue -------------------- //
     // ---------------------------------------------------- //
@@ -22,9 +22,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
     submit.setAttribute('type', 'submit');
 
     var instructions = document.createElement('div');
-    instructions.innerHTML = '<p>1. Change the text<br>2. Click "submit" once<br>\
-        3. Check if the input field value stays the same<br>4. Click "submit" a\
-        second time<br>5. Check if input field is empty.</p>';
+    instructions.innerHTML = '<p>1. Inspect the input element and verify that the value-attribute equals "testing".<br>2. Change the text.<br>3. Click "submit" once<br>\
+        4. Verify that the value of the input element has not changed<br>4. Inspect the element and notice that the value-attribute is now empty.</p>';
 
     document.body.appendChild(instructions);
 
@@ -54,8 +53,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
          // update the virtual element, then diff and see if there needs to be updates
         element2.firstChild.setAttribute('value', '');
-
+        element2.firstChild.value = element1.firstChild.value;
         var diff = dd.diff(element1, element2);
+        window.diff = diff;
         dd.apply(element1, diff);
 
         console.log(diff);

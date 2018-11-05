@@ -1021,8 +1021,8 @@
             if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
                 diffs.push(new Diff()
                     .setValue(t._const.action, t._const.modifyValue)
-                    .setValue(t._const.oldValue, t1.value)
-                    .setValue(t._const.newValue, t2.value)
+                    .setValue(t._const.oldValue, t1.value || "")
+                    .setValue(t._const.newValue, t2.value || "")
                     .setValue(t._const.route, route)
                 );
             }
@@ -1110,9 +1110,6 @@
                     break;
                 case this._const.modifyAttribute:
                     node.attributes[diff[this._const.name]] = diff[this._const.newValue];
-                    if (node.nodeName === 'INPUT' && diff[this._const.name] === 'value') {
-                        node.value = diff[this._const.value];
-                    }
                     break;
                 case this._const.removeAttribute:
 
@@ -1394,6 +1391,9 @@
                         return false;
                     }
                     node.setAttribute(diff[this._const.name], diff[this._const.newValue]);
+                    if (diff[this._const.name] === 'value' && node.nodeName === 'INPUT' && node.value !== diff[this._const.oldValue]) {
+                        node.value = diff[this._const.oldValue];
+                    }
                     break;
                 case this._const.removeAttribute:
                     if (!node || !node.removeAttribute) {
