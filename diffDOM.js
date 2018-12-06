@@ -714,6 +714,8 @@
                 dobj = this,
                 nodeArray, childNode, length, attribute, i;
             objNode.nodeName = aNode.nodeName;
+            if (objNode.nodeName && objNode.nodeName.indexOf("#") != 0)
+                objNode.nodeName = objNode.nodeName.toUpperCase();
             if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {
                 objNode.data = aNode.data;
             } else {
