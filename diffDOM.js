@@ -553,7 +553,8 @@
                     if (!isEqual(t1, t2)) {
                         if (foundAll) {
                             console.error('Could not find remaining diffs!');
-                            console.log({t1, t2});
+                            console.log(t1);
+                            console.log(t2);
                         } else {
                             foundAll = true;
                             removeDone(t1);
