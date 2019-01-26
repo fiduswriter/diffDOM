@@ -16,19 +16,19 @@ Check http://fiduswriter.github.io/diffDOM for demo and tests.
 
 ## Usage
 
-Include the diffDOM.js file in your HTML like this:
+Include the diffDOM file in your HTML like this:
 ```html
-<script src="diffDOM.js">
+<script src="browser/index.js"></script>
 ```
 
 Or like this in node/browserify:
 ```js
-var diffDOM = require("diff-dom");
+var diffDOM = import{DiffDOM}
 ```
 
 Then create an instance of diffDOM within the javascript code:
 ```js
-dd = new diffDOM();
+dd = new diffDOM.DiffDOM();
 ```
 
 Now you can create a diff to get from dom `elementA` to dom `elementB` like this:
@@ -82,7 +82,7 @@ if (result) {
 
 diffDOM does not include merging for changes to text nodes. However, it includes hooks so that you can add more advanced handling. Simple overwrite the `textDiff` function of the `diffDOM` instance. The functions TEXTDIFF and TEXTPATCH need to be defined in the code:
 ```js
-dd = new diffDOM({
+dd = new diffDOM.DiffDOM({
     textDiff: function (node, currentValue, expectedValue, newValue) {
         if (currentValue===expectedValue) {
             // The text node contains the text we expect it to contain, so we simple change the text of it to the new value.
@@ -102,7 +102,7 @@ dd = new diffDOM({
 diffDOM provides extension points before and after virtual and actual diffs, exposing some of the internals of the diff algorithm, and allowing you to make additional decisions based on that information.
 
 ```js
-dd = new diffDOM({
+dd = new diffDOM.DiffDOM({
     preVirtualDiffApply: function (info) {
         console.log(info);
     },
@@ -121,7 +121,7 @@ dd = new diffDOM({
 Additionally, the _pre_ hooks allow you to shortcircuit the standard behaviour of the diff by returning `true` from this callback. This will cause the `diffApply` functions to return prematurely, skipping their standard behaviour.
 
 ```js
-dd = new diffDOM({
+dd = new diffDOM.DiffDOM({
     // prevent removal of attributes
     preDiffApply: function (info) {
         if (info.diff.action === 'removeAttribute') {
@@ -137,7 +137,7 @@ dd = new diffDOM({
 diffDOM also provides a way to filter outer diff
 
 ```js
-dd = new diffDOM({
+dd = new diffDOM.DiffDOM({
     filterOuterDiff: function(t1, t2, diffs) {
         // can change current outer diffs by returning a new array,
         // or by mutating outerDiffs.
@@ -153,7 +153,7 @@ dd = new diffDOM({
 
 For debugging you might want to set a max number of diff changes between two elements before diffDOM gives up. To allow for a maximum of 500 differences between elements when diffing, initialize diffDOM like this:
 ```js
-dd = new diffDOM({
+dd = new diffDOM.DiffDOM({
     debug: true,
     diffcap: 500
   });
@@ -164,7 +164,7 @@ dd = new diffDOM({
 For forms that have been filled out by a user in ways that have changed which value is associated with an input field or which options are checked/selected without
 the DOM having been updated, the values are diffed. For use cases in which no changes have been made to any of the form values, one may choose to skip diffing the values. To do this, hand `false` as a third configuration option to diffDOM:
 ```js
-dd = new diffDOM({
+dd = new diffDOM.DiffDOM({
     valueDiffing: false
   });
 ```

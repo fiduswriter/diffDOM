@@ -12,10 +12,7 @@
       background-color: Tomato;
     }
   </style>
-  <script src="TraceLogger.js">
-  </script>
-  <script src="../diffDOM.js">
-  </script>
+  <script src="../browser/index.js"></script>
 </head>
 
 <body>
@@ -121,11 +118,11 @@
       return cost;
     }
 
-    var dd = new diffDOM({
+    var dd = new diffDOM.DiffDOM({
         debug: true,
         diffcap: 500
       }),
-      tl = new TraceLogger(dd),
+      tl = new diffDOM.TraceLogger(dd),
       divNodeList, divs = [],
       diffs, t1, i;
 

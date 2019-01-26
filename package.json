@@ -1,26 +1,37 @@
 {
-  "name": "diff-dom",
-  "version": "2.5.1",
-  "description": "A diff for DOM elements, as client-side JavaScript code. Gets all modifications, insertions and removals between two DOM fragments.",
-  "main": "diffDOM.js",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/fiduswriter/diffDOM.git"
-  },
-  "author": "Johannes Wilm mail@johanneswilm.org",
-  "license": "LGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/fiduswriter/diffDOM/issues"
-  },
-  "homepage": "https://github.com/fiduswriter/diffDOM",
-  "keywords": [
-    "diff",
-    "dom"
-  ]
+    "name": "diff-dom",
+    "version": "3.0.0",
+    "description": "A diff for DOM elements, as client-side JavaScript code. Gets all modifications, insertions and removals between two DOM fragments.",
+    "main": "dist/index.js",
+    "module": "src/index.js",
+    "directories": {
+        "test": "tests"
+    },
+    "scripts": {
+        "test": "npm run eslint",
+        "eslint": "eslint src/",
+        "transpile": "rollup -c",
+        "postversion": "echo remember to run 'git push --follow-tags'",
+        "prepare": "npm run eslint && npm run transpile"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/fiduswriter/diffDOM.git"
+    },
+    "author": "Johannes Wilm mail@johanneswilm.org",
+    "license": "LGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/fiduswriter/diffDOM/issues"
+    },
+    "homepage": "https://github.com/fiduswriter/diffDOM",
+    "keywords": [
+        "diff",
+        "dom"
+    ],
+    "dependencies": {},
+    "devDependencies": {
+        "eslint": "^5.12.1",
+        "rollup": "^1.1.2",
+        "rollup-plugin-buble": "^0.19.6"
+    }
 }
