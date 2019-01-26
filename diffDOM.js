@@ -63,13 +63,13 @@
         var uniqueDescriptors = {},
             duplicateDescriptors = {},
             liLength = li.length,
-            nodeLength, node, descriptors, descriptor, inUnique, inDupes, i, j;
+            descriptorsLength, node, descriptors, descriptor, inUnique, inDupes, i, j;
 
         for (i = 0; i < liLength; i++) {
             node = li[i];
-            nodeLength = node.length;
             descriptors = elementDescriptors(node);
-            for (j = 0; j < nodeLength; j++) {
+            descriptorsLength = descriptors.length;
+            for (j = 0; j < descriptorsLength; j++) {
                 descriptor = descriptors[j];
                 inUnique = descriptor in uniqueDescriptors;
                 inDupes = descriptor in duplicateDescriptors;
@@ -553,7 +553,8 @@
                     if (!isEqual(t1, t2)) {
                         if (foundAll) {
                             console.error('Could not find remaining diffs!');
-                            console.log({t1, t2});
+                            console.log(t1);
+                            console.log(t2);
                         } else {
                             foundAll = true;
                             removeDone(t1);
