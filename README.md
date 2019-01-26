@@ -21,15 +21,19 @@ Include the diffDOM file in your HTML like this:
 <script src="browser/index.js"></script>
 ```
 
-Or like this in node/browserify:
+(feel free to rename the file)
+
+Or like this if you import from npm:
 ```js
-var diffDOM = import{DiffDOM}
+import {DiffDOM} frpm "diff-dom"
 ```
 
 Then create an instance of diffDOM within the javascript code:
 ```js
 dd = new diffDOM.DiffDOM();
 ```
+
+(leave out the `diffdom.` if you use the npm-version)
 
 Now you can create a diff to get from dom `elementA` to dom `elementB` like this:
 ```js
