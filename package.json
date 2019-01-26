@@ -28,7 +28,9 @@
         "diff",
         "dom"
     ],
-    "dependencies": {},
+    "dependencies": {
+        "rollup-plugin-terser": "^4.0.3"
+    },
     "devDependencies": {
         "eslint": "^5.12.1",
         "rollup": "^1.1.2",
