@@ -409,12 +409,12 @@ export class diffDOM {
         this.compress = compress
 
         const varNames = ["addAttribute", "modifyAttribute", "removeAttribute",
-          "modifyTextElement", "relocateGroup", "removeElement", "addElement",
-          "removeTextElement", "addTextElement", "replaceElement", "modifyValue",
-          "modifyChecked", "modifySelected", "modifyComment", "action", "route",
-          "oldValue", "newValue", "element", "group", "from", "to", "name",
-          "value", "data", "attributes", "nodeName", "childNodes", "checked",
-          "selected"
+            "modifyTextElement", "relocateGroup", "removeElement", "addElement",
+            "removeTextElement", "addTextElement", "replaceElement", "modifyValue",
+            "modifyChecked", "modifySelected", "modifyComment", "action", "route",
+            "oldValue", "newValue", "element", "group", "from", "to", "name",
+            "value", "data", "attributes", "nodeName", "childNodes", "checked",
+            "selected"
         ]
         this._const = {}
         if (this.compress) {
