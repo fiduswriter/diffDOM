@@ -1,4 +1,6 @@
 venv/
 node_modules/
 package-lock.json
-dist/
+tests/
+demo/
+browser/

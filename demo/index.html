@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>diffDOM</title>
-  <script src="../diffDOM.js">
+  <script src="../browser/index.js">
   </script>
   <style>
     .success {
@@ -47,7 +47,7 @@
   var textarea = document.querySelector('textarea'),
     outDiv = document.querySelector('div'),
     newElement = document.createElement('div'),
-    dd = new diffDOM();
+    dd = new diffDOM.DiffDOM();
 
   textarea.addEventListener('input', function() {
     newElement.innerHTML = textarea.value;

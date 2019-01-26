@@ -15,10 +15,7 @@
       display: none;
     }
   </style>
-  <script src="TraceLogger.js">
-  </script>
-  <script src="../diffDOM.js">
-  </script>
+  <script src="../browser/index.js"></script>
 </head>
 
 <body>
@@ -83,12 +80,12 @@
       print("diff operations for " + elTexts[0] + " → " + elTexts[1]);
     }
 
-    var dd = new diffDOM({
+    var dd = new diffDOM.DiffDOM({
         debug: true,
         diffcap: 700,
         valueDiffing: true
       }),
-      tl = new TraceLogger(dd), elements, first, second, third, fourth, theDiff;
+      tl = new diffDOM.TraceLogger(dd), elements, first, second, third, fourth, theDiff;
 
     // Textarea
 

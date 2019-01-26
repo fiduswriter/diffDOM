@@ -21,12 +21,12 @@ export class TraceLogger {
         this.padding = ""
         this.tick = 1
         this.messages = []
-        let wrapkey = (obj, key) => {
+        const wrapkey = (obj, key) => {
             // trace this function
             const oldfn = obj[key]
-            obj[key] = () => {
-                this.fin(key, Array.prototype.slice.call(arguments))
-                const result = oldfn.apply(obj, arguments)
+            obj[key] = (...args) => {
+                this.fin(key, Array.prototype.slice.call(args))
+                const result = oldfn.apply(obj, args)
                 this.fout(key, result)
                 return result
             }

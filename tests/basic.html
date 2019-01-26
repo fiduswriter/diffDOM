@@ -12,10 +12,7 @@
       background-color: Tomato;
     }
   </style>
-  <script src="TraceLogger.js">
-  </script>
-  <script src="../diffDOM.js">
-  </script>
+  <script src="../browser/index.js"></script>
 </head>
 
 <body>
@@ -553,11 +550,11 @@
       document.body.lastChild.appendChild(par);
     }
 
-    var dd = new diffDOM({
+    var dd = new diffDOM.DiffDOM({
       debug: true,
       diffcap: 500
     }),
-      tl = new TraceLogger(dd),
+      tl = new diffDOM.TraceLogger(dd),
       divNodeList, divs = [],
       diffs, t1, i;
 
@@ -596,6 +593,7 @@
       try {
         reportDiv();
         print("diff operations for div #" + i + " → div #" + (i + 1));
+        console.log(divs[i], divs[i+1])
         diffs = dd.diff(divs[i], divs[i + 1]);
         console.log(JSON.stringify(diffs));
 

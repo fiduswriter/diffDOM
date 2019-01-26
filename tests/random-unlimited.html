@@ -12,10 +12,7 @@
       background-color: Tomato;
     }
   </style>
-  <script src="TraceLogger.js">
-  </script>
-  <script src="../diffDOM.js">
-  </script>
+  <script src="../browser/index.js"></script>
   <script>
     window.onload = function () {
 
@@ -24,8 +21,8 @@
       CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
       ATTRIBUTES = ['data-test', 'class', 'data-fisher', 'data-id'];
 
-      var dd = new diffDOM({debug:true,diffcap:1000}),
-        tl = new TraceLogger(dd),
+      var dd = new diffDOM.DiffDOM({debug:true,diffcap:1000}),
+        tl = new diffDOM.TraceLogger(dd),
         divs, diffs, t1, i, j, availableElements, testElement, textContent, mainDiv = document.createElement('div');
 
 

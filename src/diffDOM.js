@@ -371,7 +371,7 @@ class DiffTracker {
 
 }
 
-export class diffDOM {
+export class DiffDOM {
     constructor({
         debug = false,
         diffcap = 10, // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
@@ -1256,7 +1256,7 @@ export class diffDOM {
     // ===== Apply a diff =====
 
     apply(tree, diffs) {
-        return diffs.every(diff => this.appleDiff(tree, diff))
+        return diffs.every(diff => this.applyDiff(tree, diff))
     }
 
 

@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-<script src="../diffDOM.js">
+<script src="../browser/index.js"></script>
 </script>
 <script>
 'use strict';
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     // ------------- Testing the issue -------------------- //
     // ---------------------------------------------------- //
 
-    var dd = new diffDOM();
+    var dd = new diffDOM.DiffDOM();
 
     // create two sets of identical html
     var element1 = document.createElement('form');
