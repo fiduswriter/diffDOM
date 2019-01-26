@@ -9,7 +9,7 @@ export default {
             format: 'cjs'
         },
         {
-            file: 'browser/index.js',
+            file: 'browser/diffDOM.js',
             format: 'iife',
             name: 'diffDOM'
         },
