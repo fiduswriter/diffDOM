@@ -10,6 +10,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
+        "no-console": "off",
         "accessor-pairs": "error",
         "array-bracket-newline": "off",
         "array-bracket-spacing": [
@@ -254,7 +255,7 @@ module.exports = {
             "error",
             "never"
         ],
-        "semi": "off",
+        "semi": ["error", "never"],
         "semi-spacing": [
             "error",
             {
