@@ -2,17 +2,8 @@ let diffcount;
 let foundAll = false;
 
 class Diff {
-    constructor(options) {
-        const diff = this;
-        if (options) {
-            Object.keys(options);
-            const length = keys.length;
-            let i;
-            for (i = 0; i < length; i++) {
-                diff[keys[i]] = options[keys[i]];
-            }
-        }
-
+    constructor(options = {}) {
+        Object.entries(options).forEach(([key, value]) => this[key] = value)
     }
 
     toString() {
@@ -27,7 +18,7 @@ class Diff {
 
 
 
-const elementDescriptors = el => {
+function elementDescriptors(el) {
     const output = [];
     if (el.nodeName !== '#text' && el.nodeName !== '#comment') {
         output.push(el.nodeName);
@@ -44,59 +35,41 @@ const elementDescriptors = el => {
     return output;
 };
 
-const findUniqueDescriptors = li => {
+function findUniqueDescriptors(li) {
     const uniqueDescriptors = {};
     const duplicateDescriptors = {};
-    const liLength = li.length;
-    let nodeLength;
-    let node;
-    let descriptors;
-    let descriptor;
-    let inUnique;
-    let inDupes;
-    let i;
-    let j;
 
-    for (i = 0; i < liLength; i++) {
-        node = li[i];
-        nodeLength = node.length;
-        descriptors = elementDescriptors(node);
-        for (j = 0; j < nodeLength; j++) {
-            descriptor = descriptors[j];
-            inUnique = descriptor in uniqueDescriptors;
-            inDupes = descriptor in duplicateDescriptors;
+    li.forEach(node => {
+        elementDescriptors(node).forEach(descriptor => {
+            const inUnique = descriptor in uniqueDescriptors;
+            const inDupes = descriptor in duplicateDescriptors;
             if (!inUnique && !inDupes) {
                 uniqueDescriptors[descriptor] = true;
             } else if (inUnique) {
                 delete uniqueDescriptors[descriptor];
                 duplicateDescriptors[descriptor] = true;
             }
-        }
-    }
+        })
+    })
 
     return uniqueDescriptors;
 };
 
-const uniqueInBoth = (l1, l2) => {
+function uniqueInBoth(l1, l2) {
     const l1Unique = findUniqueDescriptors(l1);
     const l2Unique = findUniqueDescriptors(l2);
     const inBoth = {};
-    const keys = Object.keys(l1Unique);
-    const length = keys.length;
-    let key;
-    let i;
 
-    for (i = 0; i < length; i++) {
-        key = keys[i];
+    Object.keys(l1Unique).forEach(key => {
         if (l2Unique[key]) {
             inBoth[key] = true;
         }
-    }
+    })
 
     return inBoth;
 };
 
-const removeDone = tree => {
+function removeDone(tree) {
     delete tree.outerDone;
     delete tree.innerDone;
     delete tree.valueDone;
@@ -107,10 +80,7 @@ const removeDone = tree => {
     }
 };
 
-const isEqual = (e1, e2) => {
-    let e1Attributes;
-    let e2Attributes;
-
+function isEqual(e1, e2) {
     if (!['nodeName', 'value', 'checked', 'selected', 'data'].every(element => {
             if (e1[element] !== e2[element]) {
                 return false;
@@ -128,8 +98,8 @@ const isEqual = (e1, e2) => {
         return false;
     }
     if (e1.attributes) {
-        e1Attributes = Object.keys(e1.attributes);
-        e2Attributes = Object.keys(e2.attributes);
+        const e1Attributes = Object.keys(e1.attributes);
+        const e2Attributes = Object.keys(e2.attributes);
 
         if (e1Attributes.length !== e2Attributes.length) {
             return false;
@@ -158,10 +128,7 @@ const isEqual = (e1, e2) => {
 };
 
 
-const roughlyEqual = (e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) => {
-    let childUniqueDescriptors;
-    let nodeList1;
-    let nodeList2;
+function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
 
     if (!e1 || !e2) {
         return false;
@@ -207,8 +174,8 @@ const roughlyEqual = (e1, e2, uniqueDescriptors, sameSiblings, preventRecursion)
         return true;
     }
 
-    nodeList1 = e1.childNodes ? e1.childNodes.slice().reverse() : [];
-    nodeList2 = e2.childNodes ? e2.childNodes.slice().reverse() : [];
+    const nodeList1 = e1.childNodes ? e1.childNodes.slice().reverse() : [];
+    const nodeList2 = e2.childNodes ? e2.childNodes.slice().reverse() : [];
 
     if (nodeList1.length !== nodeList2.length) {
         return false;
@@ -219,19 +186,19 @@ const roughlyEqual = (e1, e2, uniqueDescriptors, sameSiblings, preventRecursion)
     } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
         // was not set, we must explicitly force it to true for child iterations.
-        childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2);
+        const childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2);
         return nodeList1.every((element, index) => roughlyEqual(element, nodeList2[index], childUniqueDescriptors, true, true));
     }
 };
 
 
-const cloneObj = obj => //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
-    JSON.parse(JSON.stringify(obj));
-
+function cloneObj(obj) { //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
+    return JSON.parse(JSON.stringify(obj));
+}
 /**
  * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
  */
-const findCommonSubsets = (c1, c2, marked1, marked2) => {
+function findCommonSubsets(c1, c2, marked1, marked2) {
     let lcsSize = 0;
     let index = [];
     const c1Length = c1.length;
@@ -249,10 +216,6 @@ const findCommonSubsets = (c1, c2, marked1, marked2) => {
 
     let origin;
     let ret;
-    let c1Index;
-    let c2Index;
-    let c1Element;
-    let c2Element;
 
     if (subsetsSame) {
 
@@ -276,10 +239,10 @@ const findCommonSubsets = (c1, c2, marked1, marked2) => {
     }
 
     // fill the matches with distance values
-    for (c1Index = 0; c1Index < c1Length; c1Index++) {
-        c1Element = c1[c1Index];
-        for (c2Index = 0; c2Index < c2Length; c2Index++) {
-            c2Element = c2[c2Index];
+    for (let c1Index = 0; c1Index < c1Length; c1Index++) {
+        const c1Element = c1[c1Index];
+        for (let c2Index = 0; c2Index < c2Length; c2Index++) {
+            const c2Element = c2[c2Index];
             if (!marked1[c1Index] && !marked2[c2Index] && roughlyEqual(c1Element, c2Element, uniqueDescriptors, subsetsSame)) {
                 matches[c1Index + 1][c2Index + 1] = (matches[c1Index][c2Index] ? matches[c1Index][c2Index] + 1 : 1);
                 if (matches[c1Index + 1][c2Index + 1] >= lcsSize) {
@@ -306,7 +269,9 @@ const findCommonSubsets = (c1, c2, marked1, marked2) => {
 /**
  * This should really be a predefined function in Array...
  */
-const makeArray = (n, v) => Array(...new Array(n)).map(() => v);
+function makeArray(n, v) {
+    return Array(...new Array(n)).map(() => v);
+}
 
 /**
  * Generate arrays that indicate which node belongs to which subset,
@@ -328,30 +293,24 @@ const makeArray = (n, v) => Array(...new Array(n)).map(() => v);
  * gaps1 = [1, true, 0, 0], gaps2 = [true, 0, 0, 1]
  *
  */
-const getGapInformation = (t1, t2, stable) => {
+function getGapInformation(t1, t2, stable) {
     const gaps1 = t1.childNodes ? makeArray(t1.childNodes.length, true) : [];
     const gaps2 = t2.childNodes ? makeArray(t2.childNodes.length, true) : [];
     let group = 0;
-    const length = stable.length;
-    let i;
-    let j;
-    let endOld;
-    let endNew;
-    let subset;
 
     // give elements from the same subset the same group number
-    for (i = 0; i < length; i++) {
-        subset = stable[i];
-        endOld = subset.oldValue + subset.length;
-        endNew = subset.newValue + subset.length;
-        for (j = subset.oldValue; j < endOld; j += 1) {
+    stable.forEach(subset => {
+        const endOld = subset.oldValue + subset.length;
+        const endNew = subset.newValue + subset.length;
+
+        for (let j = subset.oldValue; j < endOld; j += 1) {
             gaps1[j] = group;
         }
-        for (j = subset.newValue; j < endNew; j += 1) {
+        for (let j = subset.newValue; j < endNew; j += 1) {
             gaps2[j] = group;
         }
         group += 1;
-    }
+    })
 
     return {
         gaps1,
@@ -362,7 +321,7 @@ const getGapInformation = (t1, t2, stable) => {
 /**
  * Find all matching subsets, based on immediate child differences only.
  */
-const markSubTrees = (oldTree, newTree) => {
+function markSubTrees(oldTree, newTree) {
     // note: the child lists are views, and so update as we update old/newTree
     const oldChildren = oldTree.childNodes ? oldTree.childNodes : [];
 
@@ -381,19 +340,12 @@ const markSubTrees = (oldTree, newTree) => {
         marked2[subset.newValue + i] = true;
     };
 
-    let length;
-    let subsetArray;
-    let i;
-
     while (subset) {
         subset = findCommonSubsets(oldChildren, newChildren, marked1, marked2);
         if (subset) {
             subsets.push(subset);
-            subsetArray = Array(...new Array(subset.length)).map(returnIndex);
-            length = subsetArray.length;
-            for (i = 0; i < length; i++) {
-                markBoth(subsetArray[i]);
-            }
+            const subsetArray = Array(...new Array(subset.length)).map(returnIndex);
+            subSetArray.forEach(item => markBoth(item))
         }
     }
 
@@ -410,106 +362,70 @@ function swap(obj, p1, p2) {
 }
 
 
-const DiffTracker = function() {
-    this.list = [];
-};
+class DiffTracker {
+    constructor() {
+        this.list = [];
+    }
 
-DiffTracker.prototype = {
-    list: false,
     add(diffs) {
         this.list.push(...diffs);
-    },
-    forEach(fn) {
-        const length = this.list.length;
-        let i;
-        for (i = 0; i < length; i++) {
-            fn(this.list[i]);
-        }
     }
-};
+    forEach(fn) {
+        this.list.forEach(li => fn(li))
+    }
 
-class diffDOM {
-    constructor(options) {
-        const defaults = {
-            debug: false,
-            diffcap: 10, // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
-            maxDepth: false, // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
-            maxChildCount: 50, // False or a numeral. If set to a numeral, does not try to diff the contents of nodes with more children if there are more than maxChildDiffCount differences among child nodes.
-            maxChildDiffCount: 3, // Numeral. See maxChildCount.
-            valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
-            // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
-            textDiff() {
-                arguments[0].data = arguments[3];
-                return;
-            },
-            // empty functions were benchmarked as running faster than both
-            // `f && f()` and `if (f) { f(); }`
-            preVirtualDiffApply() {},
-            postVirtualDiffApply() {},
-            preDiffApply() {},
-            postDiffApply() {},
-            filterOuterDiff: null,
-            compress: false // Whether to work with compressed diffs
-        };
+}
 
-        var varNames;
-        let i;
-        let j;
+export class diffDOM {
+    constructor({
+        debug = false,
+        diffcap = 10, // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
+        maxDepth = false, // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
+        maxChildCount = 50, // False or a numeral. If set to a numeral, does not try to diff the contents of nodes with more children if there are more than maxChildDiffCount differences among child nodes.
+        maxChildDiffCount = 3, // Numeral. See maxChildCount.
+        valueDiffing = true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
+        // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
+        textDiff = function() {
+            arguments[0].data = arguments[3];
+            return;
+        },
+        // empty functions were benchmarked as running faster than both
+        // `f && f()` and `if (f) { f(); }`
+        preVirtualDiffApply = function() {},
+        postVirtualDiffApply = function() {},
+        preDiffApply = function() {},
+        postDiffApply = function() {},
+        filterOuterDiff = null,
+        compress = false // Whether to work with compressed diffs
+    }) {
 
-        if (typeof options === "undefined") {
-            options = {};
-        }
+        this.debug = debug
+        this.diffcap = diffcap
+        this.maxDepth = maxDepth
+        this.maxChildCount = maxChildCount
+        this.maxChildDiffCount = maxChildDiffCount
+        this.valueDiffing = valueDiffing
+        this.textDiff = textDiff
+        this.preVirtualDiffApply = preVirtualDiffApply
+        this.postVirtualDiffApply = postVirtualDiffApply
+        this.preDiffApply = preDiffApply
+        this.postDiffApply = postDiffApply
+        this.filterOuterDiff = filterOuterDiff
+        this.compress = compress
 
-        for (i in defaults) {
-            if (typeof options[i] === "undefined") {
-                this[i] = defaults[i];
-            } else {
-                this[i] = options[i];
-            }
-        }
-
-        var varNames = {
-            'addAttribute': 'addAttribute',
-            'modifyAttribute': 'modifyAttribute',
-            'removeAttribute': 'removeAttribute',
-            'modifyTextElement': 'modifyTextElement',
-            'relocateGroup': 'relocateGroup',
-            'removeElement': 'removeElement',
-            'addElement': 'addElement',
-            'removeTextElement': 'removeTextElement',
-            'addTextElement': 'addTextElement',
-            'replaceElement': 'replaceElement',
-            'modifyValue': 'modifyValue',
-            'modifyChecked': 'modifyChecked',
-            'modifySelected': 'modifySelected',
-            'modifyComment': 'modifyComment',
-            'action': 'action',
-            'route': 'route',
-            'oldValue': 'oldValue',
-            'newValue': 'newValue',
-            'element': 'element',
-            'group': 'group',
-            'from': 'from',
-            'to': 'to',
-            'name': 'name',
-            'value': 'value',
-            'data': 'data',
-            'attributes': 'attributes',
-            'nodeName': 'nodeName',
-            'childNodes': 'childNodes',
-            'checked': 'checked',
-            'selected': 'selected'
-        };
-
+        const varNames = ["addAttribute", "modifyAttribute", "removeAttribute",
+          "modifyTextElement", "relocateGroup", "removeElement", "addElement",
+          "removeTextElement", "addTextElement", "replaceElement", "modifyValue",
+          "modifyChecked", "modifySelected", "modifyComment", "action", "route",
+          "oldValue", "newValue", "element", "group", "from", "to", "name",
+          "value", "data", "attributes", "nodeName", "childNodes", "checked",
+          "selected"
+        ]
+        this._const = {};
         if (this.compress) {
-            j = 0;
-            this._const = {};
-            for (i in varNames) {
-                this._const[i] = j;
-                j++;
-            }
+            varNames.forEach((varName, index) => this._const[varName] = index);
         } else {
-            this._const = varNames;
+            varNames.forEach(varName => this._const[varName] = varName);
         }
     }
 
@@ -617,7 +533,6 @@ class diffDOM {
     }
 
     findOuterDiff(t1, t2, route) {
-        const t = this;
         const diffs = [];
         let attr;
         let attr1;
@@ -628,10 +543,10 @@ class diffDOM {
 
         if (t1.nodeName !== t2.nodeName) {
             return [new Diff()
-                .setValue(t._const.action, t._const.replaceElement)
-                .setValue(t._const.oldValue, cloneObj(t1))
-                .setValue(t._const.newValue, cloneObj(t2))
-                .setValue(t._const.route, route)
+                .setValue(this._const.action, this._const.replaceElement)
+                .setValue(this._const.oldValue, cloneObj(t1))
+                .setValue(this._const.newValue, cloneObj(t2))
+                .setValue(this._const.route, route)
             ];
         }
 
@@ -647,10 +562,10 @@ class diffDOM {
             }
             if (childDiffCount === this.maxChildDiffCount) {
                 return [new Diff()
-                    .setValue(t._const.action, t._const.replaceElement)
-                    .setValue(t._const.oldValue, cloneObj(t1))
-                    .setValue(t._const.newValue, cloneObj(t2))
-                    .setValue(t._const.route, route)
+                    .setValue(this._const.action, this._const.replaceElement)
+                    .setValue(this._const.oldValue, cloneObj(t1))
+                    .setValue(this._const.newValue, cloneObj(t2))
+                    .setValue(this._const.route, route)
                 ];
             }
         }
@@ -659,17 +574,17 @@ class diffDOM {
             // Comment or text node.
             if (t1.nodeName === '#text') {
                 return [new Diff()
-                    .setValue(t._const.action, t._const.modifyTextElement)
-                    .setValue(t._const.route, route)
-                    .setValue(t._const.oldValue, t1.data)
-                    .setValue(t._const.newValue, t2.data)
+                    .setValue(this._const.action, this._const.modifyTextElement)
+                    .setValue(this._const.route, route)
+                    .setValue(this._const.oldValue, t1.data)
+                    .setValue(this._const.newValue, t2.data)
                 ];
             } else {
                 return [new Diff()
-                    .setValue(t._const.action, t._const.modifyComment)
-                    .setValue(t._const.route, route)
-                    .setValue(t._const.oldValue, t1.data)
-                    .setValue(t._const.newValue, t2.data)
+                    .setValue(this._const.action, this._const.modifyComment)
+                    .setValue(this._const.route, route)
+                    .setValue(this._const.oldValue, t1.data)
+                    .setValue(this._const.newValue, t2.data)
                 ];
             }
 
@@ -685,20 +600,20 @@ class diffDOM {
             pos = attr2.indexOf(attr);
             if (pos === -1) {
                 diffs.push(new Diff()
-                    .setValue(t._const.action, t._const.removeAttribute)
-                    .setValue(t._const.route, route)
-                    .setValue(t._const.name, attr)
-                    .setValue(t._const.value, t1.attributes[attr])
+                    .setValue(this._const.action, this._const.removeAttribute)
+                    .setValue(this._const.route, route)
+                    .setValue(this._const.name, attr)
+                    .setValue(this._const.value, t1.attributes[attr])
                 );
             } else {
                 attr2.splice(pos, 1);
                 if (t1.attributes[attr] !== t2.attributes[attr]) {
                     diffs.push(new Diff()
-                        .setValue(t._const.action, t._const.modifyAttribute)
-                        .setValue(t._const.route, route)
-                        .setValue(t._const.name, attr)
-                        .setValue(t._const.oldValue, t1.attributes[attr])
-                        .setValue(t._const.newValue, t2.attributes[attr])
+                        .setValue(this._const.action, this._const.modifyAttribute)
+                        .setValue(this._const.route, route)
+                        .setValue(this._const.name, attr)
+                        .setValue(this._const.oldValue, t1.attributes[attr])
+                        .setValue(this._const.newValue, t2.attributes[attr])
                     );
                 }
             }
@@ -708,10 +623,10 @@ class diffDOM {
         for (i = 0; i < attrLength; i++) {
             attr = attr2[i];
             diffs.push(new Diff()
-                .setValue(t._const.action, t._const.addAttribute)
-                .setValue(t._const.route, route)
-                .setValue(t._const.name, attr)
-                .setValue(t._const.value, t2.attributes[attr])
+                .setValue(this._const.action, this._const.addAttribute)
+                .setValue(this._const.route, route)
+                .setValue(this._const.name, attr)
+                .setValue(this._const.value, t2.attributes[attr])
             );
         }
 
@@ -827,7 +742,6 @@ class diffDOM {
         let childNodesLengthDifference;
         let diffs = [];
         let index = 0;
-        const t = this;
         let last;
         let e1;
         let e2;
@@ -923,7 +837,6 @@ class diffDOM {
          * only in t1) or added (if only in t2). Then the creation of a group
          * relocation diff is attempted.
          */
-        const t = this;
         const gapInformation = getGapInformation(t1, t2, subtrees);
         const gaps1 = gapInformation.gaps1;
         const gaps2 = gapInformation.gaps2;
@@ -935,12 +848,9 @@ class diffDOM {
         let similarNode;
         let testI;
         const diffs = [];
-        let index1;
-        let index2;
-        let j;
 
 
-        for (index2 = 0, index1 = 0; index2 < shortest; index1 += 1, index2 += 1) {
+        for (let index2 = 0, index1 = 0; index2 < shortest; index1 += 1, index2 += 1) {
             if (gaps1[index2] === true) {
                 node = t1.childNodes[index1];
                 if (node.nodeName === '#text') {
@@ -955,27 +865,27 @@ class diffDOM {
                         }
                         if (!similarNode) {
                             diffs.push(new Diff()
-                                .setValue(t._const.action, t._const.modifyTextElement)
-                                .setValue(t._const.route, route.concat(index2))
-                                .setValue(t._const.oldValue, node.data)
-                                .setValue(t._const.newValue, t2.childNodes[index2].data)
+                                .setValue(this._const.action, this._const.modifyTextElement)
+                                .setValue(this._const.route, route.concat(index2))
+                                .setValue(this._const.oldValue, node.data)
+                                .setValue(this._const.newValue, t2.childNodes[index2].data)
                             );
                             return diffs;
                         }
                     }
                     diffs.push(new Diff()
-                        .setValue(t._const.action, t._const.removeTextElement)
-                        .setValue(t._const.route, route.concat(index2))
-                        .setValue(t._const.value, node.data)
+                        .setValue(this._const.action, this._const.removeTextElement)
+                        .setValue(this._const.route, route.concat(index2))
+                        .setValue(this._const.value, node.data)
                     );
                     gaps1.splice(index2, 1);
                     shortest = Math.min(gaps1.length, gaps2.length);
                     index2 -= 1;
                 } else {
                     diffs.push(new Diff()
-                        .setValue(t._const.action, t._const.removeElement)
-                        .setValue(t._const.route, route.concat(index2))
-                        .setValue(t._const.element, cloneObj(node))
+                        .setValue(this._const.action, this._const.removeElement)
+                        .setValue(this._const.route, route.concat(index2))
+                        .setValue(this._const.element, cloneObj(node))
                     );
                     gaps1.splice(index2, 1);
                     shortest = Math.min(gaps1.length, gaps2.length);
@@ -986,18 +896,18 @@ class diffDOM {
                 node = t2.childNodes[index2];
                 if (node.nodeName === '#text') {
                     diffs.push(new Diff()
-                        .setValue(t._const.action, t._const.addTextElement)
-                        .setValue(t._const.route, route.concat(index2))
-                        .setValue(t._const.value, node.data)
+                        .setValue(this._const.action, this._const.addTextElement)
+                        .setValue(this._const.route, route.concat(index2))
+                        .setValue(this._const.value, node.data)
                     );
                     gaps1.splice(index2, 0, true);
                     shortest = Math.min(gaps1.length, gaps2.length);
                     index1 -= 1;
                 } else {
                     diffs.push(new Diff()
-                        .setValue(t._const.action, t._const.addElement)
-                        .setValue(t._const.route, route.concat(index2))
-                        .setValue(t._const.element, cloneObj(node))
+                        .setValue(this._const.action, this._const.addElement)
+                        .setValue(this._const.route, route.concat(index2))
+                        .setValue(this._const.element, cloneObj(node))
                     );
                     gaps1.splice(index2, 0, true);
                     shortest = Math.min(gaps1.length, gaps2.length);
@@ -1014,18 +924,18 @@ class diffDOM {
                 if (toGroup !== group.oldValue) {
                     // Check whether destination nodes are different than originating ones.
                     destinationDifferent = false;
-                    for (j = 0; j < group.length; j += 1) {
+                    for (let j = 0; j < group.length; j += 1) {
                         if (!roughlyEqual(t1.childNodes[toGroup + j], t1.childNodes[group.oldValue + j], [], false, true)) {
                             destinationDifferent = true;
                         }
                     }
                     if (destinationDifferent) {
                         return [new Diff()
-                            .setValue(t._const.action, t._const.relocateGroup)
+                            .setValue(this._const.action, this._const.relocateGroup)
                             .setValue('groupLength', group.length)
-                            .setValue(t._const.from, group.oldValue)
-                            .setValue(t._const.to, toGroup)
-                            .setValue(t._const.route, route)
+                            .setValue(this._const.from, group.oldValue)
+                            .setValue(this._const.to, toGroup)
+                            .setValue(this._const.route, route)
                         ];
                     }
                 }
@@ -1039,31 +949,30 @@ class diffDOM {
         // differs from what is represented in the DOM. For example in the case
         // of filled out forms, etc.
         const diffs = [];
-        const t = this;
 
         if (t1.selected !== t2.selected) {
             diffs.push(new Diff()
-                .setValue(t._const.action, t._const.modifySelected)
-                .setValue(t._const.oldValue, t1.selected)
-                .setValue(t._const.newValue, t2.selected)
-                .setValue(t._const.route, route)
+                .setValue(this._const.action, this._const.modifySelected)
+                .setValue(this._const.oldValue, t1.selected)
+                .setValue(this._const.newValue, t2.selected)
+                .setValue(this._const.route, route)
             );
         }
 
         if ((t1.value || t2.value) && t1.value !== t2.value && t1.nodeName !== 'OPTION') {
             diffs.push(new Diff()
-                .setValue(t._const.action, t._const.modifyValue)
-                .setValue(t._const.oldValue, t1.value || "")
-                .setValue(t._const.newValue, t2.value || "")
-                .setValue(t._const.route, route)
+                .setValue(this._const.action, this._const.modifyValue)
+                .setValue(this._const.oldValue, t1.value || "")
+                .setValue(this._const.newValue, t2.value || "")
+                .setValue(this._const.route, route)
             );
         }
         if (t1.checked !== t2.checked) {
             diffs.push(new Diff()
-                .setValue(t._const.action, t._const.modifyChecked)
-                .setValue(t._const.oldValue, t1.checked)
-                .setValue(t._const.newValue, t2.checked)
-                .setValue(t._const.route, route)
+                .setValue(this._const.action, this._const.modifyChecked)
+                .setValue(this._const.oldValue, t1.checked)
+                .setValue(this._const.newValue, t2.checked)
+                .setValue(this._const.route, route)
             );
         }
 
@@ -1073,18 +982,10 @@ class diffDOM {
     // ===== Apply a virtual diff =====
 
     applyVirtual(tree, diffs) {
-        const dobj = this;
-        const length = diffs.length;
-        let diff;
-        let i;
-        if (length === 0) {
-            return true;
-        }
-        for (i = 0; i < length; i++) {
-            diff = diffs[i];
-            dobj.applyVirtualDiff(tree, diff);
-        }
-        return true;
+        diffs.forEach(diff => {
+            this.applyVirtualDiff(tree, diff)
+        })
+        return true
     }
 
     getFromVirtualRoute(tree, route) {
@@ -1114,16 +1015,7 @@ class diffDOM {
         const parentNode = routeInfo.parentNode;
         const nodeIndex = routeInfo.nodeIndex;
         const newSubsets = [];
-        let splitLength;
-        let newNode;
-        let movedNode;
-        let nodeArray;
-        let route;
-        let length;
-        let c;
-        let i;
 
-        const t = this;
         // pre-diff hook
         const info = {
             diff,
@@ -1134,6 +1026,11 @@ class diffDOM {
             return true;
         }
 
+        let newNode;
+        let nodeArray;
+        let route;
+        let length;
+        let c;
         switch (diff[this._const.action]) {
             case this._const.addAttribute:
                 if (!node.attributes) {
@@ -1195,17 +1092,12 @@ class diffDOM {
                 break;
             case this._const.relocateGroup:
                 nodeArray = node.childNodes.splice(diff[this._const.from], diff.groupLength).reverse();
-                length = nodeArray.length;
-                for (i = 0; i < length; i++) {
-                    movedNode = nodeArray[i];
-                    node.childNodes.splice(diff[t._const.to], 0, movedNode);
-                }
+                nodeArray.forEach(movedNode => node.childNodes.splice(diff[t._const.to], 0, movedNode))
                 if (node.subsets) {
-
                     node.subsets.forEach(map => {
                         if (diff[t._const.from] < diff[t._const.to] && map.oldValue <= diff[t._const.to] && map.oldValue > diff[t._const.from]) {
                             map.oldValue -= diff.groupLength;
-                            splitLength = map.oldValue + map.length - diff[t._const.to];
+                            const splitLength = map.oldValue + map.length - diff[t._const.to];
                             if (splitLength > 0) {
                                 // new insertion splits map.
                                 newSubsets.push({
@@ -1217,7 +1109,7 @@ class diffDOM {
                             }
                         } else if (diff[t._const.from] > diff[t._const.to] && map.oldValue > diff[t._const.to] && map.oldValue < diff[t._const.from]) {
                             map.oldValue += diff.groupLength;
-                            splitLength = map.oldValue + map.length - diff[t._const.to];
+                            const splitLength = map.oldValue + map.length - diff[t._const.to];
                             if (splitLength > 0) {
                                 // new insertion splits map.
                                 newSubsets.push({
@@ -1376,32 +1268,17 @@ class diffDOM {
     // ===== Apply a diff =====
 
     apply(tree, diffs) {
-        const dobj = this;
-        const length = diffs.length;
-        let diff;
-        let i;
-
-        if (length === 0) {
-            return true;
-        }
-        for (i = 0; i < length; i++) {
-            diff = diffs[i];
-            if (!dobj.applyDiff(tree, diff)) {
-                return false;
-            }
-        }
-        return true;
+        return diffs.every(diff => this.appleDiff(tree, diff))
     }
 
-    getFromRoute(tree, route) {
+
+    getFromRoute(node, route) {
         route = route.slice();
-        let c;
-        let node = tree;
         while (route.length > 0) {
             if (!node.childNodes) {
                 return false;
             }
-            c = route.splice(0, 1)[0];
+            const c = route.splice(0, 1)[0];
             node = node.childNodes[c];
         }
         return node;
@@ -1413,12 +1290,8 @@ class diffDOM {
         let reference;
         let route;
         let nodeArray;
-        let length;
-        let childNode;
-        let index;
         let c;
 
-        const t = this;
         // pre-diff hook
         const info = {
             diff,
@@ -1485,15 +1358,13 @@ class diffDOM {
                 node.parentNode.replaceChild(this.objToNode(diff[this._const.newValue], node.namespaceURI === 'http://www.w3.org/2000/svg'), node);
                 break;
             case this._const.relocateGroup:
-                nodeArray = Array(...new Array(diff.groupLength)).map(() => node.removeChild(node.childNodes[diff[t._const.from]]));
-                length = nodeArray.length;
-                for (index = 0; index < length; index++) {
-                    childNode = nodeArray[index];
+                nodeArray = Array(...new Array(diff.groupLength)).map(() => node.removeChild(node.childNodes[diff[this._const.from]]));
+                nodeArray.forEach((childNode, index) => {
                     if (index === 0) {
-                        reference = node.childNodes[diff[t._const.to]];
+                        reference = node.childNodes[diff[this._const.to]];
                     }
                     node.insertBefore(childNode, reference || null);
-                }
+                })
                 break;
             case this._const.removeElement:
                 node.parentNode.removeChild(node);
@@ -1535,19 +1406,14 @@ class diffDOM {
     // ===== Undo a diff =====
 
     undo(tree, diffs) {
-        const dobj = this;
-        let diff;
-        const length = diffs.length;
-        let i;
-        diffs = diffs.slice();
-        if (!length) {
-            diffs = [diffs];
+        if (!diffs.length) {
+            diffs = [diffs]
         }
-        diffs.reverse();
-        for (i = 0; i < length; i++) {
-            diff = diffs[i];
-            dobj.undoDiff(tree, diff);
-        }
+        diffs = diffs.slice()
+        diffs.reverse()
+        diffs.forEach(diff => {
+            this.undoDiff(tree, diff)
+        })
     }
 
     undoDiff(tree, diff) {
