@@ -228,7 +228,7 @@
       if(diff && this._VDOM){
         this._VDOM = this[0].cloneNode();
         //console.log(this._VDOM);
-        this._VDD = this._VDD || new window.DiffDOM.diffDOM({valueDiffing: false});
+        this._VDD = this._VDD || new diffDOM.DiffDOM({valueDiffing: false});
         this._VDOM.innerHTML = html;
         return applyDiff.call(this);
       }else{
