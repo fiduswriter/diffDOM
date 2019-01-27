@@ -22,7 +22,7 @@
       ATTRIBUTES = ['data-test', 'class', 'data-fisher', 'data-id'];
 
       var dd = new diffDOM.DiffDOM({debug:true,diffcap:1000}),
-        tl = new diffDOM.TraceLogger(dd),
+        tl = new diffDOM.TraceLogger(dd.DiffFinder),
         divs, diffs, t1, i, j, availableElements, testElement, textContent, mainDiv = document.createElement('div');
 
 

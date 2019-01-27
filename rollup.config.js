@@ -6,12 +6,14 @@ export default {
     output: [
         {
             file: 'dist/index.js',
-            format: 'cjs'
+            format: 'cjs',
+            sourcemap: true
         },
         {
             file: 'browser/diffDOM.js',
             format: 'iife',
-            name: 'diffDOM'
+            name: 'diffDOM',
+            sourcemap: true
         },
     ],
     plugins: [
