@@ -33,7 +33,7 @@ export class DiffDOM {
         // IE11 doesn't have Object.assign and buble doesn't translate object spreaders
         // by default, so this is the safest way of doing it currently.
         Object.entries(DEFAULT_OPTIONS).forEach(([key, value]) => {
-            if (!Object.prototype.hasOwnProperty.call(this.options, 'key')) {
+            if (!Object.prototype.hasOwnProperty.call(this.options, key)) {
                 this.options[key] = value
             }
         })
@@ -53,10 +53,6 @@ export class DiffDOM {
             } else {
                 varNames.forEach(varName => this.options._const[varName] = varName)
             }
-        }
-
-        if (!this.options.document) {
-            throw('No document available!')
         }
 
         this.DiffFinder = DiffFinder

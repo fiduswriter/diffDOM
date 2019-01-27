@@ -8,11 +8,11 @@
         "test": "tests"
     },
     "scripts": {
-        "test": "npm run eslint",
-        "eslint": "eslint src/",
+        "test": "jest",
+        "lint": "eslint src/",
         "transpile": "rollup -c",
         "postversion": "echo remember to run 'git push --follow-tags'",
-        "prepare": "npm run eslint && npm run transpile"
+        "prepare": "npm run lint && npm run transpile"
     },
     "repository": {
         "type": "git",
@@ -32,8 +32,11 @@
         "rollup-plugin-terser": "^4.0.3"
     },
     "devDependencies": {
+        "@babel/preset-env": "^7.3.1",
         "eslint": "^5.12.1",
+        "jest": "^24.0.0",
         "rollup": "^1.1.2",
-        "rollup-plugin-buble": "^0.19.6"
+        "rollup-plugin-buble": "^0.19.6",
+        "slimdom": "^2.2.1"
     }
 }
