@@ -23,7 +23,7 @@ Include the diffDOM file in your HTML like this:
 
 Or like this if you import from npm:
 ```js
-import {DiffDOM} frpm "diff-dom"
+import {DiffDOM} from "diff-dom"
 ```
 
 Then create an instance of diffDOM within the javascript code:
