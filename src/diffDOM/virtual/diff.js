@@ -45,8 +45,8 @@ export class DiffFinder {
                     if (this.foundAll) {
                         console.error('Could not find remaining diffs!')
                         console.log({
-                            t1,
-                            t2
+                            't1': t1,
+                            't2': t2
                         })
                     } else {
                         this.foundAll = true
