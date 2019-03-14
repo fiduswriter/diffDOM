@@ -74,8 +74,8 @@ export class DiffFinder {
         // outer differences?
         if (!t1.outerDone) {
             diffs = this.findOuterDiff(t1, t2, route)
-            if (this.filterOuterDiff) {
-                fdiffs = this.filterOuterDiff(t1, t2, diffs)
+            if (this.options.filterOuterDiff) {
+                fdiffs = this.options.filterOuterDiff(t1, t2, diffs)
                 if (fdiffs) diffs = fdiffs
             }
             if (diffs.length > 0) {
