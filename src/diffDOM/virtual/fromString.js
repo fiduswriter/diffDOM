@@ -35,9 +35,7 @@ function parseTag(tag) {
         nodeName: '',
         voidElement: false,
         attributes: {},
-        childNodes: [],
-        outerDone: false,
-        innerDone: false
+        childNodes: []
     }
 
     tag.replace(attrRE, match => {
@@ -47,7 +45,7 @@ function parseTag(tag) {
                 if (lookup[match] || tag.charAt(tag.length - 2) === '/') {
                     res.voidElement = true
                 }
-                res.nodeName = match
+                res.nodeName = match.toUpperCase()
             } else {
                 res.attributes[key] = match.replace(/['"]/g, '')
             }
@@ -93,8 +91,8 @@ function parse(
 
             if (!current.voidElement && !inComponent && nextChar && nextChar !== '<') {
                 current.childNodes.push({
-                    type: 'text',
-                    content: html.slice(start, html.indexOf('<', start))
+                    nodeName: '#text',
+                    data: html.slice(start, html.indexOf('<', start))
                 })
             }
 
@@ -122,15 +120,15 @@ function parse(
                 // a child to the current node.
                 parent = level === -1 ? result : arr[level].childNodes
 
-                // calculate correct end of the content slice in case there's
+                // calculate correct end of the data slice in case there's
                 // no tag after the text node.
                 const end = html.indexOf('<', start)
-                const content = html.slice(start, end === -1 ? undefined : end)
+                const data = html.slice(start, end === -1 ? undefined : end)
                 // if a node is nothing but whitespace, no need to add it.
-                if (!(/^\s*$/).test(content)) {
+                if (!(/^\s*$/).test(data)) {
                     parent.push({
-                        type: 'text',
-                        content
+                        nodeName: '#text',
+                        data
                     })
                 }
             }
