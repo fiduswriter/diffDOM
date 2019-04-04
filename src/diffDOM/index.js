@@ -1,5 +1,6 @@
 import {applyDOM, undoDOM} from "./dom/index"
 import {DiffFinder} from "./virtual/index"
+export {nodeToObj} from "./virtual/index"
 
 const DEFAULT_OPTIONS = {
     debug: false,
