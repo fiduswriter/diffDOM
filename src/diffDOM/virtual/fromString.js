@@ -3,7 +3,7 @@
 const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
 // re-used obj for quick lookups of components
 const empty = Object.create ? Object.create(null) : {}
-const attrRE = /([\w-]+)|['"]{1}([^'"]*)['"]{1}/g
+const attrRE = /([\w-:]+)|(['"])(.*?)\2/g
 
 // create optimized lookup object for
 // void elements as listed here:
@@ -46,7 +46,7 @@ function parseTag(tag) {
                 if (!res.attributes) {
                     res.attributes = {}
                 }
-                res.attributes[key] = match.replace(/['"]/g, '')
+                res.attributes[key] = match.replace(/^['"]|['"]$/g, '')
             }
         i++
     })
@@ -129,13 +129,10 @@ function parse(
                 // no tag after the text node.
                 const end = html.indexOf('<', start)
                 const data = html.slice(start, end === -1 ? undefined : end)
-                // if a node is nothing but whitespace, no need to add it.
-                if (!(/^\s*$/).test(data)) {
-                    parent.push({
-                        nodeName: '#text',
-                        data
-                    })
-                }
+                parent.push({
+                    nodeName: '#text',
+                    data
+                })
             }
         }
     })
@@ -144,9 +141,7 @@ function parse(
 }
 
 function cleanObj(obj) {
-    if (obj.hasOwnProperty('voidElement')) {
-        delete obj.voidElement
-    }
+    delete obj.voidElement
     if (obj.childNodes) {
         obj.childNodes.forEach(child => cleanObj(child))
     }

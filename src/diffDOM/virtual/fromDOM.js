@@ -1,4 +1,4 @@
-export function nodeToObj(aNode, options) {
+export function nodeToObj(aNode, options = {}) {
     const objNode = {}
     objNode.nodeName = aNode.nodeName
     if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {

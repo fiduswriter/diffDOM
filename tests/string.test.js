@@ -1,5 +1,6 @@
 import {
-    DiffDOM
+    DiffDOM,
+    nodeToObj
 } from "../src/index"
 
 import {
@@ -7,6 +8,9 @@ import {
 } from "../src/diffDOM/virtual/fromString"
 
 const strings = [
+    '<div><div><div><img><span>hello</span></div></div><img></div>',
+    '<div></div>',
+
     '<div><p>first paragraph</p><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>',
     '<div><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>',
     '<div><h1>Foo</h1><h2>Bar</h2><h3>Baz</h3></div>',
@@ -459,33 +463,29 @@ describe('string', () => {
         })
 
         for (let i = 0; i < strings.length; i = i + 2) {
-            const diffs = dd.diff(strings[i], strings[i + 1])
-            if (!diffs.length) {
-                console.log(strings[i], strings[i + 1])
-                console.log(JSON.stringify(stringToObj(strings[i])))
-                console.log(JSON.stringify(stringToObj(strings[i + 1])))
-            }
-            expect(diffs).not.toHaveLength(0)
-
             const el1Outer = document.createElement('div')
-            el1Outer.innerHTML = strings[i]
-            const el1 = el1Outer.firstElementChild
             const el2Outer = document.createElement('div')
+            el1Outer.innerHTML = strings[i]
             el2Outer.innerHTML = strings[i + 1]
+            const diffs = dd.diff(el1Outer.innerHTML, el2Outer.innerHTML)
+            expect(diffs).not.toHaveLength(0)
+            const el1 = el1Outer.firstElementChild
             const el2 = el2Outer.firstElementChild
             const el1a = el1.cloneNode(true)
             dd.apply(el1a, diffs)
-            if (!el1a.isEqualNode(el2)) {
-                console.log(strings[i], strings[i + 1])
-                console.log(el1a.outerHTML)
-                console.log(el2.outerHTML)
-                console.log({diffs: JSON.stringify(diffs)})
-                console.log(JSON.stringify(stringToObj(strings[i])))
-                console.log(JSON.stringify(stringToObj(strings[i + 1])))
-            }
-            expect(el1a.isEqualNode(el2) || el1a.innerHTML === el2.innerHTML).toBe(true)
+            el1a.innerHTML = el1a.innerHTML
+            expect(
+                el1a.isEqualNode(el2) ||
+                el1a.innerHTML === el2.innerHTML ||
+                JSON.stringify(nodeToObj(el1a)) === JSON.stringify(nodeToObj(el2))
+            ).toBe(true)
             dd.undo(el1a, diffs)
-            expect(el1a.isEqualNode(el1) || el1a.innerHTML === el1.innerHTML).toBe(true)
+            el1a.innerHTML = el1a.innerHTML
+            expect(
+                el1a.isEqualNode(el1) ||
+                el1a.innerHTML === el1.innerHTML ||
+                JSON.stringify(nodeToObj(el1a)) === JSON.stringify(nodeToObj(el1))
+            ).toBe(true)
         }
     })
 
