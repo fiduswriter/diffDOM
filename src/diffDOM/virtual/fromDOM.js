@@ -1,5 +1,5 @@
 import parse from '../lib/parse'
-import { stringify} from 'html-parse-stringify'
+
 export function nodeToObj(aNode, options) {
     const objNode = {}
     objNode.nodeName = aNode.nodeName
