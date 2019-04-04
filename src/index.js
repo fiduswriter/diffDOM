@@ -1,2 +1,2 @@
-export {DiffDOM, nodeToObj} from "./diffDOM/index"
+export {DiffDOM, nodeToObj, stringToObj} from "./diffDOM/index"
 export {TraceLogger} from "./TraceLogger"

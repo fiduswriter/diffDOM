@@ -44,6 +44,26 @@ dd.apply(elementA, diff);
 ```
 Now `elementA` will have been changed to be structurally equal to `elementB`.
 
+### Virtual DOM and HTML strings
+
+You can also use HTML strings or the virtual DOM objects diffDOM uses internally to create diffs.
+
+```js
+diff = dd.diff(elementA, '<div>hello</div>')
+```
+
+You can create the Virtual DOM objects diffDOM uses, create them like this:
+
+```js
+import {nodeToObj, stringToObj} from "diff-dom"
+
+obj1 = nodeToObj(elementA)
+obj2 = stringToObj('<div>hello</div>')
+```
+
+Diffing between these objects will be faster than diffing DOM nodes and can be useful in environments
+without access to the DOM.
+
 ### Advanced uses
 
 #### Undo

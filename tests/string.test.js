@@ -1,11 +1,8 @@
 import {
     DiffDOM,
-    nodeToObj
-} from "../src/index"
-
-import {
+    nodeToObj,
     stringToObj
-} from "../src/diffDOM/virtual/fromString"
+} from "../src/index"
 
 const strings = [
     '<div><div><div><img><span>hello</span></div></div><img></div>',
