@@ -31,11 +31,7 @@ function parseTag(tag) {
     let i = 0
     let key
     const res = {
-        type: 'tag',
-        nodeName: '',
-        voidElement: false,
-        attributes: {},
-        childNodes: []
+        nodeName: ''
     }
 
     tag.replace(attrRE, match => {
@@ -47,6 +43,9 @@ function parseTag(tag) {
                 }
                 res.nodeName = match.toUpperCase()
             } else {
+                if (!res.attributes) {
+                    res.attributes = {}
+                }
                 res.attributes[key] = match.replace(/['"]/g, '')
             }
         i++
@@ -90,6 +89,9 @@ function parse(
             }
 
             if (!current.voidElement && !inComponent && nextChar && nextChar !== '<') {
+                if (!current.childNodes) {
+                    current.childNodes = []
+                }
                 current.childNodes.push({
                     nodeName: '#text',
                     data: html.slice(start, html.indexOf('<', start))
@@ -106,6 +108,9 @@ function parse(
             parent = arr[level - 1]
 
             if (parent) {
+                if (!parent.childNodes) {
+                    parent.childNodes = []
+                }
                 parent.childNodes.push(current)
             }
 
@@ -118,7 +123,7 @@ function parse(
                 // trailing text node
                 // if we're at the root, push a base text node. otherwise add as
                 // a child to the current node.
-                parent = level === -1 ? result : arr[level].childNodes
+                parent = level === -1 ? result : arr[level].childNodes || []
 
                 // calculate correct end of the data slice in case there's
                 // no tag after the text node.
@@ -138,7 +143,16 @@ function parse(
     return result
 }
 
+function cleanObj(obj) {
+    if (obj.hasOwnProperty('voidElement')) {
+        delete obj.voidElement
+    }
+    if (obj.childNodes) {
+        obj.childNodes.forEach(child => cleanObj(child))
+    }
+    return obj
+}
+
 export function stringToObj(aNode) {
-   const a = parse(aNode)[0]
-   return a
+   return cleanObj(parse(aNode)[0])
 }

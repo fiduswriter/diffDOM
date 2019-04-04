@@ -16,7 +16,7 @@ const strings = [
     '<div><p><b>Foo</b> Car <b>Baz</b></p></div>',
 
     '<div data-fisher="K7hI" data-test="u6" class="y"><i class="zCLG"><img><b class="78q0" data-fisher="fpn"><img>zSK</b><i class="H" data-id="GGQkeN1p" data-fisher="EcM"><span data-id="r3" data-test="MZDE"><img><span class="aUR2AC" data-id="psHs" data-fisher="DJF">xl</span></span><p data-test="dzBl"></p>X</i><span class="v28"></span>LuLrHE</i><span class="DP">F3gw</span><img><b data-test="xDlb" class="uLuSt" data-id="zJJW"><img></b><span data-test="Rrmt"><img>5GCo</span><img>nzt</div>',
-    '<div data-fisher="87EDX" class="I1RIevCe" data-id="gsDiU"><span data-id="qRvl" data-test="Bd2Jx" class="Fme"><p class="Q3b" data-fisher="ejS"><span data-id="p"></span><img><i><i class="lK9">hjGWF</i>DvXS</i><b class="l8y3" data-test="kb" data-fisher="3iHP"></b><b data-id="1hBIDR" data-test="iPEF" data-fisher="J"></b></p><p data-id="Y" data-test="XV"><p class="Tl"><b data-test="v6lT" class="tSi" data-fisher="DG"><b class="SS"><b data-test="Qhm"><img>jtH1</b></b><img><i data-fisher="4d" class="ZXxT2"><i data-test="Fpvw" data-id="itc"></i>Z5FN</i></b><img><img></p><span data-fisher="Y1Ynt" class="Di"><i data-id="p7Xz" data-test="PUaR" class="mwuE3"><span></span><img>UqzVsH</i></span></p><b data-fisher="ZlPA"><span class="gmjEL"><p data-fisher="Fdxh" data-id="t"><i data-id="0y3a"></i></p></span>TeQ</b><p></p><span data-id="zMRoXQU" class="eE2R"><img></span></span><i data-test="bPl" data-fisher="AZBctZN"><b data-fisher="XDZNp"><p data-fisher="wz4d"><img></p><p data-fisher="SJb" data-test="8odH" class="yABhu0"></p></b><span data-fisher="Z1PHn" class="r" data-test="jj"><img><img></span><p></p>3nG</i><img>I3mrG</div>',
+    '<div data-fisher="87EDX" class="I1RIevCe" data-id="gsDiU"><span data-id="qRvl" data-test="Bd2Jx" class="Fme"><p class="Q3b" data-fisher="ejS"><span data-id="p"></span><img><i><i class="lK9">hjGWF</i>DvXS</i><b class="l8y3" data-test="kb" data-fisher="3iHP"></b><b data-id="1hBIDR" data-test="iPEF" data-fisher="J"></b></p><p data-id="Y" data-test="XV"></p><p class="Tl"><b data-test="v6lT" class="tSi" data-fisher="DG"><b class="SS"><b data-test="Qhm"><img>jtH1</b></b><img><i data-fisher="4d" class="ZXxT2"><i data-test="Fpvw" data-id="itc"></i>Z5FN</i></b><img><img></p><span data-fisher="Y1Ynt" class="Di"><i data-id="p7Xz" data-test="PUaR" class="mwuE3"><span></span><img>UqzVsH</i></span><p></p><b data-fisher="ZlPA"><span class="gmjEL"><p data-fisher="Fdxh" data-id="t"><i data-id="0y3a"></i></p></span>TeQ</b><p></p><span data-id="zMRoXQU" class="eE2R"><img></span></span><i data-test="bPl" data-fisher="AZBctZN"><b data-fisher="XDZNp"><p data-fisher="wz4d"><img></p><p data-fisher="SJb" data-test="8odH" class="yABhu0"></p></b><span data-fisher="Z1PHn" class="r" data-test="jj"><img><img></span><p></p>3nG</i><img>I3mrG</div>',
 
     '<div><img><p></p><i></i><img></div>',
     '<div><img><p>a</p><i></i><img><p></p></div>',
@@ -86,8 +86,7 @@ const strings = [
     </div>`,
 
     `<div>
-      <p>hello <span>finger</span>
-      </p>
+      <p>hello <span>finger</span></p>
     </div>`,
     `<div>
       <p>hello <span>fingers</span>. Welcome!</p>
@@ -99,24 +98,14 @@ const strings = [
     `<div><span><p>fello</p><p></p></span>
     </div>`,
 
-    `<div>
-      <img>
-    </div>`,
-    `<div><i><i><img><p></p></i><span><p><p></p></p></span>
-      </i><b></b>
-    </div>`,
+    `<div><img></div>`,
+    `<div><i><i><img><p></p></i><span><p><p></p></p></span></i><b></b></div>`,
 
-    `<div><b></b>
-    </div>`,
-    `<div><i><i><b></b><p></p></i><span><p><p></p></p></span>
-      </i><b></b>
-    </div>`,
+    `<div><b></b></div>`,
+    `<div><i><i><b></b><p></p></i><span><p><p></p></p></span></i><b></b></div>`,
 
-    `<div><span>hello</span>
-    </div>`,
-    `<div>
-      <p>hello</p>
-    </div>`,
+    `<div><span>hello</span></div>`,
+    `<div><p>hello</p></div>`,
 
     `<div>
       <img>
@@ -454,10 +443,8 @@ const strings = [
 
 
 
-    `<div><span></span>hall<span></span>
-    </div>`,
-    `<div><span></span>hallo<span></span>
-    </div>`,
+    `<div><span></span>hall<span></span></div>`,
+    `<div><span></span>hallo<span></span></div>`,
 
     '<div><select><option></option><option>A</option></select></div>',
     '<div><select><option>A</option><option></option></select></div>'
@@ -490,6 +477,9 @@ describe('string', () => {
             dd.apply(el1a, diffs)
             if (!el1a.isEqualNode(el2)) {
                 console.log(strings[i], strings[i + 1])
+                console.log(el1a.outerHTML)
+                console.log(el2.outerHTML)
+                console.log({diffs: JSON.stringify(diffs)})
                 console.log(JSON.stringify(stringToObj(strings[i])))
                 console.log(JSON.stringify(stringToObj(strings[i + 1])))
             }
