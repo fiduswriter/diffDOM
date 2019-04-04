@@ -1,18 +1,16 @@
 import {Diff, DiffTracker, cloneObj, getGapInformation, isEqual, markSubTrees, removeDone, roughlyEqual} from "./helpers"
 import {applyVirtual} from "./apply"
-import {nodeToObj} from "./fromDOM"
+import {nodeToObj, stringToObj} from "./fromDOM"
 
 // ===== Create a diff =====
 
 export class DiffFinder {
     constructor(t1Node, t2Node, options) {
         this.options = options
-        this.t1 = nodeToObj(t1Node, this.options)
-        this.t2 = nodeToObj(t2Node, this.options)
-
+        this.t1 = ( t1Node instanceof HTMLElement) ? nodeToObj(t1Node, this.options) : (typeof t1Node === 'string') ? stringToObj(`<div id="margin-box-container">${t1Node}</div>`, this.options) : t1Node
+        this.t2 = (t2Node instanceof HTMLElement) ? nodeToObj(t2Node, this.options) : (typeof t2Node === 'string') ? stringToObj(t2Node, this.options) : t2Node
         this.diffcount = 0
         this.foundAll = false
-
         if (this.debug) {
             this.t1Orig = nodeToObj(t1Node, this.options)
             this.t2Orig = nodeToObj(t2Node, this.options)
@@ -61,6 +59,7 @@ export class DiffFinder {
                 applyVirtual(t1, diffs, this.options)
             }
         } while (diffs.length > 0)
+
         return this.tracker.list
     }
 
@@ -74,8 +73,8 @@ export class DiffFinder {
         // outer differences?
         if (!t1.outerDone) {
             diffs = this.findOuterDiff(t1, t2, route)
-            if (this.filterOuterDiff) {
-                fdiffs = this.filterOuterDiff(t1, t2, diffs)
+            if (this.options.filterOuterDiff) {
+                fdiffs = this.options.filterOuterDiff(t1, t2, diffs)
                 if (fdiffs) diffs = fdiffs
             }
             if (diffs.length > 0) {
