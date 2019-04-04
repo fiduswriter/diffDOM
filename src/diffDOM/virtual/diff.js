@@ -1,13 +1,14 @@
 import {Diff, DiffTracker, cloneObj, getGapInformation, isEqual, markSubTrees, removeDone, roughlyEqual} from "./helpers"
 import {applyVirtual} from "./apply"
-import {nodeToObj, stringToObj} from "./fromDOM"
+import {nodeToObj} from "./fromDOM"
+import {stringToObj} from "./fromString"
 
 // ===== Create a diff =====
 
 export class DiffFinder {
     constructor(t1Node, t2Node, options) {
         this.options = options
-        this.t1 = ( t1Node instanceof HTMLElement) ? nodeToObj(t1Node, this.options) : (typeof t1Node === 'string') ? stringToObj(`<div id="margin-box-container">${t1Node}</div>`, this.options) : t1Node
+        this.t1 = (t1Node instanceof HTMLElement) ? nodeToObj(t1Node, this.options) : (typeof t1Node === 'string') ? stringToObj(t1Node, this.options) : t1Node
         this.t2 = (t2Node instanceof HTMLElement) ? nodeToObj(t2Node, this.options) : (typeof t2Node === 'string') ? stringToObj(t2Node, this.options) : t2Node
         this.diffcount = 0
         this.foundAll = false

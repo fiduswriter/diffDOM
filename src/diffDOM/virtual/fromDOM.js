@@ -1,5 +1,3 @@
-import parse from '../lib/parse'
-
 export function nodeToObj(aNode, options) {
     const objNode = {}
     objNode.nodeName = aNode.nodeName
@@ -30,10 +28,4 @@ export function nodeToObj(aNode, options) {
         }
     }
     return objNode
-}
-
-
-export function stringToObj(aNode,options) {
-   const a = parse(aNode)[0]
-   return a
 }
