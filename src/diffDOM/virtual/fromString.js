@@ -137,7 +137,7 @@ function parse(
         }
     })
 
-    return result
+    return result[0]
 }
 
 function cleanObj(obj) {
@@ -148,6 +148,6 @@ function cleanObj(obj) {
     return obj
 }
 
-export function stringToObj(aNode) {
-   return cleanObj(parse(aNode)[0])
+export function stringToObj(string) {
+   return cleanObj(parse(string))
 }
