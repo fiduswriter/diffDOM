@@ -129,7 +129,7 @@ export class DiffFinder {
             ]
         }
 
-        if (route.length && this.options.maxChildCount && t1.childNodes && t2.childNodes && t1.childNodes.length > this.options.maxChildCount && t2.childNodes.length > this.options.maxChildCount) {
+        if (route.length && this.options.maxChildCount && t1.childNodes && t2.childNodes && (t1.childNodes.length > this.options.maxChildCount || t2.childNodes.length > this.options.maxChildCount)) {
             const childNodesLength = t1.childNodes.length < t2.childNodes.length ? t1.childNodes.length : t2.childNodes.length
             let childDiffCount = 0
             let j = 0
