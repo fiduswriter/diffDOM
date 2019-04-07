@@ -8,8 +8,8 @@ import {stringToObj} from "./fromString"
 export class DiffFinder {
     constructor(t1Node, t2Node, options) {
         this.options = options
-        this.t1 = (t1Node instanceof HTMLElement) ? nodeToObj(t1Node, this.options) : (typeof t1Node === 'string') ? stringToObj(t1Node, this.options) : t1Node
-        this.t2 = (t2Node instanceof HTMLElement) ? nodeToObj(t2Node, this.options) : (typeof t2Node === 'string') ? stringToObj(t2Node, this.options) : t2Node
+        this.t1 = (t1Node instanceof HTMLElement) ? nodeToObj(t1Node, this.options) : (typeof t1Node === 'string') ? stringToObj(t1Node, this.options) : JSON.parse(JSON.stringify(t1Node))
+        this.t2 = (t2Node instanceof HTMLElement) ? nodeToObj(t2Node, this.options) : (typeof t2Node === 'string') ? stringToObj(t2Node, this.options) : JSON.parse(JSON.stringify(t2Node))
         this.diffcount = 0
         this.foundAll = false
         if (this.debug) {
@@ -43,10 +43,6 @@ export class DiffFinder {
                 if (!isEqual(t1, t2)) {
                     if (this.foundAll) {
                         console.error('Could not find remaining diffs!')
-                        console.log({
-                            t1,
-                            t2
-                        })
                     } else {
                         this.foundAll = true
                         removeDone(t1)
@@ -119,8 +115,10 @@ export class DiffFinder {
         let attrLength
         let pos
         let i
-
         if (t1.nodeName !== t2.nodeName) {
+            if (!route.length) {
+                throw new Error('Top level nodes have to be of the same kind.')
+            }
             return [new Diff()
                 .setValue(this.options._const.action, this.options._const.replaceElement)
                 .setValue(this.options._const.oldValue, cloneObj(t1))
@@ -128,25 +126,13 @@ export class DiffFinder {
                 .setValue(this.options._const.route, route)
             ]
         }
-
-        if (route.length && this.options.maxChildCount && t1.childNodes && t2.childNodes && (t1.childNodes.length > this.options.maxChildCount || t2.childNodes.length > this.options.maxChildCount)) {
-            const childNodesLength = t1.childNodes.length < t2.childNodes.length ? t1.childNodes.length : t2.childNodes.length
-            let childDiffCount = 0
-            let j = 0
-            while (childDiffCount < this.options.maxChildDiffCount && j < childNodesLength) {
-                if (!isEqual(t1.childNodes[j], t2.childNodes[j])) {
-                    childDiffCount++
-                }
-                j++
-            }
-            if (childDiffCount === this.options.maxChildDiffCount) {
-                return [new Diff()
-                    .setValue(this.options._const.action, this.options._const.replaceElement)
-                    .setValue(this.options._const.oldValue, cloneObj(t1))
-                    .setValue(this.options._const.newValue, cloneObj(t2))
-                    .setValue(this.options._const.route, route)
-                ]
-            }
+        if (route.length && this.options.maxNodeDiffCount < Math.abs((t1.childNodes || []).length - (t2.childNodes || []).length)) {
+            return [new Diff()
+                .setValue(this.options._const.action, this.options._const.replaceElement)
+                .setValue(this.options._const.oldValue, cloneObj(t1))
+                .setValue(this.options._const.newValue, cloneObj(t2))
+                .setValue(this.options._const.route, route)
+            ]
         }
 
         if (t1.data !== t2.data) {
@@ -168,7 +154,6 @@ export class DiffFinder {
             }
 
         }
-
 
         attr1 = t1.attributes ? Object.keys(t1.attributes).sort() : []
         attr2 = t2.attributes ? Object.keys(t2.attributes).sort() : []
@@ -213,25 +198,26 @@ export class DiffFinder {
     }
 
     findInnerDiff(t1, t2, route) {
-
-        //var subtrees = (t1.childNodes && t2.childNodes) ?  markSubTrees(t1, t2) : [],
-        const subtrees = t1.subsets && t1.subsetsAge-- ? t1.subsets : (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : []
-
-        const t1ChildNodes = t1.childNodes ? t1.childNodes : []
-        const t2ChildNodes = t2.childNodes ? t2.childNodes : []
-        let childNodesLengthDifference
+        const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
+        const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
+        const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
+        const childNodesLengthDifference = Math.abs(t1ChildNodes.length - t2ChildNodes.length)
         let diffs = []
         let index = 0
+        if (!this.options.maxChildCount || last < this.options.maxChildCount) {
+            const subtrees = t1.subsets && t1.subsetsAge-- ? t1.subsets : (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : []
 
-        if (subtrees.length > 0) {
-            /* One or more groups have been identified among the childnodes of t1
-             * and t2.
-             */
-            diffs = this.attemptGroupRelocation(t1, t2, subtrees, route)
-            if (diffs.length > 0) {
-                return diffs
+            if (subtrees.length > 0) {
+                /* One or more groups have been identified among the childnodes of t1
+                 * and t2.
+                 */
+                diffs = this.attemptGroupRelocation(t1, t2, subtrees, route)
+                if (diffs.length > 0) {
+                    return diffs
+                }
             }
         }
+
 
         /* 0 or 1 groups of similar child nodes have been found
          * for t1 and t2. 1 If there is 1, it could be a sign that the
@@ -239,11 +225,6 @@ export class DiffFinder {
          * t1 and t2 are made to have the same length and each of the
          * pairs of child nodes are diffed.
          */
-
-        const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
-        if (t1ChildNodes.length !== t2ChildNodes.length) {
-            childNodesLengthDifference = true
-        }
 
         for (let i = 0; i < last; i += 1) {
             const e1 = t1ChildNodes[i]
@@ -294,9 +275,39 @@ export class DiffFinder {
              */
 
             if (e1 && e2) {
-                diffs = diffs.concat(this.findNextDiff(e1, e2, route.concat(index)))
-            }
+                if (!this.options.maxChildCount || last < this.options.maxChildCount) {
+                    diffs = diffs.concat(this.findNextDiff(e1, e2, route.concat(index)))
+                } else if (!isEqual(e1, e2)) {
+                    if (t1ChildNodes.length > t2ChildNodes.length) {
+                        diffs = diffs.concat([
+                            new Diff()
+                                .setValue(this.options._const.action, this.options._const.removeElement)
+                                .setValue(this.options._const.element, cloneObj(e1))
+                                .setValue(this.options._const.route, route.concat(index))
+                        ])
+                        t1ChildNodes.splice(i, 1)
+                        index -= 1
+                    } else if (t1ChildNodes.length < t2ChildNodes.length) {
+                        diffs = diffs.concat([
+                            new Diff()
+                                .setValue(this.options._const.action, this.options._const.addElement)
+                                .setValue(this.options._const.element, cloneObj(e2))
+                                .setValue(this.options._const.route, route.concat(index))
+                        ])
+                        t1ChildNodes.splice(i, 0, {})
+                    } else {
+                        diffs = diffs.concat([
+                            new Diff()
+                                .setValue(this.options._const.action, this.options._const.replaceElement)
+                                .setValue(this.options._const.oldValue, cloneObj(e1))
+                                .setValue(this.options._const.newValue, cloneObj(e2))
+                                .setValue(this.options._const.route, route.concat(index))
+                        ])
+                    }
 
+                }
+
+            }
             index += 1
 
         }
