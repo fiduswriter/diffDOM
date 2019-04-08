@@ -49,7 +49,7 @@ export function applyDiff(
             }
             node.setAttribute(diff[options._const.name], diff[options._const.newValue])
             if (node.nodeName === 'INPUT' && diff[options._const.name] === 'value') {
-                node.value = diff[options._const.oldValue]
+                node.value = diff[options._const.newValue]
             }
             break
         case options._const.removeAttribute:
