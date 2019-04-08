@@ -201,7 +201,7 @@ export class DiffFinder {
         const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
         const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
         const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
-        const childNodesLengthDifference = Math.abs(t1ChildNodes.length - t2ChildNodes.length)
+        let childNodesLengthDifference = Math.abs(t1ChildNodes.length - t2ChildNodes.length)
         let diffs = []
         let index = 0
         if (!this.options.maxChildCount || last < this.options.maxChildCount) {
@@ -287,6 +287,7 @@ export class DiffFinder {
                         ])
                         t1ChildNodes.splice(i, 1)
                         index -= 1
+                        childNodesLengthDifference -= 1
                     } else if (t1ChildNodes.length < t2ChildNodes.length) {
                         diffs = diffs.concat([
                             new Diff()
@@ -295,6 +296,7 @@ export class DiffFinder {
                                 .setValue(this.options._const.route, route.concat(index))
                         ])
                         t1ChildNodes.splice(i, 0, {})
+                        childNodesLengthDifference -= 1
                     } else {
                         diffs = diffs.concat([
                             new Diff()
