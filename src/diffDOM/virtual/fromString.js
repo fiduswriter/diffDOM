@@ -3,7 +3,7 @@
 const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
 // re-used obj for quick lookups of components
 const empty = Object.create ? Object.create(null) : {}
-const attrRE = /([\w-:]+)|(['"])(.*?)\2/g
+const attrRE = /([\w-:]+)|(['"])([^'"]*)\2/g
 
 // create optimized lookup object for
 // void elements as listed here:
