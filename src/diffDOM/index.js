@@ -13,6 +13,7 @@ const DEFAULT_OPTIONS = {
         node.data = newValue
         return
     },
+    trimNodeTextValue: false,
     // empty functions were benchmarked as running faster than both
     // `f && f()` and `if (f) { f(); }`
     preVirtualDiffApply() {},

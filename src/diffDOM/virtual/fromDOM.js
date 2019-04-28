@@ -2,7 +2,7 @@ export function nodeToObj(aNode, options = {}) {
     const objNode = {}
     objNode.nodeName = aNode.nodeName
     if (objNode.nodeName === '#text' || objNode.nodeName === '#comment') {
-        objNode.data = aNode.data
+        objNode.data = options.trimNodeTextValue ? aNode.data.trim() : aNode.data;
     } else {
         if (aNode.attributes && aNode.attributes.length > 0) {
             objNode.attributes = {}

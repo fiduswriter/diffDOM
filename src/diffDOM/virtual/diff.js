@@ -198,7 +198,7 @@ export class DiffFinder {
     }
 
     findInnerDiff(t1, t2, route) {
-        const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
+        const t1ChildNodes = t1.childNodes ? t1.childNodes.filter(node => node.nodeName) : []
         const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
         const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
         let childNodesLengthDifference = Math.abs(t1ChildNodes.length - t2ChildNodes.length)

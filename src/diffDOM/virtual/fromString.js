@@ -92,9 +92,10 @@ function parse(
                 if (!current.childNodes) {
                     current.childNodes = []
                 }
+                const data = html.slice(start, html.indexOf('<', start));
                 current.childNodes.push({
                     nodeName: '#text',
-                    data: html.slice(start, html.indexOf('<', start))
+                    data: options.trimNodeTextValue ? data.trim() : data
                 })
             }
 
@@ -131,7 +132,7 @@ function parse(
                 const data = html.slice(start, end === -1 ? undefined : end)
                 parent.push({
                     nodeName: '#text',
-                    data
+                    data: options.trimNodeTextValue ? data.trim() : data
                 })
             }
         }
@@ -148,6 +149,6 @@ function cleanObj(obj) {
     return obj
 }
 
-export function stringToObj(string) {
-   return cleanObj(parse(string))
+export function stringToObj(string, options = {}) {
+   return cleanObj(parse(string, options))
 }
