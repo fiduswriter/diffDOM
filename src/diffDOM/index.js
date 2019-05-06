@@ -21,6 +21,7 @@ const DEFAULT_OPTIONS = {
     postDiffApply() {},
     filterOuterDiff: null,
     compress: false, // Whether to work with compressed diffs
+    caseSensitive: false, // Whether to honer node name casing
     _const: false, // object with strings for every change types to be used in diffs.
     document: window && window.document ? window.document : false
 }
