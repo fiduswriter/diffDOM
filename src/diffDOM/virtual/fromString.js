@@ -3,7 +3,7 @@
 const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
 // re-used obj for quick lookups of components
 const empty = Object.create ? Object.create(null) : {}
-const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(["].*?["]|['].*?['])/g
+const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g
 
 // create optimized lookup object for
 // void elements as listed here:
@@ -35,7 +35,7 @@ function parseTag(tag)
         attributes: {}
     }
 
-    let tagMatch = tag.match(/<([^\s]+?)[\s>]/)
+    let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if(tagMatch)
     {
         res.nodeName = tagMatch[1].toUpperCase();
@@ -45,9 +45,10 @@ function parseTag(tag)
     }
 
     let reg = new RegExp(attrRE)
+    let result = null;
     for (; ;)
     {
-        let result = reg.exec(tag)
+        result = reg.exec(tag)
 
         if (result === null)
             break;
@@ -67,7 +68,7 @@ function parseTag(tag)
             reg.lastIndex--
         }
         else if (result[2])
-            res.attributes[result[2]] = result[3].replace(/^['"]|['"]$/g, '')
+            res.attributes[result[2]] = result[3].trim().substring(1,result[3].length - 1)
     }
 
     return res
