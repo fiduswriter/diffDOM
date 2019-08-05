@@ -57,8 +57,14 @@ function parseTag(tag)
 
         if (result[1])
         {
+            let attr = result[1].trim()
+            let arr = [attr, ""]
+
+            if(attr.indexOf("=") > -1)
+                arr = attr.split("=");
+
+            res.attributes[arr[0]] = arr[1]
             reg.lastIndex--
-            res.attributes[result[1].trim()] = ''
         }
         else if (result[2])
             res.attributes[result[2]] = result[3].replace(/^['"]|['"]$/g, '')
