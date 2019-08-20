@@ -5,6 +5,12 @@ const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
 const empty = Object.create ? Object.create(null) : {}
 const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g
 
+
+function unescape(string) {
+    return string.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+.replace(/&amp;/g, '&')
+}
+
 // create optimized lookup object for
 // void elements as listed here:
 // http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
@@ -104,7 +110,7 @@ function parse(
                 }
                 current.childNodes.push({
                     nodeName: '#text',
-                    data: html.slice(start, html.indexOf('<', start))
+                    data: unescape(html.slice(start, html.indexOf('<', start)))
                 })
             }
 
@@ -138,7 +144,7 @@ function parse(
                 // calculate correct end of the data slice in case there's
                 // no tag after the text node.
                 const end = html.indexOf('<', start)
-                const data = html.slice(start, end === -1 ? undefined : end)
+                const data = unescape(html.slice(start, end === -1 ? undefined : end))
                 parent.push({
                     nodeName: '#text',
                     data
