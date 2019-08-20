@@ -28,47 +28,38 @@ const lookup = {
 }
 
 
-function parseTag(tag)
-{
+function parseTag(tag) {
     const res = {
         nodeName: '',
         attributes: {}
     }
 
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
-    if(tagMatch)
-    {
-        res.nodeName = tagMatch[1].toUpperCase();
-        if (lookup[tagMatch[1].toLowerCase()] || tag.charAt(tag.length - 2) === '/')
-            res.voidElement = true
+    if (tagMatch) {
+        res.nodeName = tagMatch[1].toUpperCase()
+        if (lookup[tagMatch[1].toLowerCase()] || tag.charAt(tag.length - 2) === '/') res.voidElement = true
 
     }
 
     let reg = new RegExp(attrRE)
-    let result = null;
-    for (; ;)
-    {
+    let result = null
+    let done = false
+    while (!done) {
         result = reg.exec(tag)
 
-        if (result === null)
-            break;
+        if (result === null) {
+            done = true
+        } else if (result[0].trim()) {
+            if (result[1]) {
+                let attr = result[1].trim()
+                let arr = [attr, ""]
 
-        if (!result[0].trim())
-            continue;
+                if (attr.indexOf("=") > -1) arr = attr.split("=")
 
-        if (result[1])
-        {
-            let attr = result[1].trim()
-            let arr = [attr, ""]
-
-            if(attr.indexOf("=") > -1)
-                arr = attr.split("=");
-
-            res.attributes[arr[0]] = arr[1]
-            reg.lastIndex--
+                res.attributes[arr[0]] = arr[1]
+                reg.lastIndex--
+            } else if (result[2]) res.attributes[result[2]] = result[3].trim().substring(1, result[3].length - 1)
         }
-        else if (result[2])
-            res.attributes[result[2]] = result[3].trim().substring(1,result[3].length - 1)
     }
 
     return res
@@ -76,9 +67,8 @@ function parseTag(tag)
 
 function parse(
     html,
-    options = { components: empty }
-)
-{
+    options = {components: empty}
+) {
     const result = []
     let current
     let level = -1
@@ -86,15 +76,11 @@ function parse(
     const byTag = {}
     let inComponent = false
 
-    html.replace(tagRE, (tag, index) =>
-    {
-        if (inComponent)
-        {
-            if (tag !== (`</${current.nodeName}>`))
-            {
+    html.replace(tagRE, (tag, index) => {
+        if (inComponent) {
+            if (tag !== (`</${current.nodeName}>`)) {
                 return
-            } else
-            {
+            } else {
                 inComponent = false
             }
         }
@@ -103,21 +89,17 @@ function parse(
         const nextChar = html.charAt(start)
         let parent
 
-        if (isOpen)
-        {
+        if (isOpen) {
             level++
 
             current = parseTag(tag)
-            if (current.type === 'tag' && options.components[current.nodeName])
-            {
+            if (current.type === 'tag' && options.components[current.nodeName]) {
                 current.type = 'component'
                 inComponent = true
             }
 
-            if (!current.voidElement && !inComponent && nextChar && nextChar !== '<')
-            {
-                if (!current.childNodes)
-                {
+            if (!current.voidElement && !inComponent && nextChar && nextChar !== '<') {
+                if (!current.childNodes) {
                     current.childNodes = []
                 }
                 current.childNodes.push({
@@ -129,17 +111,14 @@ function parse(
             byTag[current.tagName] = current
 
             // if we're at root, push new base node
-            if (level === 0)
-            {
+            if (level === 0) {
                 result.push(current)
             }
 
             parent = arr[level - 1]
 
-            if (parent)
-            {
-                if (!parent.childNodes)
-                {
+            if (parent) {
+                if (!parent.childNodes) {
                     parent.childNodes = []
                 }
                 parent.childNodes.push(current)
@@ -148,11 +127,9 @@ function parse(
             arr[level] = current
         }
 
-        if (!isOpen || current.voidElement)
-        {
+        if (!isOpen || current.voidElement) {
             level--
-            if (!inComponent && nextChar !== '<' && nextChar)
-            {
+            if (!inComponent && nextChar !== '<' && nextChar) {
                 // trailing text node
                 // if we're at the root, push a base text node. otherwise add as
                 // a child to the current node.
@@ -173,17 +150,14 @@ function parse(
     return result[0]
 }
 
-function cleanObj(obj)
-{
+function cleanObj(obj) {
     delete obj.voidElement
-    if (obj.childNodes)
-    {
+    if (obj.childNodes) {
         obj.childNodes.forEach(child => cleanObj(child))
     }
     return obj
 }
 
-export function stringToObj(string)
-{
+export function stringToObj(string) {
     return cleanObj(parse(string))
 }
