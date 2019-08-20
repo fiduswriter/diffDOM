@@ -1,10 +1,12 @@
+import {unescape} from "../helpers"
+
 export function objToNode(objNode, insideSvg, options) {
     let node
     if (objNode.nodeName === '#text') {
-        node = options.document.createTextNode(objNode.data)
+        node = options.document.createTextNode(unescape(objNode.data))
 
     } else if (objNode.nodeName === '#comment') {
-        node = options.document.createComment(objNode.data)
+        node = options.document.createComment(unescape(objNode.data))
     } else {
         if (objNode.nodeName === 'svg' || insideSvg) {
             node = options.document.createElementNS('http://www.w3.org/2000/svg', objNode.nodeName)

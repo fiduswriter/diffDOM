@@ -1,5 +1,6 @@
 import {applyDOM, undoDOM} from "./dom/index"
 import {DiffFinder} from "./virtual/index"
+import {unescape} from "./helpers"
 export {nodeToObj, stringToObj} from "./virtual/index"
 
 const DEFAULT_OPTIONS = {
@@ -10,7 +11,7 @@ const DEFAULT_OPTIONS = {
     valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
     textDiff(node, currentValue, expectedValue, newValue) {
-        node.data = newValue
+        node.data = unescape(newValue)
         return
     },
     // empty functions were benchmarked as running faster than both
