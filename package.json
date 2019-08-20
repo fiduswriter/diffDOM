@@ -1,6 +1,6 @@
 {
     "name": "diff-dom",
-    "version": "4.1.5",
+    "version": "4.1.6",
     "description": "A diff for DOM elements, as client-side JavaScript code. Gets all modifications, insertions and removals between two DOM fragments.",
     "main": "dist/index.js",
     "module": "src/index.js",
