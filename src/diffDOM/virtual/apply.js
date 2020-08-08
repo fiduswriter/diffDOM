@@ -26,7 +26,7 @@ function getFromVirtualRoute(tree, route) {
 function applyVirtualDiff(
         tree,
         diff,
-        options // {preDiffApply, postDiffApply, _const}
+        options // {preVirtualDiffApply, postVirtualDiffApply, _const}
     ) {
     const routeInfo = getFromVirtualRoute(tree, diff[options._const.route])
     let node = routeInfo.node
@@ -40,7 +40,7 @@ function applyVirtualDiff(
         node
     }
 
-    if (options.preDiffApply(info)) {
+    if (options.preVirtualDiffApply(info)) {
         return true
     }
 
@@ -277,7 +277,7 @@ function applyVirtualDiff(
 
     // capture newNode for the callback
     info.newNode = newNode
-    options.postDiffApply(info)
+    options.postVirtualDiffApply(info)
 
     return
 }
