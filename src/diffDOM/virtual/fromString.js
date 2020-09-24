@@ -79,7 +79,6 @@ function parse(
     let current
     let level = -1
     const arr = []
-    const byTag = {}
     let inComponent = false
 
     html.replace(tagRE, (tag, index) => {
@@ -113,8 +112,6 @@ function parse(
                     data: unescape(html.slice(start, html.indexOf('<', start)))
                 })
             }
-
-            byTag[current.tagName] = current
 
             // if we're at root, push new base node
             if (level === 0) {
