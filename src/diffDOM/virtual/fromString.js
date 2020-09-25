@@ -52,7 +52,7 @@ function parseTag(tag) {
             const endIndex = tag.indexOf('-->')
             return {
                 type: 'comment',
-                data: endIndex !== -1 ? tag.slice(4, endIndex) : '',
+                data: endIndex !== -1 ? tag.slice(4, endIndex) : ''
             }
         }
     }
