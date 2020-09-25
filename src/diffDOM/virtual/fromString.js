@@ -33,6 +33,25 @@ const lookup = {
     wbr: true
 }
 
+const endTagObmissions = {
+    li: ['li'],
+    p: ['address', 'article', 'aside', 'blockquote', 'div', 'dl', 'fieldset', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'main', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'ul'],
+    dt: ['dt', 'dd'],
+    dd: ['dt', 'dd'],
+    tr: ['tr'],
+    td: ['td', 'th'],
+    th: ['td', 'th'],
+    tfoot: ['tbody'],
+    tbody: ['tbody', 'tfoot'],
+    thead: ['tbody', 'tfoot'],
+    option: ['option', 'optgroup'],
+    optgroup: ['optgroup'],
+    rb: ['rb', 'rt', 'rtc', 'rp'],
+    rt: ['rb', 'rt', 'rtc', 'rp'],
+    rtc: ['rb', 'rtc', 'rp'],
+    rp: ['rb', 'rt', 'rtc', 'rp']
+}
+
 
 function parseTag(tag) {
     const res = {
@@ -125,8 +144,11 @@ function parse(
         }
 
         if (isOpen) {
+            const previous = current
             current = parseTag(tag)
+            if (!previous || !(endTagObmissions[previous.nodeName.toLowerCase()]) || !(endTagObmissions[previous.nodeName.toLowerCase()].includes(current.nodeName.toLowerCase()))) {
             level++
+            }
             if (current.type === 'tag' && options.components[current.nodeName]) {
                 current.type = 'component'
                 inComponent = true
@@ -157,6 +179,10 @@ function parse(
             }
 
             arr[level] = current
+        }
+
+        if (!isOpen) {
+            current = undefined
         }
 
         if (!isOpen || current.voidElement) {

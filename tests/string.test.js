@@ -8,6 +8,9 @@ const strings = [
     '<div><div><div><img><span>hello</span></div></div><img></div>',
     '<div></div>',
 
+    '<ul><li><li><li></ul>',
+    '<ul></ul>',
+
     '<div><p>first paragraph</p><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>',
     '<div><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>',
     '<div><h1>Foo</h1><h2>Bar</h2><h3>Baz</h3></div>',
@@ -462,6 +465,8 @@ describe('string', () => {
             diffcap: 500
         })
 
+        // test normalizing the html
+
         for (let i = 0; i < strings.length; i = i + 2) {
             const el1Outer = document.createElement('div')
             const el2Outer = document.createElement('div')
@@ -487,6 +492,19 @@ describe('string', () => {
                 JSON.stringify(nodeToObj(el1a)) === JSON.stringify(nodeToObj(el1))
             ).toBe(true)
         }
+
+        //  test whether strings are normalized correctly
+
+        for (let i = 0; i < strings.length; i = i + 1) {
+            const elOuter = document.createElement('div')
+            elOuter.innerHTML = strings[i]
+            const diffs = dd.diff(strings[i], elOuter.innerHTML)
+            if (diffs.length) {
+                console.log([strings[i], elOuter.innerHTML,JSON.stringify(stringToObj(strings[1])), JSON.stringify(stringToObj(elOuter.innerHTML))])
+            }
+            expect(diffs).toHaveLength(0)
+        }
+
     })
 
 })
