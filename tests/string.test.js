@@ -448,7 +448,10 @@ const strings = [
     `<div><span></span>hallo<span></span></div>`,
 
     '<div><select><option></option><option>A</option></select></div>',
-    '<div><select><option>A</option><option></option></select></div>'
+    '<div><select><option>A</option><option></option></select></div>',
+
+    '<div><!-- A comment --><br></div>',
+    '<div><br><!-- Another comment --></div>'
 ]
 
 describe('string', () => {

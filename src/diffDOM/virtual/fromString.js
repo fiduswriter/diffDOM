@@ -43,8 +43,18 @@ function parseTag(tag) {
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if (tagMatch) {
         res.nodeName = tagMatch[1].toUpperCase()
-        if (lookup[tagMatch[1].toLowerCase()] || tag.charAt(tag.length - 2) === '/') res.voidElement = true
+        if (lookup[tagMatch[1].toLowerCase()] || tag.charAt(tag.length - 2) === '/') {
+            res.voidElement = true
+        }
 
+        // handle comment tag
+        if (res.nodeName.startsWith('!--')) {
+            const endIndex = tag.indexOf('-->')
+            return {
+                type: 'comment',
+                data: endIndex !== -1 ? tag.slice(4, endIndex) : '',
+            }
+        }
     }
 
     let reg = new RegExp(attrRE)
@@ -90,14 +100,33 @@ function parse(
             }
         }
         const isOpen = tag.charAt(1) !== '/'
+        const isComment = tag.startsWith('<!--')
         const start = index + tag.length
         const nextChar = html.charAt(start)
         let parent
 
-        if (isOpen) {
-            level++
+        if (isComment) {
+            const comment = parseTag(tag)
 
+            // if we're at root, push new base node
+            if (level < 0) {
+                result.push(comment)
+                return result
+            }
+            parent = arr[level]
+            if (parent) {
+                if (!parent.childNodes) {
+                    parent.childNodes = []
+                }
+                parent.childNodes.push(comment)
+            }
+
+            return result
+        }
+
+        if (isOpen) {
             current = parseTag(tag)
+            level++
             if (current.type === 'tag' && options.components[current.nodeName]) {
                 current.type = 'component'
                 inComponent = true
