@@ -342,33 +342,36 @@ export class DiffFinder {
             if (gaps1[index2] === true) {
                 node = t1.childNodes[index1]
                 if (node.nodeName === '#text') {
-                    if (t2.childNodes[index2].nodeName === '#text' && node.data !== t2.childNodes[index2].data) {
-                        testI = index1
-                        while (t1.childNodes.length > testI + 1 && t1.childNodes[testI + 1].nodeName === '#text') {
-                            testI += 1
-                            if (t2.childNodes[index2].data === t1.childNodes[testI].data) {
-                                similarNode = true
-                                break
+                    if (t2.childNodes[index2].nodeName === '#text') {
+                        if(node.data !== t2.childNodes[index2].data) {
+                            testI = index1
+                            while (t1.childNodes.length > testI + 1 && t1.childNodes[testI + 1].nodeName === '#text') {
+                                testI += 1
+                                if (t2.childNodes[index2].data === t1.childNodes[testI].data) {
+                                    similarNode = true
+                                    break
+                                }
+                            }
+                            if (!similarNode) {
+                                diffs.push(new Diff()
+                                    .setValue(this.options._const.action, this.options._const.modifyTextElement)
+                                    .setValue(this.options._const.route, route.concat(index2))
+                                    .setValue(this.options._const.oldValue, node.data)
+                                    .setValue(this.options._const.newValue, t2.childNodes[index2].data)
+                                )
+                                return diffs
                             }
                         }
-                        if (!similarNode) {
-                            diffs.push(new Diff()
-                                .setValue(this.options._const.action, this.options._const.modifyTextElement)
-                                .setValue(this.options._const.route, route.concat(index2))
-                                .setValue(this.options._const.oldValue, node.data)
-                                .setValue(this.options._const.newValue, t2.childNodes[index2].data)
-                            )
-                            return diffs
-                        }
+                    } else {
+                        diffs.push(new Diff()
+                            .setValue(this.options._const.action, this.options._const.removeTextElement)
+                            .setValue(this.options._const.route, route.concat(index2))
+                            .setValue(this.options._const.value, node.data)
+                        )
+                        gaps1.splice(index2, 1)
+                        shortest = Math.min(gaps1.length, gaps2.length)
+                        index2 -= 1
                     }
-                    diffs.push(new Diff()
-                        .setValue(this.options._const.action, this.options._const.removeTextElement)
-                        .setValue(this.options._const.route, route.concat(index2))
-                        .setValue(this.options._const.value, node.data)
-                    )
-                    gaps1.splice(index2, 1)
-                    shortest = Math.min(gaps1.length, gaps2.length)
-                    index2 -= 1
                 } else {
                     diffs.push(new Diff()
                         .setValue(this.options._const.action, this.options._const.removeElement)

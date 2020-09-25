@@ -15,8 +15,8 @@ export class Diff {
 
 function elementDescriptors(el) {
     const output = []
+    output.push(el.nodeName)
     if (el.nodeName !== '#text' && el.nodeName !== '#comment') {
-        output.push(el.nodeName)
         if (el.attributes) {
             if (el.attributes['class']) {
                 output.push(`${el.nodeName}.${el.attributes['class'].replace(/ /g, '.')}`)
