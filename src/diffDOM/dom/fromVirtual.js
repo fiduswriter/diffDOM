@@ -6,8 +6,10 @@ export function objToNode(objNode, insideSvg, options) {
     } else if (objNode.nodeName === '#comment') {
         node = options.document.createComment(objNode.data)
     } else {
-        if (objNode.nodeName.toLowerCase() === 'svg' || insideSvg) {
-            node = options.document.createElementNS('http://www.w3.org/2000/svg', objNode.nodeName.toLowerCase())
+        if (insideSvg) {
+            node = options.document.createElementNS('http://www.w3.org/2000/svg', objNode.nodeName)
+        } else if (objNode.nodeName.toLowerCase() === 'svg') {
+            node = options.document.createElementNS('http://www.w3.org/2000/svg', 'svg')
             insideSvg = true
         } else {
             node = options.document.createElement(objNode.nodeName)
