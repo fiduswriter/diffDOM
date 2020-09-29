@@ -343,7 +343,7 @@ export class DiffFinder {
                 node = t1.childNodes[index1]
                 if (node.nodeName === '#text') {
                     if (t2.childNodes[index2].nodeName === '#text') {
-                        if(node.data !== t2.childNodes[index2].data) {
+                        if (node.data !== t2.childNodes[index2].data) {
                             testI = index1
                             while (t1.childNodes.length > testI + 1 && t1.childNodes[testI + 1].nodeName === '#text') {
                                 testI += 1
