@@ -279,14 +279,24 @@ export class DiffFinder {
                     diffs = diffs.concat(this.findNextDiff(e1, e2, route.concat(index)))
                 } else if (!isEqual(e1, e2)) {
                     if (t1ChildNodes.length > t2ChildNodes.length) {
-                        diffs = diffs.concat([
-                            new Diff()
-                                .setValue(this.options._const.action, this.options._const.removeElement)
-                                .setValue(this.options._const.element, cloneObj(e1))
+                        if (e1.nodeName === '#text') {
+                            diffs.push(new Diff()
+                                .setValue(this.options._const.action, this.options._const.removeTextElement)
                                 .setValue(this.options._const.route, route.concat(index))
-                        ])
+                                .setValue(this.options._const.value, e1.data)
+                            )
+                        } else {
+                            diffs.push(
+                                new Diff()
+                                    .setValue(this.options._const.action, this.options._const.removeElement)
+                                    .setValue(this.options._const.element, cloneObj(e1))
+                                    .setValue(this.options._const.route, route.concat(index))
+                            )
+                        }
                         t1ChildNodes.splice(i, 1)
+                        i -= 1
                         index -= 1
+
                         childNodesLengthDifference -= 1
                     } else if (t1ChildNodes.length < t2ChildNodes.length) {
                         diffs = diffs.concat([

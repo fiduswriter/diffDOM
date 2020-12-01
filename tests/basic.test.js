@@ -463,6 +463,99 @@ const html = `
 
 <div><!-- A comment --><br></div>
 <div><br><!-- Another comment --></div>
+
+<div>
+      <select>
+          <option value="" data-id="0">Please select</option>
+          <option value="AL" data-id="1">Alabama</option>
+          <option value="AK" data-id="2">Alaska</option>
+          <option value="AZ" data-id="3">Arizona</option>
+          <option value="AR" data-id="4">Arkansas</option>
+          <option value="CA" data-id="5">California</option>
+          <option value="CO" data-id="6">Colorado</option>
+          <option value="CT" data-id="7">Connecticut</option>
+          <option value="DC" data-id="8">District of Columbia</option>
+          <option value="DE" data-id="9">Delaware</option>
+          <option value="FL" data-id="10">Florida</option>
+          <option value="GA" data-id="11">Georgia</option>
+          <option value="HI" data-id="12">Hawaii</option>
+          <option value="ID" data-id="13">Idaho</option>
+          <option value="IL" data-id="14">Illinois</option>
+          <option value="IN" data-id="15">Indiana</option>
+          <option value="IA" data-id="16">Iowa</option>
+          <option value="KS" data-id="17">Kansas</option>
+          <option value="KY" data-id="18">Kentucky</option>
+          <option value="LA" data-id="19">Louisiana</option>
+          <option value="ME" data-id="20">Maine</option>
+          <option value="MD" data-id="21">Maryland</option>
+          <option value="MA" data-id="22">Massachusetts</option>
+          <option value="MI" data-id="23">Michigan</option>
+          <option value="MN" data-id="24">Minnesota</option>
+          <option value="MS" data-id="25">Mississippi</option>
+          <option value="MO" data-id="26">Missouri</option>
+          <option value="MT" data-id="27">Montana</option>
+          <option value="NE" data-id="28">Nebraska</option>
+          <option value="NV" data-id="29">Nevada</option>
+          <option value="NH" data-id="30">New Hampshire</option>
+          <option value="NJ" data-id="31">New Jersey</option>
+          <option value="NM" data-id="32">New Mexico</option>
+          <option value="NY" data-id="33">New York</option>
+          <option value="NC" data-id="34">North Carolina</option>
+          <option value="ND" data-id="35">North Dakota</option>
+          <option value="OH" data-id="36">Ohio</option>
+          <option value="OK" data-id="37">Oklahoma</option>
+          <option value="OR" data-id="38">Oregon</option>
+          <option value="PA" data-id="39">Pennsylvania</option>
+          <option value="RI" data-id="40">Rhode Island</option>
+          <option value="SC" data-id="41">South Carolina</option>
+          <option value="SD" data-id="42">South Dakota</option>
+          <option value="TN" data-id="43">Tennessee</option>
+          <option value="TX" data-id="44">Texas</option>
+          <option value="UT" data-id="45">Utah</option>
+          <option value="VT" data-id="46">Vermont</option>
+          <option value="VA" data-id="47">Virginia</option>
+          <option value="WA" data-id="48">Washington</option>
+          <option value="WV" data-id="49">West Virginia</option>
+          <option value="WI" data-id="50">Wisconsin</option>
+          <option value="WY" data-id="51">Wyoming</option>
+          <option value="AS" data-id="52">American Samoa</option>
+          <option value="GU" data-id="53">Guam</option>
+          <option value="PR" data-id="54">Puerto Rico</option>
+          <option value="VI" data-id="55">Virgin Islands</option>
+      </select>
+</div>
+<div>
+      <select>
+          <option value="" data-id="0">Please select</option>
+
+          <option value="AB" data-id="1">Alberta</option>
+
+          <option value="BC" data-id="2">British Columbia</option>
+
+          <option value="MB" data-id="3">Manitoba</option>
+
+          <option value="NB" data-id="4">New Brunswick</option>
+
+          <option value="NL" data-id="5">Newfoundland and Labrador</option>
+
+          <option value="NS" data-id="6">Nova Scotia</option>
+
+          <option value="ON" data-id="7">Ontario</option>
+
+          <option value="PE" data-id="8">Prince Edward Island</option>
+
+          <option value="QC" data-id="9">Quebec</option>
+
+          <option value="SK" data-id="10">Saskatchewan</option>
+
+          <option value="NT" data-id="11">Northwest Territories</option>
+
+          <option value="NU" data-id="12">Nunavut</option>
+
+          <option value="YT" data-id="13">Yukon</option>
+
+      </select>
+</div>
 `
 
 function objToNode(objNode, insideSvg) {
