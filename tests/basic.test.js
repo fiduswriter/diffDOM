@@ -556,7 +556,27 @@ const html = `
 
       </select>
 </div>
+
+<div><div id="title">GARDEN</div>
+<div id="tree"></div>
+<div class="flower">ROSE</div>
+<script src="script.js"></script></div>
+
+<div><div id="title">GARDEN</div>
+<div class="flower">ROSE</div>
+<div id="tree"></div>
+<script src="script.js"></script></div>
 `
+
+const caps = [
+    1, 1, 1, 27, 13, 10, 7, 6, 4, 6,
+    11, 4, 4, 4, 2, 3, 5, 1, 3, 3,
+    6, 1, 2, 7, 3, 2, 1, 4, 1, 3,
+    2, 10, 4, 15, 3, 13, 22, 36, 1, 4,
+    1225, 827, 824, 21, 11, 1, 10, 1, 30, 7,
+    20, 1, 1, 3, 2, 111, 8, 3, 8, 3
+]
+
 
 describe('basic', () => {
 
@@ -571,6 +591,7 @@ describe('basic', () => {
         for (let i = 0; i < divs.length; i = i + 2) {
             const diffs = dd.diff(divs[i], divs[i + 1])
             expect(diffs).not.toHaveLength(0)
+            expect(diffs.length).toBeLessThanOrEqual(caps[i/2])
             const t1 = divs[i].cloneNode(true)
             dd.apply(t1, diffs)
             expect(t1.isEqualNode(divs[i + 1]) || t1.innerHTML === divs[i + 1].innerHTML).toBe(true)
