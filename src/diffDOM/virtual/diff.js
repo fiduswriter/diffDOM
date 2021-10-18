@@ -205,13 +205,13 @@ export class DiffFinder {
         let diffs = []
         let index = 0
         if (!this.options.maxChildCount || last < this.options.maxChildCount) {
-            const subtrees = t1.subsets && t1.subsetsAge-- ? t1.subsets : (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : []
-
+            const cachedSubtrees = t1.subsets && t1.subsetsAge--
+            const subtrees = cachedSubtrees ? t1.subsets : (t1.childNodes && t2.childNodes) ? markSubTrees(t1, t2) : []
             if (subtrees.length > 0) {
                 /* One or more groups have been identified among the childnodes of t1
                  * and t2.
                  */
-                diffs = this.attemptGroupRelocation(t1, t2, subtrees, route)
+                diffs = this.attemptGroupRelocation(t1, t2, subtrees, route, cachedSubtrees)
                 if (diffs.length > 0) {
                     return diffs
                 }
@@ -327,7 +327,7 @@ export class DiffFinder {
         return diffs
     }
 
-    attemptGroupRelocation(t1, t2, subtrees, route) {
+    attemptGroupRelocation(t1, t2, subtrees, route, cachedSubtrees) {
         /* Either t1.childNodes and t2.childNodes have the same length, or
          * there are at least two groups of similar elements can be found.
          * attempts are made at equalizing t1 with t2. First all initial
@@ -347,9 +347,10 @@ export class DiffFinder {
         let testI
         const diffs = []
 
-
         for (let index2 = 0, index1 = 0; index2 < shortest; index1 += 1, index2 += 1) {
-            if (gaps1[index2] === true) {
+            if (cachedSubtrees && (gaps1[index2] === true || gaps2[index2] === true)) {
+                // pass
+            } else if (gaps1[index2] === true) {
                 node = t1.childNodes[index1]
                 if (node.nodeName === '#text') {
                     if (t2.childNodes[index2].nodeName === '#text') {

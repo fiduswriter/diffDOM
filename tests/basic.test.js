@@ -569,12 +569,11 @@ const html = `
 `
 
 const caps = [
-    1, 1, 1, 27, 13, 10, 7, 6, 4, 6,
-    11, 4, 4, 4, 2, 3, 5, 1, 3, 3,
-    6, 1, 2, 7, 3, 2, 1, 4, 1, 3,
-    2, 10, 4, 15, 3, 13, 22, 36, 1, 4,
-    1225, 827, 824, 21, 11, 1, 10, 1, 30, 7,
-    20, 1, 1, 3, 2, 111, 8, 3, 8, 3
+    1, 1, 1, 27, 2, 5, 3, 1, 4, 1, 11, 4,
+    4, 4, 2, 3, 5, 1, 3, 3, 6, 1, 2, 3,
+    2, 2, 1, 4, 1, 3, 2, 10, 4, 15, 3, 13,
+    15, 1, 1, 3, 17, 12, 10, 10, 2, 1, 1, 1,
+    30, 7, 20, 1, 1, 3, 2, 111, 8, 3, 8, 3
 ]
 
 
@@ -584,7 +583,7 @@ describe('basic', () => {
         document.body.innerHTML = html
         const dd = new DiffDOM({
                 debug: true,
-                diffcap: 500
+                diffcap: 1000
             }),
             divs = document.querySelectorAll('div')
 
@@ -598,6 +597,7 @@ describe('basic', () => {
             dd.undo(t1, diffs)
             expect(t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML).toBe(true)
         }
+
     })
 
 })
