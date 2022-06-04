@@ -1,7 +1,7 @@
 import {cloneObj} from "./helpers"
 
 // ===== Apply a virtual diff =====
-
+let the_counter = 0
 function getFromVirtualRoute(tree, route) {
     let node = tree
     let parentNode
@@ -111,8 +111,13 @@ function applyVirtualDiff(
             nodeArray = node.childNodes.splice(diff[options._const.from], diff.groupLength).reverse()
             nodeArray.forEach(movedNode => node.childNodes.splice(diff[options._const.to], 0, movedNode))
             if (node.subsets) {
+                //console.log({subsets: JSON.stringify(node.subsets)})
                 node.subsets.forEach(map => {
-                    if (diff[options._const.from] < diff[options._const.to] && map.oldValue <= diff[options._const.to] && map.oldValue > diff[options._const.from]) {
+                    if (
+                        diff[options._const.from] < diff[options._const.to] &&
+                        map.oldValue > diff[options._const.from] &&
+                        map.oldValue <= diff[options._const.to] + diff.groupLength
+                    ) {
                         map.oldValue -= diff.groupLength
                         const splitLength = map.oldValue + map.length - diff[options._const.to]
                         if (splitLength > 0) {
@@ -124,7 +129,11 @@ function applyVirtualDiff(
                             })
                             map.length -= splitLength
                         }
-                    } else if (diff[options._const.from] > diff[options._const.to] && map.oldValue > diff[options._const.to] && map.oldValue < diff[options._const.from]) {
+                    } else if (
+                        diff[options._const.from] > diff[options._const.to] &&
+                        map.oldValue >= diff[options._const.to] &&
+                        map.oldValue < diff[options._const.from]
+                    ) {
                         map.oldValue += diff.groupLength
                         const splitLength = map.oldValue + map.length - diff[options._const.to]
                         if (splitLength > 0) {
@@ -140,6 +149,7 @@ function applyVirtualDiff(
                         map.oldValue = diff[options._const.to]
                     }
                 })
+                //console.log({subsets: JSON.stringify(node.subsets), newSubsets: JSON.stringify(newSubsets)})
             }
 
             break
@@ -186,6 +196,8 @@ function applyVirtualDiff(
                 node.childNodes.splice(c, 0, newNode)
             }
             if (node.subsets) {
+                //node.cachedSubsets = true
+                //delete node.subsets
                 node.subsets.forEach(map => {
                     if (map.oldValue >= c) {
                         map.oldValue += 1
@@ -199,6 +211,32 @@ function applyVirtualDiff(
                         map.length -= splitLength
                     }
                 })
+                const mnewSubsets = []
+                if (the_counter < 1) {
+                    newSubsets.push({
+                        oldValue: c,
+                        newValue: c,
+                        length: 1
+                    })
+                    the_counter += 1
+                    console.log(mnewSubsets)
+                    console.log(node.subsets)
+                    console.log(newSubsets)
+                } else if (the_counter < 2) {
+                    mnewSubsets.push({
+                        oldValue: c,
+                        newValue: c,
+                        length: 1
+                    })
+                    the_counter += 1
+                    console.log(mnewSubsets)
+                    console.log(node.subsets)
+                    console.log(newSubsets)
+                }
+
+                //if (node.subsets.find(subset => subset.oldValue === c || subset.newValue === c)) {
+
+                //}
             }
             break
         case options._const.removeTextElement:
@@ -269,9 +307,10 @@ function applyVirtualDiff(
     }
 
     if (node.subsets) {
-        node.subsets = node.subsets.filter(map => !map.delete && map.oldValue !== map.newValue)
+        node.subsets = node.subsets.filter(map => !map.delete)
         if (newSubsets.length) {
             node.subsets = node.subsets.concat(newSubsets)
+            //console.log(JSON.stringify(node.subsets))
         }
     }
 
