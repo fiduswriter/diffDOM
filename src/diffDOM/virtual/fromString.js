@@ -1,6 +1,8 @@
 // from html-parse-stringify (MIT)
 
 const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
+const whitespaceRE = /^\s*$/
+
 // re-used obj for quick lookups of components
 const empty = Object.create ? Object.create(null) : {}
 const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g
@@ -43,7 +45,7 @@ function parseTag(tag) {
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if (tagMatch) {
         res.nodeName = tagMatch[1].toUpperCase()
-        if (lookup[tagMatch[1].toLowerCase()] || tag.charAt(tag.length - 2) === '/') {
+        if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === '/') {
             res.voidElement = true
         }
 
@@ -173,7 +175,8 @@ function parse(
                 level > -1 &&
                 (current.voidElement || current.nodeName === tag.slice(2, -1))
             ) {
-                level--
+                // move current up a level to match the end tag
+                current = level === -1 ? result : arr[level]
             }
             if (!inComponent && nextChar !== '<' && nextChar) {
                 // trailing text node
@@ -184,11 +187,22 @@ function parse(
                 // calculate correct end of the data slice in case there's
                 // no tag after the text node.
                 const end = html.indexOf('<', start)
-                const data = unescape(html.slice(start, end === -1 ? undefined : end))
-                parent.push({
-                    nodeName: '#text',
-                    data
-                })
+                let data = unescape(html.slice(start, end === -1 ? undefined : end))
+                // if a node is nothing but whitespace, collapse it as the spec states:
+                // https://www.w3.org/TR/html4/struct/text.html#h-9.1
+                if (whitespaceRE.test(data)) {
+                    data = ' '
+                }
+                // don't add whitespace-only text nodes if they would be trailing text nodes
+                // or if they would be leading whitespace-only text nodes:
+                //  * end > -1 indicates this is not a trailing text node
+                //  * leading node is when level is -1 and parent has length 0
+                if ((end > -1 && level + parent.length >= 0) || data !== ' ') {
+                    parent.push({
+                        nodeName: '#text',
+                        data
+                    })
+                }
             }
         }
     })
