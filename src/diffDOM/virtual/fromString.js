@@ -91,6 +91,15 @@ function parse(
     const arr = []
     let inComponent = false
 
+    // handle text at top level
+    if (html.indexOf('<') !== 0) {
+        const end = html.indexOf('<')
+        result.push({
+            nodeName: '#text',
+            data: end === -1 ? html : html.substring(0, end),
+        })
+    }
+
     html.replace(tagRE, (tag, index) => {
         if (inComponent) {
             if (tag !== (`</${current.nodeName}>`)) {
@@ -160,7 +169,12 @@ function parse(
         }
 
         if (!isOpen || current.voidElement) {
-            level--
+            if (
+                level > -1 &&
+                (current.voidElement || current.nodeName === tag.slice(2, -1))
+            ) {
+                level--
+            }
             if (!inComponent && nextChar !== '<' && nextChar) {
                 // trailing text node
                 // if we're at the root, push a base text node. otherwise add as
