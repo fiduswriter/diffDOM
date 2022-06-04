@@ -173,8 +173,9 @@ function parse(
         if (!isOpen || current.voidElement) {
             if (
                 level > -1 &&
-                (current.voidElement || current.nodeName === tag.slice(2, -1))
+                (current.voidElement || current.nodeName === tag.slice(2, -1).toUpperCase())
             ) {
+                level--
                 // move current up a level to match the end tag
                 current = level === -1 ? result : arr[level]
             }
@@ -188,21 +189,10 @@ function parse(
                 // no tag after the text node.
                 const end = html.indexOf('<', start)
                 let data = unescape(html.slice(start, end === -1 ? undefined : end))
-                // if a node is nothing but whitespace, collapse it as the spec states:
-                // https://www.w3.org/TR/html4/struct/text.html#h-9.1
-                if (whitespaceRE.test(data)) {
-                    data = ' '
-                }
-                // don't add whitespace-only text nodes if they would be trailing text nodes
-                // or if they would be leading whitespace-only text nodes:
-                //  * end > -1 indicates this is not a trailing text node
-                //  * leading node is when level is -1 and parent has length 0
-                if ((end > -1 && level + parent.length >= 0) || data !== ' ') {
-                    parent.push({
-                        nodeName: '#text',
-                        data
-                    })
-                }
+                parent.push({
+                    nodeName: '#text',
+                    data
+                })
             }
         }
     })
