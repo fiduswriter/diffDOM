@@ -1,7 +1,6 @@
 // from html-parse-stringify (MIT)
 
 const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
-const whitespaceRE = /^\s*$/
 
 // re-used obj for quick lookups of components
 const empty = Object.create ? Object.create(null) : {}
@@ -98,7 +97,7 @@ function parse(
         const end = html.indexOf('<')
         result.push({
             nodeName: '#text',
-            data: end === -1 ? html : html.substring(0, end),
+            data: end === -1 ? html : html.substring(0, end)
         })
     }
 
