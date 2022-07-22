@@ -30,7 +30,6 @@ export class DiffFinder {
             if (this.options.debug) {
                 this.diffcount += 1
                 if (this.diffcount > this.options.diffcap) {
-                    window.diffError = [this.t1Orig, this.t2Orig]
                     throw new Error(`surpassed diffcap:${JSON.stringify(this.t1Orig)} -> ${JSON.stringify(this.t2Orig)}`)
                 }
             }
