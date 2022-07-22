@@ -22,7 +22,7 @@ const DEFAULT_OPTIONS = {
     filterOuterDiff: null,
     compress: false, // Whether to work with compressed diffs
     _const: false, // object with strings for every change types to be used in diffs.
-    document: window && window.document ? window.document : false
+    document: typeof window !== 'undefined' && window.document ? window.document : false
 }
 
 
