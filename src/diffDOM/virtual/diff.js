@@ -8,8 +8,8 @@ import {stringToObj} from "./fromString"
 export class DiffFinder {
     constructor(t1Node, t2Node, options) {
         this.options = options
-        this.t1 = (t1Node instanceof HTMLElement) ? nodeToObj(t1Node, this.options) : (typeof t1Node === 'string') ? stringToObj(t1Node, this.options) : JSON.parse(JSON.stringify(t1Node))
-        this.t2 = (t2Node instanceof HTMLElement) ? nodeToObj(t2Node, this.options) : (typeof t2Node === 'string') ? stringToObj(t2Node, this.options) : JSON.parse(JSON.stringify(t2Node))
+        this.t1 = (typeof HTMLElement !== 'undefined' && t1Node instanceof HTMLElement) ? nodeToObj(t1Node, this.options) : (typeof t1Node === 'string') ? stringToObj(t1Node, this.options) : JSON.parse(JSON.stringify(t1Node))
+        this.t2 = (typeof HTMLElement !== 'undefined' && t2Node instanceof HTMLElement) ? nodeToObj(t2Node, this.options) : (typeof t2Node === 'string') ? stringToObj(t2Node, this.options) : JSON.parse(JSON.stringify(t2Node))
         this.diffcount = 0
         this.foundAll = false
         if (this.debug) {
