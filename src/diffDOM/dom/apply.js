@@ -92,7 +92,7 @@ export function applyDiff(
             node.parentNode.replaceChild(
                 objToNode(
                     diff[options._const.newValue],
-                    node.namespaceURI === 'http://www.w3.org/2000/svg',
+                    diff[options._const.newValue].nodeName.toLowerCase() === 'svg',
                     options
                 ),
                 node
