@@ -1,3 +1,8 @@
+/**
+ * @jest-environment jsdom
+ */
+
+
 import {
     DiffDOM,
     nodeToObj,

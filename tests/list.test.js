@@ -1,7 +1,10 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import {
     DiffDOM
 } from "../src/index"
-
 
 // Add all divs to be compared here two by two
 const html = `
