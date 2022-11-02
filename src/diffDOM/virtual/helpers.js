@@ -1,6 +1,6 @@
 export class Diff {
     constructor(options = {}) {
-        Object.entries(options).forEach(([key, value]) => this[key] = value)
+        Object.entries(options).forEach(([key, value]) => (this[key] = value))
     }
 
     toString() {
@@ -16,16 +16,20 @@ export class Diff {
 function elementDescriptors(el) {
     const output = []
     output.push(el.nodeName)
-    if (el.nodeName !== '#text' && el.nodeName !== '#comment') {
+    if (el.nodeName !== "#text" && el.nodeName !== "#comment") {
         if (el.attributes) {
-            if (el.attributes['class']) {
-                output.push(`${el.nodeName}.${el.attributes['class'].replace(/ /g, '.')}`)
+            if (el.attributes["class"]) {
+                output.push(
+                    `${el.nodeName}.${el.attributes["class"].replace(
+                        / /g,
+                        "."
+                    )}`
+                )
             }
             if (el.attributes.id) {
                 output.push(`${el.nodeName}#${el.attributes.id}`)
             }
         }
-
     }
     return output
 }
@@ -34,8 +38,8 @@ function findUniqueDescriptors(li) {
     const uniqueDescriptors = {}
     const duplicateDescriptors = {}
 
-    li.forEach(node => {
-        elementDescriptors(node).forEach(descriptor => {
+    li.forEach((node) => {
+        elementDescriptors(node).forEach((descriptor) => {
             const inUnique = descriptor in uniqueDescriptors
             const inDupes = descriptor in duplicateDescriptors
             if (!inUnique && !inDupes) {
@@ -55,7 +59,7 @@ function uniqueInBoth(l1, l2) {
     const l2Unique = findUniqueDescriptors(l2)
     const inBoth = {}
 
-    Object.keys(l1Unique).forEach(key => {
+    Object.keys(l1Unique).forEach((key) => {
         if (l2Unique[key]) {
             inBoth[key] = true
         }
@@ -76,12 +80,16 @@ export function removeDone(tree) {
 }
 
 export function isEqual(e1, e2) {
-    if (!['nodeName', 'value', 'checked', 'selected', 'data'].every(element => {
-            if (e1[element] !== e2[element]) {
-                return false
+    if (
+        !["nodeName", "value", "checked", "selected", "data"].every(
+            (element) => {
+                if (e1[element] !== e2[element]) {
+                    return false
+                }
+                return true
             }
-            return true
-        })) {
+        )
+    ) {
         return false
     }
 
@@ -99,12 +107,14 @@ export function isEqual(e1, e2) {
         if (e1Attributes.length !== e2Attributes.length) {
             return false
         }
-        if (!e1Attributes.every(attribute => {
+        if (
+            !e1Attributes.every((attribute) => {
                 if (e1.attributes[attribute] !== e2.attributes[attribute]) {
                     return false
                 }
                 return true
-            })) {
+            })
+        ) {
             return false
         }
     }
@@ -112,19 +122,25 @@ export function isEqual(e1, e2) {
         if (e1.childNodes.length !== e2.childNodes.length) {
             return false
         }
-        if (!e1.childNodes.every((childNode, index) => isEqual(childNode, e2.childNodes[index]))) {
-
+        if (
+            !e1.childNodes.every((childNode, index) =>
+                isEqual(childNode, e2.childNodes[index])
+            )
+        ) {
             return false
         }
-
     }
 
     return true
 }
 
-
-export function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRecursion) {
-
+export function roughlyEqual(
+    e1,
+    e2,
+    uniqueDescriptors,
+    sameSiblings,
+    preventRecursion
+) {
     if (!e1 || !e2) {
         return false
     }
@@ -133,20 +149,18 @@ export function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRec
         return false
     }
 
-    if (e1.nodeName === '#text') {
+    if (e1.nodeName === "#text") {
         // Note that we initially don't care what the text content of a node is,
         // the mere fact that it's the same tag and "has text" means it's roughly
         // equal, and then we can find out the true text difference later.
         return preventRecursion ? true : e1.data === e2.data
     }
 
-
     if (e1.nodeName in uniqueDescriptors) {
         return true
     }
 
     if (e1.attributes && e2.attributes) {
-
         if (e1.attributes.id) {
             if (e1.attributes.id !== e2.attributes.id) {
                 return false
@@ -157,8 +171,13 @@ export function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRec
                 }
             }
         }
-        if (e1.attributes['class'] && e1.attributes['class'] === e2.attributes['class']) {
-            const classDescriptor = `${e1.nodeName}.${e1.attributes['class'].replace(/ /g, '.')}`
+        if (
+            e1.attributes["class"] &&
+            e1.attributes["class"] === e2.attributes["class"]
+        ) {
+            const classDescriptor = `${e1.nodeName}.${e1.attributes[
+                "class"
+            ].replace(/ /g, ".")}`
             if (classDescriptor in uniqueDescriptors) {
                 return true
             }
@@ -177,17 +196,27 @@ export function roughlyEqual(e1, e2, uniqueDescriptors, sameSiblings, preventRec
     }
 
     if (preventRecursion) {
-        return nodeList1.every((element, index) => element.nodeName === nodeList2[index].nodeName)
+        return nodeList1.every(
+            (element, index) => element.nodeName === nodeList2[index].nodeName
+        )
     } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
         // was not set, we must explicitly force it to true for child iterations.
         const childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2)
-        return nodeList1.every((element, index) => roughlyEqual(element, nodeList2[index], childUniqueDescriptors, true, true))
+        return nodeList1.every((element, index) =>
+            roughlyEqual(
+                element,
+                nodeList2[index],
+                childUniqueDescriptors,
+                true,
+                true
+            )
+        )
     }
 }
 
-
-export function cloneObj(obj) { //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
+export function cloneObj(obj) {
+    //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
     return JSON.parse(JSON.stringify(obj))
 }
 /**
@@ -210,7 +239,6 @@ function findCommonSubsets(c1, c2, marked1, marked2) {
         subsetsSame = c1Length === c2Length
 
     if (subsetsSame) {
-
         c1.some((element, i) => {
             const c1Desc = elementDescriptors(element)
             const c2Desc = elementDescriptors(c2[i])
@@ -235,8 +263,19 @@ function findCommonSubsets(c1, c2, marked1, marked2) {
         const c1Element = c1[c1Index]
         for (let c2Index = 0; c2Index < c2Length; c2Index++) {
             const c2Element = c2[c2Index]
-            if (!marked1[c1Index] && !marked2[c2Index] && roughlyEqual(c1Element, c2Element, uniqueDescriptors, subsetsSame)) {
-                matches[c1Index + 1][c2Index + 1] = (matches[c1Index][c2Index] ? matches[c1Index][c2Index] + 1 : 1)
+            if (
+                !marked1[c1Index] &&
+                !marked2[c2Index] &&
+                roughlyEqual(
+                    c1Element,
+                    c2Element,
+                    uniqueDescriptors,
+                    subsetsSame
+                )
+            ) {
+                matches[c1Index + 1][c2Index + 1] = matches[c1Index][c2Index]
+                    ? matches[c1Index][c2Index] + 1
+                    : 1
                 if (matches[c1Index + 1][c2Index + 1] >= lcsSize) {
                     lcsSize = matches[c1Index + 1][c2Index + 1]
                     index = [c1Index + 1, c2Index + 1]
@@ -254,7 +293,7 @@ function findCommonSubsets(c1, c2, marked1, marked2) {
     return {
         oldValue: index[0] - lcsSize,
         newValue: index[1] - lcsSize,
-        length: lcsSize
+        length: lcsSize,
     }
 }
 
@@ -291,7 +330,7 @@ export function getGapInformation(t1, t2, stable) {
     let group = 0
 
     // give elements from the same subset the same group number
-    stable.forEach(subset => {
+    stable.forEach((subset) => {
         const endOld = subset.oldValue + subset.length
         const endNew = subset.newValue + subset.length
 
@@ -306,7 +345,7 @@ export function getGapInformation(t1, t2, stable) {
 
     return {
         gaps1,
-        gaps2
+        gaps2,
     }
 }
 
@@ -323,11 +362,11 @@ export function markSubTrees(oldTree, newTree) {
     const subsets = []
     let subset = true
 
-    const returnIndex = function() {
+    const returnIndex = function () {
         return arguments[1]
     }
 
-    const markBoth = i => {
+    const markBoth = (i) => {
         marked1[subset.oldValue + i] = true
         marked2[subset.newValue + i] = true
     }
@@ -336,8 +375,10 @@ export function markSubTrees(oldTree, newTree) {
         subset = findCommonSubsets(oldChildren, newChildren, marked1, marked2)
         if (subset) {
             subsets.push(subset)
-            const subsetArray = Array(...new Array(subset.length)).map(returnIndex)
-            subsetArray.forEach(item => markBoth(item))
+            const subsetArray = Array(...new Array(subset.length)).map(
+                returnIndex
+            )
+            subsetArray.forEach((item) => markBoth(item))
         }
     }
 
@@ -355,7 +396,6 @@ export class DiffTracker {
         this.list.push(...diffs)
     }
     forEach(fn) {
-        this.list.forEach(li => fn(li))
+        this.list.forEach((li) => fn(li))
     }
-
 }

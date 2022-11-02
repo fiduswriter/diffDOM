@@ -1,4 +1,4 @@
-import {objToNode} from "./fromVirtual"
+import { objToNode } from "./fromVirtual"
 
 // ===== Apply a diff =====
 
@@ -15,10 +15,10 @@ function getFromRoute(node, route) {
 }
 
 export function applyDiff(
-        tree,
-        diff,
-        options // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
-    ) {
+    tree,
+    diff,
+    options // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
+) {
     let node = getFromRoute(tree, diff[options._const.route])
     let newNode
     let reference
@@ -29,7 +29,7 @@ export function applyDiff(
     // pre-diff hook
     const info = {
         diff,
-        node
+        node,
     }
 
     if (options.preDiffApply(info)) {
@@ -41,14 +41,23 @@ export function applyDiff(
             if (!node || !node.setAttribute) {
                 return false
             }
-            node.setAttribute(diff[options._const.name], diff[options._const.value])
+            node.setAttribute(
+                diff[options._const.name],
+                diff[options._const.value]
+            )
             break
         case options._const.modifyAttribute:
             if (!node || !node.setAttribute) {
                 return false
             }
-            node.setAttribute(diff[options._const.name], diff[options._const.newValue])
-            if (node.nodeName === 'INPUT' && diff[options._const.name] === 'value') {
+            node.setAttribute(
+                diff[options._const.name],
+                diff[options._const.newValue]
+            )
+            if (
+                node.nodeName === "INPUT" &&
+                diff[options._const.name] === "value"
+            ) {
                 node.value = diff[options._const.newValue]
             }
             break
@@ -62,28 +71,38 @@ export function applyDiff(
             if (!node || node.nodeType !== 3) {
                 return false
             }
-            options.textDiff(node, node.data, diff[options._const.oldValue], diff[options._const.newValue])
+            options.textDiff(
+                node,
+                node.data,
+                diff[options._const.oldValue],
+                diff[options._const.newValue]
+            )
             break
         case options._const.modifyValue:
-            if (!node || typeof node.value === 'undefined') {
+            if (!node || typeof node.value === "undefined") {
                 return false
             }
             node.value = diff[options._const.newValue]
             break
         case options._const.modifyComment:
-            if (!node || typeof node.data === 'undefined') {
+            if (!node || typeof node.data === "undefined") {
                 return false
             }
-            options.textDiff(node, node.data, diff[options._const.oldValue], diff[options._const.newValue])
+            options.textDiff(
+                node,
+                node.data,
+                diff[options._const.oldValue],
+                diff[options._const.newValue]
+            )
             break
         case options._const.modifyChecked:
-            if (!node || typeof node.checked === 'undefined') {
+            if (!node || typeof node.checked === "undefined") {
                 return false
             }
             node.checked = diff[options._const.newValue]
             break
         case options._const.modifySelected:
-            if (!node || typeof node.selected === 'undefined') {
+            if (!node || typeof node.selected === "undefined") {
                 return false
             }
             node.selected = diff[options._const.newValue]
@@ -92,14 +111,17 @@ export function applyDiff(
             node.parentNode.replaceChild(
                 objToNode(
                     diff[options._const.newValue],
-                    diff[options._const.newValue].nodeName.toLowerCase() === 'svg',
+                    diff[options._const.newValue].nodeName.toLowerCase() ===
+                        "svg",
                     options
                 ),
                 node
             )
             break
         case options._const.relocateGroup:
-            nodeArray = Array(...new Array(diff.groupLength)).map(() => node.removeChild(node.childNodes[diff[options._const.from]]))
+            nodeArray = Array(...new Array(diff.groupLength)).map(() =>
+                node.removeChild(node.childNodes[diff[options._const.from]])
+            )
             nodeArray.forEach((childNode, index) => {
                 if (index === 0) {
                     reference = node.childNodes[diff[options._const.to]]
@@ -117,7 +139,7 @@ export function applyDiff(
             node.insertBefore(
                 objToNode(
                     diff[options._const.element],
-                    node.namespaceURI === 'http://www.w3.org/2000/svg',
+                    node.namespaceURI === "http://www.w3.org/2000/svg",
                     options
                 ),
                 node.childNodes[c] || null
@@ -132,7 +154,9 @@ export function applyDiff(
         case options._const.addTextElement:
             route = diff[options._const.route].slice()
             c = route.splice(route.length - 1, 1)[0]
-            newNode = options.document.createTextNode(diff[options._const.value])
+            newNode = options.document.createTextNode(
+                diff[options._const.value]
+            )
             node = getFromRoute(tree, route)
             if (!node || !node.childNodes) {
                 return false
@@ -140,7 +164,7 @@ export function applyDiff(
             node.insertBefore(newNode, node.childNodes[c] || null)
             break
         default:
-            console.log('unknown action')
+            console.log("unknown action")
     }
 
     // if a new node was created, we might be interested in its
@@ -152,5 +176,5 @@ export function applyDiff(
 }
 
 export function applyDOM(tree, diffs, options) {
-    return diffs.every(diff => applyDiff(tree, diff, options))
+    return diffs.every((diff) => applyDiff(tree, diff, options))
 }

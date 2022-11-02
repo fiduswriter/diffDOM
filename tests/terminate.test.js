@@ -2,11 +2,7 @@
  * @jest-environment jsdom
  */
 
-
-import {
-    DiffDOM
-} from "../src/index"
-
+import { DiffDOM } from "../src/index"
 
 // Add all divs to be compared here two by two
 const html = `
@@ -61,23 +57,27 @@ const html = `
 `
 document.body.innerHTML = html
 
-describe('terminate', () => {
-
-    it('can diff and patch html that tended to create loops', () => {
+describe("terminate", () => {
+    it("can diff and patch html that tended to create loops", () => {
         const dd = new DiffDOM({
                 debug: true,
-                diffcap: 500
+                diffcap: 500,
             }),
-            divs = document.querySelectorAll('div')
+            divs = document.querySelectorAll("div")
 
-        for (let i = 0; i < divs.length; i = i + 2) {
+        for (let i = 0; i < divs.length; i += 2) {
             const diffs = dd.diff(divs[i], divs[i + 1])
             expect(diffs).not.toHaveLength(0)
             const t1 = divs[i].cloneNode(true)
             dd.apply(t1, diffs)
-            expect(t1.isEqualNode(divs[i + 1]) || t1.innerHTML === divs[i + 1].innerHTML).toBe(true)
+            expect(
+                t1.isEqualNode(divs[i + 1]) ||
+                    t1.innerHTML === divs[i + 1].innerHTML
+            ).toBe(true)
             dd.undo(t1, diffs)
-            expect(t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML).toBe(true)
+            expect(
+                t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML
+            ).toBe(true)
         }
     })
 })

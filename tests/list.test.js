@@ -2,9 +2,7 @@
  * @jest-environment jsdom
  */
 
-import {
-    DiffDOM
-} from "../src/index"
+import { DiffDOM } from "../src/index"
 
 // Add all divs to be compared here two by two
 const html = `
@@ -42,63 +40,77 @@ document.body.innerHTML = html
 const dd = new DiffDOM({
     debug: true,
     diffcap: 300,
-    valueDiffing: false
+    valueDiffing: false,
 })
 
-describe('list', () => {
-
-    it('can diff short lists', () => {
-        const first = document.getElementById('list-1')
-        const second = document.getElementById('list-2')
-        first.removeAttribute('id')
-        second.removeAttribute('id')
+describe("list", () => {
+    it("can diff short lists", () => {
+        const first = document.getElementById("list-1")
+        const second = document.getElementById("list-2")
+        first.removeAttribute("id")
+        second.removeAttribute("id")
 
         const diff1 = dd.diff(first, second)
         expect(diff1).toHaveLength(1)
     })
 
-    it('can diff and patch long lists with many diffs', () => {
-        const divs = document.querySelectorAll('div')
+    it("can diff and patch long lists with many diffs", () => {
+        const divs = document.querySelectorAll("div")
         const diffs = dd.diff(divs[0], divs[1])
         expect(diffs).toHaveLength(365)
         const t1 = divs[0].cloneNode(true)
         dd.apply(t1, diffs)
-        expect(t1.isEqualNode(divs[1]) || t1.innerHTML === divs[1].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[1]) || t1.innerHTML === divs[1].innerHTML
+        ).toBe(true)
         dd.undo(t1, diffs)
-        expect(t1.isEqualNode(divs[0]) || t1.innerHTML === divs[0].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[0]) || t1.innerHTML === divs[0].innerHTML
+        ).toBe(true)
     })
 
-    it('can diff and patch long lists with few diffs', () => {
-        const divs = document.querySelectorAll('div')
+    it("can diff and patch long lists with few diffs", () => {
+        const divs = document.querySelectorAll("div")
         const diffs = dd.diff(divs[2], divs[3])
         expect(diffs).toHaveLength(2)
         const t1 = divs[2].cloneNode(true)
         dd.apply(t1, diffs)
-        expect(t1.isEqualNode(divs[3]) || t1.innerHTML === divs[3].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[3]) || t1.innerHTML === divs[3].innerHTML
+        ).toBe(true)
         dd.undo(t1, diffs)
-        expect(t1.isEqualNode(divs[2]) || t1.innerHTML === divs[2].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[2]) || t1.innerHTML === divs[2].innerHTML
+        ).toBe(true)
     })
 
-    it('can find one new item in a long list', () => {
-        const divs = document.querySelectorAll('div')
+    it("can find one new item in a long list", () => {
+        const divs = document.querySelectorAll("div")
         const diffs = dd.diff(divs[4], divs[5])
         expect(diffs).toHaveLength(1)
         const t1 = divs[4].cloneNode(true)
         dd.apply(t1, diffs)
-        expect(t1.isEqualNode(divs[5]) || t1.innerHTML === divs[5].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[5]) || t1.innerHTML === divs[5].innerHTML
+        ).toBe(true)
         dd.undo(t1, diffs)
-        expect(t1.isEqualNode(divs[4]) || t1.innerHTML === divs[4].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[4]) || t1.innerHTML === divs[4].innerHTML
+        ).toBe(true)
     })
 
-    it('can find one deleted item in a long list', () => {
-        const divs = document.querySelectorAll('div')
+    it("can find one deleted item in a long list", () => {
+        const divs = document.querySelectorAll("div")
         const diffs = dd.diff(divs[6], divs[7])
         expect(diffs).toHaveLength(1)
         const t1 = divs[6].cloneNode(true)
         dd.apply(t1, diffs)
-        expect(t1.isEqualNode(divs[6]) || t1.innerHTML === divs[7].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[6]) || t1.innerHTML === divs[7].innerHTML
+        ).toBe(true)
         dd.undo(t1, diffs)
-        expect(t1.isEqualNode(divs[6]) || t1.innerHTML === divs[6].innerHTML).toBe(true)
+        expect(
+            t1.isEqualNode(divs[6]) || t1.innerHTML === divs[6].innerHTML
+        ).toBe(true)
     })
-
 })

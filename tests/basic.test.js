@@ -2,10 +2,7 @@
  * @jest-environment jsdom
  */
 
-import {
-    DiffDOM
-} from "../src/index"
-
+import { DiffDOM } from "../src/index"
 
 // Add all divs to be compared here two by two
 const html = `
@@ -573,35 +570,34 @@ const html = `
 `
 
 const caps = [
-    1, 1, 1, 27, 2, 5, 3, 1, 4, 1, 11, 4,
-    4, 4, 2, 3, 5, 1, 3, 3, 6, 1, 2, 3,
-    2, 2, 1, 4, 1, 3, 2, 10, 4, 15, 3, 13,
-    15, 1, 1, 3, 17, 12, 10, 10, 2, 1, 1, 1,
-    30, 7, 20, 1, 1, 3, 2, 111, 8, 3, 8, 3
+    1, 1, 1, 27, 2, 5, 3, 1, 4, 1, 11, 4, 4, 4, 2, 3, 5, 1, 3, 3, 6, 1, 2, 3, 2,
+    2, 1, 4, 1, 3, 2, 10, 4, 15, 3, 13, 15, 1, 1, 3, 17, 12, 10, 10, 2, 1, 1, 1,
+    30, 7, 20, 1, 1, 3, 2, 111, 8, 3, 8, 3,
 ]
 
-
-describe('basic', () => {
-
-    it('can diff and patch basic html', () => {
+describe("basic", () => {
+    it("can diff and patch basic html", () => {
         document.body.innerHTML = html
         const dd = new DiffDOM({
                 debug: true,
-                diffcap: 1000
+                diffcap: 1000,
             }),
-            divs = document.querySelectorAll('div')
+            divs = document.querySelectorAll("div")
 
-        for (let i = 0; i < divs.length; i = i + 2) {
+        for (let i = 0; i < divs.length; i += 2) {
             const diffs = dd.diff(divs[i], divs[i + 1])
             expect(diffs).not.toHaveLength(0)
-            expect(diffs.length).toBeLessThanOrEqual(caps[i/2])
+            expect(diffs.length).toBeLessThanOrEqual(caps[i / 2])
             const t1 = divs[i].cloneNode(true)
             dd.apply(t1, diffs)
-            expect(t1.isEqualNode(divs[i + 1]) || t1.innerHTML === divs[i + 1].innerHTML).toBe(true)
+            expect(
+                t1.isEqualNode(divs[i + 1]) ||
+                    t1.innerHTML === divs[i + 1].innerHTML
+            ).toBe(true)
             dd.undo(t1, diffs)
-            expect(t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML).toBe(true)
+            expect(
+                t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML
+            ).toBe(true)
         }
-
     })
-
 })

@@ -6,10 +6,11 @@ const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
 const empty = Object.create ? Object.create(null) : {}
 const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g
 
-
 function unescape(string) {
-    return string.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-.replace(/&amp;/g, '&')
+    return string
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
 }
 
 // create optimized lookup object for
@@ -31,29 +32,28 @@ const lookup = {
     param: true,
     source: true,
     track: true,
-    wbr: true
+    wbr: true,
 }
-
 
 function parseTag(tag) {
     const res = {
-        nodeName: '',
-        attributes: {}
+        nodeName: "",
+        attributes: {},
     }
 
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if (tagMatch) {
         res.nodeName = tagMatch[1].toUpperCase()
-        if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === '/') {
+        if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === "/") {
             res.voidElement = true
         }
 
         // handle comment tag
-        if (res.nodeName.startsWith('!--')) {
-            const endIndex = tag.indexOf('-->')
+        if (res.nodeName.startsWith("!--")) {
+            const endIndex = tag.indexOf("-->")
             return {
-                type: 'comment',
-                data: endIndex !== -1 ? tag.slice(4, endIndex) : ''
+                type: "comment",
+                data: endIndex !== -1 ? tag.slice(4, endIndex) : "",
             }
         }
     }
@@ -75,17 +75,17 @@ function parseTag(tag) {
 
                 res.attributes[arr[0]] = arr[1]
                 reg.lastIndex--
-            } else if (result[2]) res.attributes[result[2]] = result[3].trim().substring(1, result[3].length - 1)
+            } else if (result[2])
+                res.attributes[result[2]] = result[3]
+                    .trim()
+                    .substring(1, result[3].length - 1)
         }
     }
 
     return res
 }
 
-function parse(
-    html,
-    options = {components: empty}
-) {
+function parse(html, options = { components: empty }) {
     const result = []
     let current
     let level = -1
@@ -93,24 +93,24 @@ function parse(
     let inComponent = false
 
     // handle text at top level
-    if (html.indexOf('<') !== 0) {
-        const end = html.indexOf('<')
+    if (html.indexOf("<") !== 0) {
+        const end = html.indexOf("<")
         result.push({
-            nodeName: '#text',
-            data: end === -1 ? html : html.substring(0, end)
+            nodeName: "#text",
+            data: end === -1 ? html : html.substring(0, end),
         })
     }
 
     html.replace(tagRE, (tag, index) => {
         if (inComponent) {
-            if (tag !== (`</${current.nodeName}>`)) {
+            if (tag !== `</${current.nodeName}>`) {
                 return
             } else {
                 inComponent = false
             }
         }
-        const isOpen = tag.charAt(1) !== '/'
-        const isComment = tag.startsWith('<!--')
+        const isOpen = tag.charAt(1) !== "/"
+        const isComment = tag.startsWith("<!--")
         const start = index + tag.length
         const nextChar = html.charAt(start)
         let parent
@@ -137,18 +137,26 @@ function parse(
         if (isOpen) {
             current = parseTag(tag)
             level++
-            if (current.type === 'tag' && options.components[current.nodeName]) {
-                current.type = 'component'
+            if (
+                current.type === "tag" &&
+                options.components[current.nodeName]
+            ) {
+                current.type = "component"
                 inComponent = true
             }
 
-            if (!current.voidElement && !inComponent && nextChar && nextChar !== '<') {
+            if (
+                !current.voidElement &&
+                !inComponent &&
+                nextChar &&
+                nextChar !== "<"
+            ) {
                 if (!current.childNodes) {
                     current.childNodes = []
                 }
                 current.childNodes.push({
-                    nodeName: '#text',
-                    data: unescape(html.slice(start, html.indexOf('<', start)))
+                    nodeName: "#text",
+                    data: unescape(html.slice(start, html.indexOf("<", start))),
                 })
             }
 
@@ -172,13 +180,14 @@ function parse(
         if (!isOpen || current.voidElement) {
             if (
                 level > -1 &&
-                (current.voidElement || current.nodeName === tag.slice(2, -1).toUpperCase())
+                (current.voidElement ||
+                    current.nodeName === tag.slice(2, -1).toUpperCase())
             ) {
                 level--
                 // move current up a level to match the end tag
                 current = level === -1 ? result : arr[level]
             }
-            if (!inComponent && nextChar !== '<' && nextChar) {
+            if (!inComponent && nextChar !== "<" && nextChar) {
                 // trailing text node
                 // if we're at the root, push a base text node. otherwise add as
                 // a child to the current node.
@@ -186,11 +195,13 @@ function parse(
 
                 // calculate correct end of the data slice in case there's
                 // no tag after the text node.
-                const end = html.indexOf('<', start)
-                let data = unescape(html.slice(start, end === -1 ? undefined : end))
+                const end = html.indexOf("<", start)
+                let data = unescape(
+                    html.slice(start, end === -1 ? undefined : end)
+                )
                 parent.push({
-                    nodeName: '#text',
-                    data
+                    nodeName: "#text",
+                    data,
                 })
             }
         }
@@ -202,7 +213,7 @@ function parse(
 function cleanObj(obj) {
     delete obj.voidElement
     if (obj.childNodes) {
-        obj.childNodes.forEach(child => cleanObj(child))
+        obj.childNodes.forEach((child) => cleanObj(child))
     }
     return obj
 }

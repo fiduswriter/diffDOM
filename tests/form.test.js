@@ -2,11 +2,7 @@
  * @jest-environment jsdom
  */
 
-
-import {
-    DiffDOM
-} from "../src/index"
-
+import { DiffDOM } from "../src/index"
 
 // Add all divs to be compared here two by two
 const html = `
@@ -44,22 +40,21 @@ const html = `
 document.body.innerHTML = html
 const dd = new DiffDOM({
     debug: true,
-    diffcap: 500
+    diffcap: 500,
 })
 
-describe('form', () => {
+describe("form", () => {
+    it("can diff textareas", () => {
+        const first = document.getElementById("e1")
+        const second = document.getElementById("e2")
 
-    it('can diff textareas', () => {
-        const first = document.getElementById('e1')
-        const second = document.getElementById('e2')
-
-        first.removeAttribute('id')
-        second.removeAttribute('id')
+        first.removeAttribute("id")
+        second.removeAttribute("id")
 
         const diff1 = dd.diff(first, second)
         expect(diff1).toHaveLength(1)
 
-        first.value = 'Some changed text'
+        first.value = "Some changed text"
         const diff2 = dd.diff(first, second)
         expect(diff2).toHaveLength(1)
 
@@ -67,54 +62,53 @@ describe('form', () => {
         const diff3 = dd.diff(second, third)
         expect(diff3).toHaveLength(0)
 
-        second.value = 'Some text'
+        second.value = "Some text"
         const diff4 = dd.diff(second, third)
         expect(diff4).toHaveLength(1)
 
         const diff5 = dd.diff(first, second)
         expect(diff5).toHaveLength(1)
 
-        second.innerText = 'Some text'
+        second.innerText = "Some text"
         const diff6 = dd.diff(first, second)
         dd.apply(first, diff6)
         const diff7 = dd.diff(first, third)
         dd.apply(first, diff7)
         expect(first.value).toBe(third.value)
-
     })
 
-    it('can diff input type = text', () => {
-        const first = document.getElementById('e3')
-        const second = document.getElementById('e4')
-        first.removeAttribute('id')
-        second.removeAttribute('id')
+    it("can diff input type = text", () => {
+        const first = document.getElementById("e3")
+        const second = document.getElementById("e4")
+        first.removeAttribute("id")
+        second.removeAttribute("id")
 
         const diff1 = dd.diff(first, second)
         expect(diff1).toHaveLength(1)
 
-        first.value = 'textinput changed'
+        first.value = "textinput changed"
         const diff2 = dd.diff(first, second)
         expect(diff2).toHaveLength(1)
 
-        second.value = 'new textinput'
+        second.value = "new textinput"
         const diff3 = dd.diff(first, second)
         expect(diff3).toHaveLength(2)
 
-        first.value = 'textinput'
-        second.value = 'textinput'
+        first.value = "textinput"
+        second.value = "textinput"
         const diff4 = dd.diff(first, second)
         expect(diff4).toHaveLength(2)
     })
 
-    it('can diff input type = radio', () => {
-        const first = document.getElementById('e5')
-        const second = document.getElementById('e6')
-        const third = document.getElementById('e7')
-        const fourth = document.getElementById('e8')
-        first.removeAttribute('id')
-        second.removeAttribute('id')
-        third.removeAttribute('id')
-        fourth.removeAttribute('id')
+    it("can diff input type = radio", () => {
+        const first = document.getElementById("e5")
+        const second = document.getElementById("e6")
+        const third = document.getElementById("e7")
+        const fourth = document.getElementById("e8")
+        first.removeAttribute("id")
+        second.removeAttribute("id")
+        third.removeAttribute("id")
+        fourth.removeAttribute("id")
 
         const diff1 = dd.diff(first, second)
         expect(diff1).toHaveLength(1)
@@ -132,18 +126,17 @@ describe('form', () => {
 
         const diff5 = dd.diff(second, fourth)
         expect(diff5).toHaveLength(2)
-
     })
 
-    it('can diff input type = checkbox', () => {
-        const first = document.getElementById('e9')
-        const second = document.getElementById('e10')
-        const third = document.getElementById('e11')
-        const fourth = document.getElementById('e12')
-        first.removeAttribute('id')
-        second.removeAttribute('id')
-        third.removeAttribute('id')
-        fourth.removeAttribute('id')
+    it("can diff input type = checkbox", () => {
+        const first = document.getElementById("e9")
+        const second = document.getElementById("e10")
+        const third = document.getElementById("e11")
+        const fourth = document.getElementById("e12")
+        first.removeAttribute("id")
+        second.removeAttribute("id")
+        third.removeAttribute("id")
+        fourth.removeAttribute("id")
 
         const diff1 = dd.diff(first, second)
         expect(diff1).toHaveLength(1)
@@ -163,15 +156,15 @@ describe('form', () => {
         expect(diff5).toHaveLength(2)
     })
 
-    it('can diff option', () => {
-        const first = document.getElementById('e13')
-        const second = document.getElementById('e14')
-        const third = document.getElementById('e15')
-        const fourth = document.getElementById('e16')
-        first.removeAttribute('id')
-        second.removeAttribute('id')
-        third.removeAttribute('id')
-        fourth.removeAttribute('id')
+    it("can diff option", () => {
+        const first = document.getElementById("e13")
+        const second = document.getElementById("e14")
+        const third = document.getElementById("e15")
+        const fourth = document.getElementById("e16")
+        first.removeAttribute("id")
+        second.removeAttribute("id")
+        third.removeAttribute("id")
+        fourth.removeAttribute("id")
 
         const diff1 = dd.diff(first, second)
         expect(diff1).toHaveLength(2)
@@ -189,7 +182,5 @@ describe('form', () => {
 
         const diff5 = dd.diff(second, fourth)
         expect(diff5).toHaveLength(3)
-
     })
-
 })

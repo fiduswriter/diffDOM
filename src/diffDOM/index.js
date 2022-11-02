@@ -1,6 +1,6 @@
-import {applyDOM, undoDOM} from "./dom/index"
-import {DiffFinder} from "./virtual/index"
-export {nodeToObj, stringToObj} from "./virtual/index"
+import { applyDOM, undoDOM } from "./dom/index"
+import { DiffFinder } from "./virtual/index"
+export { nodeToObj, stringToObj } from "./virtual/index"
 
 const DEFAULT_OPTIONS = {
     debug: false,
@@ -22,13 +22,14 @@ const DEFAULT_OPTIONS = {
     filterOuterDiff: null,
     compress: false, // Whether to work with compressed diffs
     _const: false, // object with strings for every change types to be used in diffs.
-    document: typeof window !== 'undefined' && window.document ? window.document : false
+    document:
+        typeof window !== "undefined" && window.document
+            ? window.document
+            : false,
 }
-
 
 export class DiffDOM {
     constructor(options = {}) {
-
         this.options = options
         // IE11 doesn't have Object.assign and buble doesn't translate object spreaders
         // by default, so this is the safest way of doing it currently.
@@ -39,24 +40,51 @@ export class DiffDOM {
         })
 
         if (!this.options._const) {
-            const varNames = ["addAttribute", "modifyAttribute", "removeAttribute",
-                "modifyTextElement", "relocateGroup", "removeElement", "addElement",
-                "removeTextElement", "addTextElement", "replaceElement", "modifyValue",
-                "modifyChecked", "modifySelected", "modifyComment", "action", "route",
-                "oldValue", "newValue", "element", "group", "from", "to", "name",
-                "value", "data", "attributes", "nodeName", "childNodes", "checked",
-                "selected"
+            const varNames = [
+                "addAttribute",
+                "modifyAttribute",
+                "removeAttribute",
+                "modifyTextElement",
+                "relocateGroup",
+                "removeElement",
+                "addElement",
+                "removeTextElement",
+                "addTextElement",
+                "replaceElement",
+                "modifyValue",
+                "modifyChecked",
+                "modifySelected",
+                "modifyComment",
+                "action",
+                "route",
+                "oldValue",
+                "newValue",
+                "element",
+                "group",
+                "from",
+                "to",
+                "name",
+                "value",
+                "data",
+                "attributes",
+                "nodeName",
+                "childNodes",
+                "checked",
+                "selected",
             ]
             this.options._const = {}
             if (this.options.compress) {
-                varNames.forEach((varName, index) => this.options._const[varName] = index)
+                varNames.forEach(
+                    (varName, index) => (this.options._const[varName] = index)
+                )
             } else {
-                varNames.forEach(varName => this.options._const[varName] = varName)
+                varNames.forEach(
+                    (varName) => (this.options._const[varName] = varName)
+                )
             }
         }
 
         this.DiffFinder = DiffFinder
-
     }
 
     apply(tree, diffs) {
@@ -71,5 +99,4 @@ export class DiffDOM {
         const finder = new this.DiffFinder(t1Node, t2Node, this.options)
         return finder.init()
     }
-
 }

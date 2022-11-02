@@ -1,2 +1,2 @@
-export {applyDOM} from "./apply"
-export {undoDOM} from "./undo"
+export { applyDOM } from "./apply"
+export { undoDOM } from "./undo"

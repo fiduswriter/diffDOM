@@ -47,11 +47,14 @@ export class TraceLogger {
     // called when exiting a function
     fout(fn, result) {
         this.log("│<──┘ generated return value", result)
-        this.padding = this.padding.substring(0, this.padding.length - this.pad.length)
+        this.padding = this.padding.substring(
+            0,
+            this.padding.length - this.pad.length
+        )
     }
     // log message formatting
     format(s, tick) {
-        let nf = function(t) {
+        let nf = function (t) {
             t = `${t}`
             while (t.length < 4) {
                 t = `0${t}`
@@ -63,7 +66,7 @@ export class TraceLogger {
     // log a trace message
     log() {
         let s = Array.prototype.slice.call(arguments)
-        const stringCollapse = function(v) {
+        const stringCollapse = function (v) {
             if (!v) {
                 return "<falsey>"
             }

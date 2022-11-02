@@ -1,4 +1,4 @@
-import {applyDiff} from "./apply"
+import { applyDiff } from "./apply"
 
 // ===== Undo a diff =====
 
@@ -13,7 +13,6 @@ function undoDiff(
     diff,
     options // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
-
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
             diff[options._const.action] = options._const.removeAttribute
@@ -72,9 +71,8 @@ function undoDiff(
             applyDiff(tree, diff, options)
             break
         default:
-            console.log('unknown action')
+            console.log("unknown action")
     }
-
 }
 
 export function undoDOM(tree, diffs, options) {
@@ -83,7 +81,7 @@ export function undoDOM(tree, diffs, options) {
     }
     diffs = diffs.slice()
     diffs.reverse()
-    diffs.forEach(diff => {
+    diffs.forEach((diff) => {
         undoDiff(tree, diff, options)
     })
 }

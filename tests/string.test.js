@@ -2,50 +2,45 @@
  * @jest-environment jsdom
  */
 
-
-import {
-    DiffDOM,
-    nodeToObj,
-    stringToObj
-} from "../src/index"
+import { DiffDOM, nodeToObj, stringToObj } from "../src/index"
 
 const strings = [
-    '<div><div><div><img><span>hello</span></div></div><img></div>',
-    '<div></div>',
+    "<div><div><div><img><span>hello</span></div></div><img></div>",
+    "<div></div>",
 
-    '<div><p>first paragraph</p><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>',
-    '<div><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>',
-    '<div><h1>Foo</h1><h2>Bar</h2><h3>Baz</h3></div>',
-    '<div><h1>Foo</h1><h2>Bar</h2></div>',
+    "<div><p>first paragraph</p><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>",
+    "<div><img><p>Another paragraph</p><p>A third paragraph</p><p>A fourth paragraph</p><p>A fifth paragraph</p></div>",
+    "<div><h1>Foo</h1><h2>Bar</h2><h3>Baz</h3></div>",
+    "<div><h1>Foo</h1><h2>Bar</h2></div>",
 
-    '<div><p><b>Foo</b> Bar <b>Baz</b></p></div>',
-    '<div><p><b>Foo</b> Car <b>Baz</b></p></div>',
+    "<div><p><b>Foo</b> Bar <b>Baz</b></p></div>",
+    "<div><p><b>Foo</b> Car <b>Baz</b></p></div>",
 
     '<div data-fisher="K7hI" data-test="u6" class="y"><i class="zCLG"><img><b class="78q0" data-fisher="fpn"><img>zSK</b><i class="H" data-id="GGQkeN1p" data-fisher="EcM"><span data-id="r3" data-test="MZDE"><img><span class="aUR2AC" data-id="psHs" data-fisher="DJF">xl</span></span><p data-test="dzBl"></p>X</i><span class="v28"></span>LuLrHE</i><span class="DP">F3gw</span><img><b data-test="xDlb" class="uLuSt" data-id="zJJW"><img></b><span data-test="Rrmt"><img>5GCo</span><img>nzt</div>',
     '<div data-fisher="87EDX" class="I1RIevCe" data-id="gsDiU"><span data-id="qRvl" data-test="Bd2Jx" class="Fme"><p class="Q3b" data-fisher="ejS"><span data-id="p"></span><img><i><i class="lK9">hjGWF</i>DvXS</i><b class="l8y3" data-test="kb" data-fisher="3iHP"></b><b data-id="1hBIDR" data-test="iPEF" data-fisher="J"></b></p><p data-id="Y" data-test="XV"></p><p class="Tl"><b data-test="v6lT" class="tSi" data-fisher="DG"><b class="SS"><b data-test="Qhm"><img>jtH1</b></b><img><i data-fisher="4d" class="ZXxT2"><i data-test="Fpvw" data-id="itc"></i>Z5FN</i></b><img><img></p><span data-fisher="Y1Ynt" class="Di"><i data-id="p7Xz" data-test="PUaR" class="mwuE3"><span></span><img>UqzVsH</i></span><p></p><b data-fisher="ZlPA"><span class="gmjEL"><p data-fisher="Fdxh" data-id="t"><i data-id="0y3a"></i></p></span>TeQ</b><p></p><span data-id="zMRoXQU" class="eE2R"><img></span></span><i data-test="bPl" data-fisher="AZBctZN"><b data-fisher="XDZNp"><p data-fisher="wz4d"><img></p><p data-fisher="SJb" data-test="8odH" class="yABhu0"></p></b><span data-fisher="Z1PHn" class="r" data-test="jj"><img><img></span><p></p>3nG</i><img>I3mrG</div>',
 
-    '<div><img><p></p><i></i><img></div>',
-    '<div><img><p>a</p><i></i><img><p></p></div>',
+    "<div><img><p></p><i></i><img></div>",
+    "<div><img><p>a</p><i></i><img><p></p></div>",
 
-    '<div><p></p><i></i><img></div>',
-    '<div><img><p>a</p><i></i><img><p></p></div>',
+    "<div><p></p><i></i><img></div>",
+    "<div><img><p>a</p><i></i><img><p></p></div>",
 
-    '<div><img><img><p></p><i></i><canvas></div>',
-    '<div><p></p><img><img><canvas></div>',
+    "<div><img><img><p></p><i></i><canvas></div>",
+    "<div><p></p><img><img><canvas></div>",
 
-    '<div><img><img><i></i></div>',
-    '<div><i></i><img><img></div>',
+    "<div><img><img><i></i></div>",
+    "<div><i></i><img><img></div>",
 
     '<div><span><b></b><img></span><img><span class="a"></span></div>',
     '<div><i></i><p id="a"></p><p class="a"></p><img><span class="a"></span></div>',
 
-    '<div><img><i></i><img></div>',
-    '<div><i></i><img><img></div>',
+    "<div><img><i></i><img></div>",
+    "<div><i></i><img><img></div>",
 
     '<div class="TBXm2"><p data-id="KVMfZ" class="Isz"></p><b data-id="5c" class="3" data-fisher="7WKUUC5"></b></div>',
     '<div data-fisher="qXQ" data-test="KD"><img><b data-id="tuKDPH6" data-test="mEHEJ0">OYVPhua9JA1ZE</b><b class="2pM" data-id="POh">b4Q</b>Qf61yc</div>',
 
-    '<div><i><p></p><i></i>a</i><p></p><img></div>',
+    "<div><i><p></p><i></i>a</i><p></p><img></div>",
     '<div><i><p></p></i><i><p class="a"></p>a</i><img></div>',
 
     '<div><span><b></b><img></span><img><span class="a"></span></div>',
@@ -60,14 +55,14 @@ const strings = [
     '<div><img><span></span><p></p><p class="a">b</p></div>',
     '<div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"></span></p></div>',
 
-    '<div><b>a</b><img><span></span><p>b</p></div>',
+    "<div><b>a</b><img><span></span><p>b</p></div>",
     '<div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"></span></p></div>',
 
     '<div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"><span></span</span></p></div>',
     '<div><img><span></span><p></p><p class="a"><span class="a"><span></span></span>c</p><p class="a"><span class="a"></span></p></div>',
 
     '<div><i class="a"></i></div>',
-    '<div><i></i><span></span>b</div>',
+    "<div><i></i><span></span>b</div>",
 
     '<div><b></b><span></span><b class="a"></b></div>',
     '<div><b></b><span></span><b><img></b><b class="b"><img></b></div>',
@@ -75,15 +70,14 @@ const strings = [
     '<div><i></i><b></b><b class="a"></b></div>',
     '<div><b></b><span></span><b><img></b><b class="b"><img></b></div>',
 
-    '<div><b></b><span></span><b><img></b><b><img></b></div>',
+    "<div><b></b><span></span><b><img></b><b><img></b></div>",
     '<div><b></b><span></span><b><img></b><b class="b"><img></b></div>',
 
-    '<div><p></p><p></p><img></div>',
-    '<div><img><p></p></div>',
+    "<div><p></p><p></p><img></div>",
+    "<div><img><p></p></div>",
 
-
-    '<div><i></i><i><img></i><img>1</div>',
-    '<div><img><i></i><b></b>1</div>',
+    "<div><i></i><i><img></i><img>1</div>",
+    "<div><img><i></i><b></b>1</div>",
 
     `<div>lol<span>ydew<i>hey</i>de</span>
     </div>`,
@@ -97,7 +91,6 @@ const strings = [
     `<div>
       <p>hello <span>fingers</span>. Welcome!</p>
     </div>`,
-
 
     `<div><span><p>tello</p><p></p></span>
     </div>`,
@@ -132,7 +125,7 @@ const strings = [
       <img>
     </div>`,
 
-    '<div><i><p><span>j0zF<b></b></span><i><span></span></i>LS</p>scKvb</i><b>vO8</b>G</div>',
+    "<div><i><p><span>j0zF<b></b></span><i><span></span></i>LS</p>scKvb</i><b>vO8</b>G</div>",
     `<div>
       <img><span></span>
     </div>`,
@@ -147,7 +140,6 @@ const strings = [
       <img>gv
       <img>
     </div>`,
-
 
     `<div>
       <p></p>
@@ -179,7 +171,6 @@ const strings = [
       <p></p><span></span>
     </div>`,
 
-
     `<div>
       <img><i></i><b></b><i></i><font></font>
       <p></p>
@@ -190,7 +181,6 @@ const strings = [
       <p></p><span></span>
       <img><i></i><b></b><i></i><font></font>
     </div>`,
-
 
     `<div>
       <img><i></i>
@@ -221,7 +211,6 @@ const strings = [
     `<div id="t2">lol
       <p>ydew<b>hey</b>de</p>
     </div>`,
-
 
     `<div>
       <p><b><i><b><i>ya</i></b><i>f</i></i><span><i></i></span>
@@ -279,7 +268,6 @@ const strings = [
       <p></p>
     </div>`,
 
-
     `<div>
       <p></p><i></i><span></span>
     </div>`,
@@ -301,14 +289,12 @@ const strings = [
       <p></p>
     </div>`,
 
-
     `<div><i></i><span></span>
       <p></p>
     </div>`,
     `<div><span></span><i></i>
       <p></p>
     </div>`,
-
 
     `<div><b><span><p></p><p><img><b></b>
       </p><b><p></p></b><i></i>
@@ -346,7 +332,7 @@ const strings = [
       <p></p>
     </div>`,
 
-    '<div>7</div>',
+    "<div>7</div>",
     `<div><i><img><i><p></p><span></span></i><span>uW<span class="dd-sep"></span>Dc</span>
       <img>
       <img>
@@ -447,29 +433,26 @@ const strings = [
       <p>desadsad</p>
     </div>`,
 
-
-
     `<div><span></span>hall<span></span></div>`,
     `<div><span></span>hallo<span></span></div>`,
 
-    '<div><select><option></option><option>A</option></select></div>',
-    '<div><select><option>A</option><option></option></select></div>',
+    "<div><select><option></option><option>A</option></select></div>",
+    "<div><select><option>A</option><option></option></select></div>",
 
-    '<div><!-- A comment --><br></div>',
-    '<div><br><!-- Another comment --></div>'
+    "<div><!-- A comment --><br></div>",
+    "<div><br><!-- Another comment --></div>",
 ]
 
-describe('string', () => {
-
-    it('can diff and patch html strings', () => {
+describe("string", () => {
+    it("can diff and patch html strings", () => {
         const dd = new DiffDOM({
             debug: true,
-            diffcap: 500
+            diffcap: 500,
         })
 
-        for (let i = 0; i < strings.length; i = i + 2) {
-            const el1Outer = document.createElement('div')
-            const el2Outer = document.createElement('div')
+        for (let i = 0; i < strings.length; i += 2) {
+            const el1Outer = document.createElement("div")
+            const el2Outer = document.createElement("div")
             el1Outer.innerHTML = strings[i]
             el2Outer.innerHTML = strings[i + 1]
             const diffs = dd.diff(el1Outer.innerHTML, el2Outer.innerHTML)
@@ -481,17 +464,18 @@ describe('string', () => {
             el1a.innerHTML = el1a.innerHTML
             expect(
                 el1a.isEqualNode(el2) ||
-                el1a.innerHTML === el2.innerHTML ||
-                JSON.stringify(nodeToObj(el1a)) === JSON.stringify(nodeToObj(el2))
+                    el1a.innerHTML === el2.innerHTML ||
+                    JSON.stringify(nodeToObj(el1a)) ===
+                        JSON.stringify(nodeToObj(el2))
             ).toBe(true)
             dd.undo(el1a, diffs)
             el1a.innerHTML = el1a.innerHTML
             expect(
                 el1a.isEqualNode(el1) ||
-                el1a.innerHTML === el1.innerHTML ||
-                JSON.stringify(nodeToObj(el1a)) === JSON.stringify(nodeToObj(el1))
+                    el1a.innerHTML === el1.innerHTML ||
+                    JSON.stringify(nodeToObj(el1a)) ===
+                        JSON.stringify(nodeToObj(el1))
             ).toBe(true)
         }
     })
-
 })
