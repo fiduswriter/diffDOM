@@ -26,7 +26,11 @@
     "homepage": "https://github.com/fiduswriter/diffDOM",
     "keywords": [
         "diff",
-        "dom"
+        "dom",
+        "vdom",
+        "vtree",
+        "patch",
+        "browser"
     ],
     "devDependencies": {
         "@babel/preset-env": "^7.19.4",
