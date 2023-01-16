@@ -2,16 +2,16 @@ import { applyDiff } from "./apply"
 
 // ===== Undo a diff =====
 
-function swap(obj, p1, p2) {
+function swap(obj: any, p1: any, p2: any) {
     const tmp = obj[p1]
     obj[p1] = obj[p2]
     obj[p2] = tmp
 }
 
 function undoDiff(
-    tree,
-    diff,
-    options // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
+    tree: any,
+    diff: any,
+    options: any // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
@@ -75,13 +75,13 @@ function undoDiff(
     }
 }
 
-export function undoDOM(tree, diffs, options) {
+export function undoDOM(tree: any, diffs: any, options: any) {
     if (!diffs.length) {
         diffs = [diffs]
     }
     diffs = diffs.slice()
     diffs.reverse()
-    diffs.forEach((diff) => {
+    diffs.forEach((diff: any) => {
         undoDiff(tree, diff, options)
     })
 }

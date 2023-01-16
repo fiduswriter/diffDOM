@@ -7,13 +7,13 @@ export class Diff {
         return JSON.stringify(this)
     }
 
-    setValue(aKey, aValue) {
+    setValue(aKey: any, aValue: any) {
         this[aKey] = aValue
         return this
     }
 }
 
-function elementDescriptors(el) {
+function elementDescriptors(el: any) {
     const output = []
     output.push(el.nodeName)
     if (el.nodeName !== "#text" && el.nodeName !== "#comment") {
@@ -34,11 +34,11 @@ function elementDescriptors(el) {
     return output
 }
 
-function findUniqueDescriptors(li) {
+function findUniqueDescriptors(li: any) {
     const uniqueDescriptors = {}
     const duplicateDescriptors = {}
 
-    li.forEach((node) => {
+    li.forEach((node: any) => {
         elementDescriptors(node).forEach((descriptor) => {
             const inUnique = descriptor in uniqueDescriptors
             const inDupes = descriptor in duplicateDescriptors
@@ -54,7 +54,7 @@ function findUniqueDescriptors(li) {
     return uniqueDescriptors
 }
 
-function uniqueInBoth(l1, l2) {
+function uniqueInBoth(l1: any, l2: any) {
     const l1Unique = findUniqueDescriptors(l1)
     const l2Unique = findUniqueDescriptors(l2)
     const inBoth = {}
@@ -68,7 +68,7 @@ function uniqueInBoth(l1, l2) {
     return inBoth
 }
 
-export function removeDone(tree) {
+export function removeDone(tree: any) {
     delete tree.outerDone
     delete tree.innerDone
     delete tree.valueDone
@@ -79,7 +79,7 @@ export function removeDone(tree) {
     }
 }
 
-export function isEqual(e1, e2) {
+export function isEqual(e1: any, e2: any) {
     if (
         !["nodeName", "value", "checked", "selected", "data"].every(
             (element) => {
@@ -123,7 +123,7 @@ export function isEqual(e1, e2) {
             return false
         }
         if (
-            !e1.childNodes.every((childNode, index) =>
+            !e1.childNodes.every((childNode: any, index: any) =>
                 isEqual(childNode, e2.childNodes[index])
             )
         ) {
@@ -135,11 +135,11 @@ export function isEqual(e1, e2) {
 }
 
 export function roughlyEqual(
-    e1,
-    e2,
-    uniqueDescriptors,
-    sameSiblings,
-    preventRecursion
+    e1: any,
+    e2: any,
+    uniqueDescriptors: any,
+    sameSiblings: any,
+    preventRecursion: any
 ) {
     if (!e1 || !e2) {
         return false
@@ -197,13 +197,13 @@ export function roughlyEqual(
 
     if (preventRecursion) {
         return nodeList1.every(
-            (element, index) => element.nodeName === nodeList2[index].nodeName
-        )
+            (element: any, index: any) => element.nodeName === nodeList2[index].nodeName
+        );
     } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
         // was not set, we must explicitly force it to true for child iterations.
         const childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2)
-        return nodeList1.every((element, index) =>
+        return nodeList1.every((element: any, index: any) =>
             roughlyEqual(
                 element,
                 nodeList2[index],
@@ -211,20 +211,20 @@ export function roughlyEqual(
                 true,
                 true
             )
-        )
+        );
     }
 }
 
-export function cloneObj(obj) {
+export function cloneObj(obj: any) {
     //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
     return JSON.parse(JSON.stringify(obj))
 }
 /**
  * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
  */
-function findCommonSubsets(c1, c2, marked1, marked2) {
+function findCommonSubsets(c1: any, c2: any, marked1: any, marked2: any) {
     let lcsSize = 0
-    let index = []
+    let index: any = []
     const c1Length = c1.length
     const c2Length = c2.length
 
@@ -239,7 +239,7 @@ function findCommonSubsets(c1, c2, marked1, marked2) {
         subsetsSame = c1Length === c2Length
 
     if (subsetsSame) {
-        c1.some((element, i) => {
+        c1.some((element: any, i: any) => {
             const c1Desc = elementDescriptors(element)
             const c2Desc = elementDescriptors(c2[i])
             if (c1Desc.length !== c2Desc.length) {
@@ -266,6 +266,7 @@ function findCommonSubsets(c1, c2, marked1, marked2) {
             if (
                 !marked1[c1Index] &&
                 !marked2[c2Index] &&
+                // @ts-expect-error TS(2554): Expected 5 arguments, but got 4.
                 roughlyEqual(
                     c1Element,
                     c2Element,
@@ -300,7 +301,7 @@ function findCommonSubsets(c1, c2, marked1, marked2) {
 /**
  * This should really be a predefined function in Array...
  */
-function makeArray(n, v) {
+function makeArray(n: any, v: any) {
     return Array(...new Array(n)).map(() => v)
 }
 
@@ -324,13 +325,13 @@ function makeArray(n, v) {
  * gaps1 = [1, true, 0, 0], gaps2 = [true, 0, 0, 1]
  *
  */
-export function getGapInformation(t1, t2, stable) {
+export function getGapInformation(t1: any, t2: any, stable: any) {
     const gaps1 = t1.childNodes ? makeArray(t1.childNodes.length, true) : []
     const gaps2 = t2.childNodes ? makeArray(t2.childNodes.length, true) : []
     let group = 0
 
     // give elements from the same subset the same group number
-    stable.forEach((subset) => {
+    stable.forEach((subset: any) => {
         const endOld = subset.oldValue + subset.length
         const endNew = subset.newValue + subset.length
 
@@ -352,7 +353,7 @@ export function getGapInformation(t1, t2, stable) {
 /**
  * Find all matching subsets, based on immediate child differences only.
  */
-export function markSubTrees(oldTree, newTree) {
+export function markSubTrees(oldTree: any, newTree: any) {
     // note: the child lists are views, and so update as we update old/newTree
     const oldChildren = oldTree.childNodes ? oldTree.childNodes : []
 
@@ -366,15 +367,19 @@ export function markSubTrees(oldTree, newTree) {
         return arguments[1]
     }
 
-    const markBoth = (i) => {
+    const markBoth = (i: any) => {
+        // @ts-expect-error TS(2339): Property 'oldValue' does not exist on type 'boolea... Remove this comment to see the full error message
         marked1[subset.oldValue + i] = true
+        // @ts-expect-error TS(2339): Property 'newValue' does not exist on type 'boolea... Remove this comment to see the full error message
         marked2[subset.newValue + i] = true
     }
 
     while (subset) {
+        // @ts-expect-error TS(2322): Type 'false | { oldValue: number; newValue: number... Remove this comment to see the full error message
         subset = findCommonSubsets(oldChildren, newChildren, marked1, marked2)
         if (subset) {
             subsets.push(subset)
+            // @ts-expect-error TS(2339): Property 'length' does not exist on type 'true'.
             const subsetArray = Array(...new Array(subset.length)).map(
                 returnIndex
             )
@@ -388,14 +393,15 @@ export function markSubTrees(oldTree, newTree) {
 }
 
 export class DiffTracker {
+    list: any;
     constructor() {
         this.list = []
     }
 
-    add(diffs) {
+    add(diffs: any) {
         this.list.push(...diffs)
     }
-    forEach(fn) {
-        this.list.forEach((li) => fn(li))
+    forEach(fn: any) {
+        this.list.forEach((li: any) => fn(li))
     }
 }

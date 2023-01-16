@@ -6,11 +6,11 @@ const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
 const empty = Object.create ? Object.create(null) : {}
 const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g
 
-function unescape(string) {
+function unescape(string: any) {
     return string
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
-        .replace(/&amp;/g, "&")
+        .replace(/&amp;/g, "&");
 }
 
 // create optimized lookup object for
@@ -35,7 +35,7 @@ const lookup = {
     wbr: true,
 }
 
-function parseTag(tag) {
+function parseTag(tag: string) {
     const res = {
         nodeName: "",
         attributes: {},
@@ -45,6 +45,7 @@ function parseTag(tag) {
     if (tagMatch) {
         res.nodeName = tagMatch[1].toUpperCase()
         if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === "/") {
+            // @ts-expect-error TS(2339): Property 'voidElement' does not exist on type '{ n... Remove this comment to see the full error message
             res.voidElement = true
         }
 
@@ -72,7 +73,6 @@ function parseTag(tag) {
                 let arr = [attr, ""]
 
                 if (attr.indexOf("=") > -1) arr = attr.split("=")
-
                 res.attributes[arr[0]] = arr[1]
                 reg.lastIndex--
             } else if (result[2])
@@ -85,11 +85,11 @@ function parseTag(tag) {
     return res
 }
 
-function parse(html, options = { components: empty }) {
-    const result = []
-    let current
+function parse(html: any, options = { components: empty }) {
+    const result: any = []
+    let current: any
     let level = -1
-    const arr = []
+    const arr: any = []
     let inComponent = false
 
     // handle text at top level
@@ -101,7 +101,7 @@ function parse(html, options = { components: empty }) {
         })
     }
 
-    html.replace(tagRE, (tag, index) => {
+    html.replace(tagRE, (tag: any, index: any) => {
         if (inComponent) {
             if (tag !== `</${current.nodeName}>`) {
                 return
@@ -210,14 +210,14 @@ function parse(html, options = { components: empty }) {
     return result[0]
 }
 
-function cleanObj(obj) {
+function cleanObj(obj: any) {
     delete obj.voidElement
     if (obj.childNodes) {
-        obj.childNodes.forEach((child) => cleanObj(child))
+        obj.childNodes.forEach((child: any) => cleanObj(child))
     }
     return obj
 }
 
-export function stringToObj(string) {
+export function stringToObj(string: any) {
     return cleanObj(parse(string))
 }

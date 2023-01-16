@@ -16,15 +16,19 @@
  * what's going on.
  */
 export class TraceLogger {
+    messages: any;
+    pad: any;
+    padding: any;
+    tick: any;
     constructor(obj = {}) {
         this.pad = "│   "
         this.padding = ""
         this.tick = 1
         this.messages = []
-        const wrapkey = (obj, key) => {
+        const wrapkey = (obj: any, key: any) => {
             // trace this function
             const oldfn = obj[key]
-            obj[key] = (...args) => {
+            obj[key] = (...args: any[]) => {
                 this.fin(key, Array.prototype.slice.call(args))
                 const result = oldfn.apply(obj, args)
                 this.fout(key, result)
@@ -37,15 +41,18 @@ export class TraceLogger {
                 wrapkey(obj, key)
             }
         }
+        // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
         this.log("┌ TRACELOG START")
     }
     // called when entering a function
-    fin(fn, args) {
+    fin(fn: any, args: any) {
         this.padding += this.pad
+        // @ts-expect-error TS(2554): Expected 0 arguments, but got 2.
         this.log(`├─> entering ${fn}`, args)
     }
     // called when exiting a function
-    fout(fn, result) {
+    fout(fn: any, result: any) {
+        // @ts-expect-error TS(2554): Expected 0 arguments, but got 2.
         this.log("│<──┘ generated return value", result)
         this.padding = this.padding.substring(
             0,
@@ -53,8 +60,8 @@ export class TraceLogger {
         )
     }
     // log message formatting
-    format(s, tick) {
-        let nf = function (t) {
+    format(s: any, tick: any) {
+        let nf = function (t: any) {
             t = `${t}`
             while (t.length < 4) {
                 t = `0${t}`
@@ -66,7 +73,7 @@ export class TraceLogger {
     // log a trace message
     log() {
         let s = Array.prototype.slice.call(arguments)
-        const stringCollapse = function (v) {
+        const stringCollapse = function (v: any) {
             if (!v) {
                 return "<falsey>"
             }

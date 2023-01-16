@@ -8,9 +8,10 @@
         "test": "tests"
     },
     "scripts": {
+        "ts-migrate": "ts-migrate",
         "test": "jest",
         "lint": "eslint src/",
-        "transpile": "rollup -c",
+        "build": "rollup -c",
         "postversion": "echo remember to run 'git push --follow-tags'",
         "prepublishOnly": "npm run lint && npm run transpile"
     },
@@ -43,6 +44,8 @@
         "jest-environment-jsdom": "^29.2.2",
         "prettier": "^2.7.1",
         "rollup": "^3.2.5",
+        "rollup-plugin-dts": "^5.1.1",
+        "rollup-plugin-typescript2": "^0.34.1",
         "updates": "^13.1.13"
     }
 }

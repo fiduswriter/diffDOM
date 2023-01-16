@@ -1,5 +1,7 @@
-export function objToNode(objNode, insideSvg, options) {
-    let node
+import {nodeType, textNodeType} from "../types"
+
+export function objToNode(objNode: nodeType, insideSvg: boolean, options: any) {
+    let node: Element
     if (objNode.nodeName === "#text") {
         node = options.document.createTextNode(objNode.data)
     } else if (objNode.nodeName === "#comment") {
@@ -25,18 +27,23 @@ export function objToNode(objNode, insideSvg, options) {
             )
         }
         if (objNode.childNodes) {
-            objNode.childNodes.forEach((childNode) =>
-                node.appendChild(objToNode(childNode, insideSvg, options))
-            )
+            // @ts-expect-error TS(2345): Argument of type '(childNode: (nodeType: any, text... Remove this comment to see the full error message
+            objNode.childNodes.forEach((childNode: (nodeType | textNodeType)) => node.appendChild(objToNode(childNode, insideSvg, options)))
         }
         if (options.valueDiffing) {
+            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'nodeType'... Remove this comment to see the full error message
             if (objNode.value) {
+                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
                 node.value = objNode.value
             }
+            // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'nodeTyp... Remove this comment to see the full error message
             if (objNode.checked) {
+                // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'Element... Remove this comment to see the full error message
                 node.checked = objNode.checked
             }
+            // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'nodeTy... Remove this comment to see the full error message
             if (objNode.selected) {
+                // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'Elemen... Remove this comment to see the full error message
                 node.selected = objNode.selected
             }
         }

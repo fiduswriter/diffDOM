@@ -1,3 +1,5 @@
+import {nodeType} from "../types"
+
 import {
     Diff,
     DiffTracker,
@@ -15,24 +17,37 @@ import { stringToObj } from "./fromString"
 // ===== Create a diff =====
 
 export class DiffFinder {
-    constructor(t1Node, t2Node, options) {
+    debug: any;
+    diffcount: number;
+    foundAll: boolean;
+    options: any;
+    t1: nodeType;
+    t1Orig: nodeType;
+    t2: nodeType;
+    t2Orig: nodeType;
+    tracker: DiffTracker;
+    constructor(t1Node: (string | nodeType), t2Node: (string | nodeType), options: any) {
         this.options = options
         this.t1 =
             typeof HTMLElement !== "undefined" && t1Node instanceof HTMLElement
                 ? nodeToObj(t1Node, this.options)
                 : typeof t1Node === "string"
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 2.
                 ? stringToObj(t1Node, this.options)
                 : JSON.parse(JSON.stringify(t1Node))
         this.t2 =
             typeof HTMLElement !== "undefined" && t2Node instanceof HTMLElement
                 ? nodeToObj(t2Node, this.options)
                 : typeof t2Node === "string"
+                // @ts-expect-error TS(2554): Expected 1 arguments, but got 2.
                 ? stringToObj(t2Node, this.options)
                 : JSON.parse(JSON.stringify(t2Node))
         this.diffcount = 0
         this.foundAll = false
         if (this.debug) {
+            // @ts-expect-error TS(2741): Property 'nodeName' is missing in type '{}' but re... Remove this comment to see the full error message
             this.t1Orig = nodeToObj(t1Node, this.options)
+            // @ts-expect-error TS(2322): Type '{}' is not assignable to type 'nodeType'.
             this.t2Orig = nodeToObj(t2Node, this.options)
         }
 
@@ -43,7 +58,7 @@ export class DiffFinder {
         return this.findDiffs(this.t1, this.t2)
     }
 
-    findDiffs(t1, t2) {
+    findDiffs(t1: nodeType, t2: nodeType) {
         let diffs
         do {
             if (this.options.debug) {
@@ -82,7 +97,7 @@ export class DiffFinder {
         return this.tracker.list
     }
 
-    findNextDiff(t1, t2, route) {
+    findNextDiff(t1: any, t2: any, route: any) {
         let diffs
         let fdiffs
 
@@ -129,7 +144,7 @@ export class DiffFinder {
         return []
     }
 
-    findOuterDiff(t1, t2, route) {
+    findOuterDiff(t1: any, t2: any, route: any) {
         const diffs = []
         let attr
         let attr1
@@ -261,14 +276,14 @@ export class DiffFinder {
         return diffs
     }
 
-    findInnerDiff(t1, t2, route) {
+    findInnerDiff(t1: any, t2: any, route: any) {
         const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
         const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
         const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
         let childNodesLengthDifference = Math.abs(
             t1ChildNodes.length - t2ChildNodes.length
         )
-        let diffs = []
+        let diffs: any = []
         let index = 0
         if (!this.options.maxChildCount || last < this.options.maxChildCount) {
             const cachedSubtrees = t1.subsets && t1.subsetsAge--
@@ -477,7 +492,7 @@ export class DiffFinder {
         return diffs
     }
 
-    attemptGroupRelocation(t1, t2, subtrees, route, cachedSubtrees) {
+    attemptGroupRelocation(t1: any, t2: any, subtrees: any, route: any, cachedSubtrees: any) {
         /* Either t1.childNodes and t2.childNodes have the same length, or
          * there are at least two groups of similar elements can be found.
          * attempts are made at equalizing t1 with t2. First all initial
@@ -673,7 +688,7 @@ export class DiffFinder {
         return diffs
     }
 
-    findValueDiff(t1, t2, route) {
+    findValueDiff(t1: any, t2: any, route: any) {
         // Differences of value. Only useful if the value/selection/checked value
         // differs from what is represented in the DOM. For example in the case
         // of filled out forms, etc.

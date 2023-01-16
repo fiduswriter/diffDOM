@@ -1,8 +1,10 @@
+import {nodeType} from "../types"
+
 import { cloneObj } from "./helpers"
 
 // ===== Apply a virtual diff =====
 
-function getFromVirtualRoute(tree, route) {
+function getFromVirtualRoute(tree: nodeType, route: any) {
     let node = tree
     let parentNode
     let nodeIndex
@@ -14,6 +16,7 @@ function getFromVirtualRoute(tree, route) {
         }
         nodeIndex = route.splice(0, 1)[0]
         parentNode = node
+        // @ts-expect-error TS(2322): Type 'nodeType | textNodeType' is not assignable t... Remove this comment to see the full error message
         node = node.childNodes[nodeIndex]
     }
     return {
@@ -24,15 +27,18 @@ function getFromVirtualRoute(tree, route) {
 }
 
 function applyVirtualDiff(
-    tree,
-    diff,
-    options // {preVirtualDiffApply, postVirtualDiffApply, _const}
+    tree: any,
+    diff: any,
+    options: any // {preVirtualDiffApply, postVirtualDiffApply, _const}
 ) {
     const routeInfo = getFromVirtualRoute(tree, diff[options._const.route])
+    // @ts-expect-error TS(2339): Property 'node' does not exist on type 'false | { ... Remove this comment to see the full error message
     let node = routeInfo.node
+    // @ts-expect-error TS(2339): Property 'parentNode' does not exist on type 'fals... Remove this comment to see the full error message
     const parentNode = routeInfo.parentNode
+    // @ts-expect-error TS(2339): Property 'nodeIndex' does not exist on type 'false... Remove this comment to see the full error message
     const nodeIndex = routeInfo.nodeIndex
-    const newSubsets = []
+    const newSubsets: any = []
 
     // pre-diff hook
     const info = {
@@ -47,7 +53,7 @@ function applyVirtualDiff(
     let newNode
     let nodeArray
     let route
-    let c
+    let c: any
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
             if (!node.attributes) {
@@ -118,11 +124,10 @@ function applyVirtualDiff(
             nodeArray = node.childNodes
                 .splice(diff[options._const.from], diff.groupLength)
                 .reverse()
-            nodeArray.forEach((movedNode) =>
-                node.childNodes.splice(diff[options._const.to], 0, movedNode)
+            nodeArray.forEach((movedNode: any) => node.childNodes.splice(diff[options._const.to], 0, movedNode)
             )
             if (node.subsets) {
-                node.subsets.forEach((map) => {
+                node.subsets.forEach((map: any) => {
                     if (
                         diff[options._const.from] < diff[options._const.to] &&
                         map.oldValue <= diff[options._const.to] &&
@@ -171,7 +176,7 @@ function applyVirtualDiff(
         case options._const.removeElement:
             parentNode.childNodes.splice(nodeIndex, 1)
             if (parentNode.subsets) {
-                parentNode.subsets.forEach((map) => {
+                parentNode.subsets.forEach((map: any) => {
                     if (map.oldValue > nodeIndex) {
                         map.oldValue -= 1
                     } else if (map.oldValue === nodeIndex) {
@@ -200,6 +205,7 @@ function applyVirtualDiff(
         case options._const.addElement:
             route = diff[options._const.route].slice()
             c = route.splice(route.length - 1, 1)[0]
+            // @ts-expect-error TS(2339): Property 'node' does not exist on type 'false | { ... Remove this comment to see the full error message
             node = getFromVirtualRoute(tree, route).node
             newNode = cloneObj(diff[options._const.element])
             newNode.outerDone = true
@@ -216,7 +222,7 @@ function applyVirtualDiff(
                 node.childNodes.splice(c, 0, newNode)
             }
             if (node.subsets) {
-                node.subsets.forEach((map) => {
+                node.subsets.forEach((map: any) => {
                     if (map.oldValue >= c) {
                         map.oldValue += 1
                     } else if (
@@ -240,7 +246,7 @@ function applyVirtualDiff(
                 delete parentNode.value
             }
             if (parentNode.subsets) {
-                parentNode.subsets.forEach((map) => {
+                parentNode.subsets.forEach((map: any) => {
                     if (map.oldValue > nodeIndex) {
                         map.oldValue -= 1
                     } else if (map.oldValue === nodeIndex) {
@@ -272,6 +278,7 @@ function applyVirtualDiff(
             newNode = {}
             newNode.nodeName = "#text"
             newNode.data = diff[options._const.value]
+            // @ts-expect-error TS(2339): Property 'node' does not exist on type 'false | { ... Remove this comment to see the full error message
             node = getFromVirtualRoute(tree, route).node
             if (!node.childNodes) {
                 node.childNodes = []
@@ -286,7 +293,7 @@ function applyVirtualDiff(
                 node.value = diff[options._const.newValue]
             }
             if (node.subsets) {
-                node.subsets.forEach((map) => {
+                node.subsets.forEach((map: any) => {
                     if (map.oldValue >= c) {
                         map.oldValue += 1
                     }
@@ -308,7 +315,7 @@ function applyVirtualDiff(
 
     if (node.subsets) {
         node.subsets = node.subsets.filter(
-            (map) => !map.delete && map.oldValue !== map.newValue
+            (map: any) => !map.delete && map.oldValue !== map.newValue
         )
         if (newSubsets.length) {
             node.subsets = node.subsets.concat(newSubsets)
@@ -316,14 +323,15 @@ function applyVirtualDiff(
     }
 
     // capture newNode for the callback
+    // @ts-expect-error TS(2339): Property 'newNode' does not exist on type '{ diff:... Remove this comment to see the full error message
     info.newNode = newNode
     options.postVirtualDiffApply(info)
 
     return
 }
 
-export function applyVirtual(tree, diffs, options) {
-    diffs.forEach((diff) => {
+export function applyVirtual(tree: any, diffs: any, options: any) {
+    diffs.forEach((diff: any) => {
         applyVirtualDiff(tree, diff, options)
     })
     return true

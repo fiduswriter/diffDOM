@@ -9,7 +9,7 @@ const DEFAULT_OPTIONS = {
     maxChildCount: 50, // False or a numeral. If set to a numeral, only does a simplified form of diffing of contents so that the number of diffs cannot be higher than the number of child nodes.
     valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
-    textDiff(node, currentValue, expectedValue, newValue) {
+    textDiff(node: any, currentValue: any, expectedValue: any, newValue: any) {
         node.data = newValue
         return
     },
@@ -29,6 +29,8 @@ const DEFAULT_OPTIONS = {
 }
 
 export class DiffDOM {
+    DiffFinder: any;
+    options: any;
     constructor(options = {}) {
         this.options = options
         // IE11 doesn't have Object.assign and buble doesn't translate object spreaders
@@ -87,15 +89,15 @@ export class DiffDOM {
         this.DiffFinder = DiffFinder
     }
 
-    apply(tree, diffs) {
+    apply(tree: any, diffs: any) {
         return applyDOM(tree, diffs, this.options)
     }
 
-    undo(tree, diffs) {
+    undo(tree: any, diffs: any) {
         return undoDOM(tree, diffs, this.options)
     }
 
-    diff(t1Node, t2Node) {
+    diff(t1Node: any, t2Node: any) {
         const finder = new this.DiffFinder(t1Node, t2Node, this.options)
         return finder.init()
     }
