@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { DiffDOM } from "../src/index"
+import { DiffDOM } from "../dist/index"
 
 function objToNode(objNode, insideSvg) {
     let node, i

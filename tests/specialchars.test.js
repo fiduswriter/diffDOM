@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { DiffDOM, nodeToObj, stringToObj } from "../src/index"
+import { DiffDOM, nodeToObj, stringToObj } from "../dist/index"
 
 const strings = [
     "<div>Elephant &gt; Fish</div>",

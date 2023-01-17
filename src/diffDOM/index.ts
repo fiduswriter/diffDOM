@@ -26,6 +26,7 @@ const DEFAULT_OPTIONS = {
         typeof window !== "undefined" && window.document
             ? window.document
             : false,
+    components: [], // list of components used for converting from string
 }
 
 export class DiffDOM {

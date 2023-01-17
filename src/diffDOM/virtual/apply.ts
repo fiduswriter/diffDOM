@@ -4,7 +4,7 @@ import { cloneObj } from "./helpers"
 
 // ===== Apply a virtual diff =====
 
-function getFromVirtualRoute(tree: nodeType, route: any) {
+function getFromVirtualRoute(tree: nodeType, route: number[]) {
     let node = tree
     let parentNode
     let nodeIndex
@@ -16,7 +16,6 @@ function getFromVirtualRoute(tree: nodeType, route: any) {
         }
         nodeIndex = route.splice(0, 1)[0]
         parentNode = node
-        // @ts-expect-error TS(2322): Type 'nodeType | textNodeType' is not assignable t... Remove this comment to see the full error message
         node = node.childNodes[nodeIndex]
     }
     return {
@@ -27,7 +26,7 @@ function getFromVirtualRoute(tree: nodeType, route: any) {
 }
 
 function applyVirtualDiff(
-    tree: any,
+    tree: nodeType,
     diff: any,
     options: any // {preVirtualDiffApply, postVirtualDiffApply, _const}
 ) {
@@ -330,7 +329,7 @@ function applyVirtualDiff(
     return
 }
 
-export function applyVirtual(tree: any, diffs: any, options: any) {
+export function applyVirtual(tree: nodeType, diffs: any, options: any) {
     diffs.forEach((diff: any) => {
         applyVirtualDiff(tree, diff, options)
     })

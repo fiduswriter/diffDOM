@@ -17,7 +17,7 @@ import { stringToObj } from "./fromString"
 // ===== Create a diff =====
 
 export class DiffFinder {
-    debug: any;
+    debug: boolean;
     diffcount: number;
     foundAll: boolean;
     options: any;

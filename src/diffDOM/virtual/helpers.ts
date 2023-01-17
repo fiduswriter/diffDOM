@@ -1,3 +1,9 @@
+import {
+    anyNodeType,
+    nodeType,
+    textNodeType
+} from "../types"
+
 export class Diff {
     constructor(options = {}) {
         Object.entries(options).forEach(([key, value]) => (this[key] = value))
@@ -13,10 +19,11 @@ export class Diff {
     }
 }
 
-function elementDescriptors(el: any) {
+function elementDescriptors(el: anyNodeType) {
     const output = []
     output.push(el.nodeName)
     if (el.nodeName !== "#text" && el.nodeName !== "#comment") {
+        el = el as nodeType
         if (el.attributes) {
             if (el.attributes["class"]) {
                 output.push(
@@ -239,7 +246,7 @@ function findCommonSubsets(c1: any, c2: any, marked1: any, marked2: any) {
         subsetsSame = c1Length === c2Length
 
     if (subsetsSame) {
-        c1.some((element: any, i: any) => {
+        c1.some((element: any, i: number) => {
             const c1Desc = elementDescriptors(element)
             const c2Desc = elementDescriptors(c2[i])
             if (c1Desc.length !== c2Desc.length) {
@@ -353,7 +360,7 @@ export function getGapInformation(t1: any, t2: any, stable: any) {
 /**
  * Find all matching subsets, based on immediate child differences only.
  */
-export function markSubTrees(oldTree: any, newTree: any) {
+export function markSubTrees(oldTree: nodeType, newTree: nodeType) {
     // note: the child lists are views, and so update as we update old/newTree
     const oldChildren = oldTree.childNodes ? oldTree.childNodes : []
 
@@ -405,3 +412,5 @@ export class DiffTracker {
         this.list.forEach((li: any) => fn(li))
     }
 }
+
+//export const elementHasValue = (element: Element) : boolean => element instanceof HTMLButtonElement || element instanceof HTMLDataElement || element instanceof HTMLInputElement || element instanceof HTMLLIElement || element instanceof HTMLMeterElement || element instanceof HTMLOptionElement || element instanceof HTMLProgressElement || element instanceof HTMLParamElement
