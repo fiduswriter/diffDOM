@@ -1,5 +1,3 @@
-import {nodeType} from "../types"
-
 import {
     Diff,
     DiffTracker,
@@ -12,34 +10,37 @@ import {
 } from "./helpers"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
+import { nodeType } from "../types"
 import { stringToObj } from "./fromString"
 
 // ===== Create a diff =====
 
 export class DiffFinder {
-    debug: boolean;
-    diffcount: number;
-    foundAll: boolean;
-    options: any;
-    t1: nodeType;
-    t1Orig: nodeType;
-    t2: nodeType;
-    t2Orig: nodeType;
-    tracker: DiffTracker;
-    constructor(t1Node: (string | nodeType), t2Node: (string | nodeType), options: any) {
+    debug: boolean
+    diffcount: number
+    foundAll: boolean
+    options: any
+    t1: nodeType
+    t1Orig: nodeType
+    t2: nodeType
+    t2Orig: nodeType
+    tracker: DiffTracker
+    constructor(
+        t1Node: string | nodeType,
+        t2Node: string | nodeType,
+        options: any
+    ) {
         this.options = options
-        this.t1 =
-            typeof HTMLElement !== "undefined" && t1Node instanceof HTMLElement
+        this.t1
+            = typeof HTMLElement !== "undefined" && t1Node instanceof HTMLElement
                 ? nodeToObj(t1Node, this.options)
                 : typeof t1Node === "string"
-                // @ts-expect-error TS(2554): Expected 1 arguments, but got 2.
                 ? stringToObj(t1Node, this.options)
                 : JSON.parse(JSON.stringify(t1Node))
-        this.t2 =
-            typeof HTMLElement !== "undefined" && t2Node instanceof HTMLElement
+        this.t2
+            = typeof HTMLElement !== "undefined" && t2Node instanceof HTMLElement
                 ? nodeToObj(t2Node, this.options)
                 : typeof t2Node === "string"
-                // @ts-expect-error TS(2554): Expected 1 arguments, but got 2.
                 ? stringToObj(t2Node, this.options)
                 : JSON.parse(JSON.stringify(t2Node))
         this.diffcount = 0
@@ -168,9 +169,9 @@ export class DiffFinder {
             ]
         }
         if (
-            route.length &&
-            this.options.maxNodeDiffCount <
-                Math.abs(
+            route.length
+            && this.options.maxNodeDiffCount
+                < Math.abs(
                     (t1.childNodes || []).length - (t2.childNodes || []).length
                 )
         ) {
@@ -399,8 +400,8 @@ export class DiffFinder {
 
             if (e1 && e2) {
                 if (
-                    !this.options.maxChildCount ||
-                    last < this.options.maxChildCount
+                    !this.options.maxChildCount
+                    || last < this.options.maxChildCount
                 ) {
                     diffs = diffs.concat(
                         this.findNextDiff(e1, e2, route.concat(index))
@@ -492,7 +493,13 @@ export class DiffFinder {
         return diffs
     }
 
-    attemptGroupRelocation(t1: any, t2: any, subtrees: any, route: any, cachedSubtrees: any) {
+    attemptGroupRelocation(
+        t1: any,
+        t2: any,
+        subtrees: any,
+        route: any,
+        cachedSubtrees: any
+    ) {
         /* Either t1.childNodes and t2.childNodes have the same length, or
          * there are at least two groups of similar elements can be found.
          * attempts are made at equalizing t1 with t2. First all initial
@@ -518,8 +525,8 @@ export class DiffFinder {
             index1 += 1, index2 += 1
         ) {
             if (
-                cachedSubtrees &&
-                (gaps1[index2] === true || gaps2[index2] === true)
+                cachedSubtrees
+                && (gaps1[index2] === true || gaps2[index2] === true)
             ) {
                 // pass
             } else if (gaps1[index2] === true) {
@@ -529,13 +536,13 @@ export class DiffFinder {
                         if (node.data !== t2.childNodes[index2].data) {
                             testI = index1
                             while (
-                                t1.childNodes.length > testI + 1 &&
-                                t1.childNodes[testI + 1].nodeName === "#text"
+                                t1.childNodes.length > testI + 1
+                                && t1.childNodes[testI + 1].nodeName === "#text"
                             ) {
                                 testI += 1
                                 if (
-                                    t2.childNodes[index2].data ===
-                                    t1.childNodes[testI].data
+                                    t2.childNodes[index2].data
+                                    === t1.childNodes[testI].data
                                 ) {
                                     similarNode = true
                                     break
@@ -708,9 +715,9 @@ export class DiffFinder {
         }
 
         if (
-            (t1.value || t2.value) &&
-            t1.value !== t2.value &&
-            t1.nodeName !== "OPTION"
+            (t1.value || t2.value)
+            && t1.value !== t2.value
+            && t1.nodeName !== "OPTION"
         ) {
             diffs.push(
                 new Diff()

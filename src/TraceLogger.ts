@@ -16,10 +16,10 @@
  * what's going on.
  */
 export class TraceLogger {
-    messages: any;
-    pad: any;
-    padding: any;
-    tick: any;
+    messages: any
+    pad: any
+    padding: any
+    tick: any
     constructor(obj = {}) {
         this.pad = "│   "
         this.padding = ""

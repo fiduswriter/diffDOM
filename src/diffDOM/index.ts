@@ -15,10 +15,10 @@ const DEFAULT_OPTIONS = {
     },
     // empty functions were benchmarked as running faster than both
     // `f && f()` and `if (f) { f(); }`
-    preVirtualDiffApply() {},
-    postVirtualDiffApply() {},
-    preDiffApply() {},
-    postDiffApply() {},
+    preVirtualDiffApply() {}, // eslint-disable-line @typescript-eslint/no-empty-function
+    postVirtualDiffApply() {}, // eslint-disable-line @typescript-eslint/no-empty-function
+    preDiffApply() {}, // eslint-disable-line @typescript-eslint/no-empty-function
+    postDiffApply() {}, // eslint-disable-line @typescript-eslint/no-empty-function
     filterOuterDiff: null,
     compress: false, // Whether to work with compressed diffs
     _const: false, // object with strings for every change types to be used in diffs.
@@ -30,8 +30,8 @@ const DEFAULT_OPTIONS = {
 }
 
 export class DiffDOM {
-    DiffFinder: any;
-    options: any;
+    DiffFinder: any
+    options: any
     constructor(options = {}) {
         this.options = options
         // IE11 doesn't have Object.assign and buble doesn't translate object spreaders

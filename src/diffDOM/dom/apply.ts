@@ -56,8 +56,8 @@ export function applyDiff(
                 diff[options._const.newValue]
             )
             if (
-                node.nodeName === "INPUT" &&
-                diff[options._const.name] === "value"
+                node.nodeName === "INPUT"
+                && diff[options._const.name] === "value"
             ) {
                 // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
                 node.value = diff[options._const.newValue]
@@ -123,8 +123,8 @@ export function applyDiff(
             node.parentNode.replaceChild(
                 objToNode(
                     diff[options._const.newValue],
-                    diff[options._const.newValue].nodeName.toLowerCase() ===
-                        "svg",
+                    diff[options._const.newValue].nodeName.toLowerCase()
+                        === "svg",
                     options
                 ),
                 node
@@ -196,5 +196,5 @@ export function applyDiff(
 }
 
 export function applyDOM(tree: any, diffs: any, options: any) {
-    return diffs.every((diff: any) => applyDiff(tree, diff, options));
+    return diffs.every((diff: any) => applyDiff(tree, diff, options))
 }

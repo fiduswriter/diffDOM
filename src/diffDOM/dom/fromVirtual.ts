@@ -1,4 +1,4 @@
-import {nodeType, textNodeType} from "../types"
+import { nodeType, textNodeType } from "../types"
 
 export function objToNode(objNode: nodeType, insideSvg: boolean, options: any) {
     let node: Element
@@ -27,8 +27,9 @@ export function objToNode(objNode: nodeType, insideSvg: boolean, options: any) {
             )
         }
         if (objNode.childNodes) {
-            // @ts-expect-error TS(2345): Argument of type '(childNode: (nodeType: any, text... Remove this comment to see the full error message
-            objNode.childNodes.forEach((childNode: (nodeType | textNodeType)) => node.appendChild(objToNode(childNode, insideSvg, options)))
+            objNode.childNodes.forEach((childNode: nodeType | textNodeType) =>
+                node.appendChild(objToNode(childNode, insideSvg, options))
+            )
         }
         if (options.valueDiffing) {
             if (objNode.value) {

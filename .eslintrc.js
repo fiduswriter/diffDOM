@@ -4,12 +4,16 @@ module.exports = {
         es6: true,
         node: true,
     },
-    extends: ["eslint:recommended", "prettier"],
+    extends: [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+    ],
     parserOptions: {
         ecmaVersion: 2022,
         sourceType: "module",
     },
-    plugins: ["prettier"],
+    plugins: ["@typescript-eslint",],
     rules: {
         "no-console": "off",
         "accessor-pairs": "error",
@@ -205,7 +209,7 @@ module.exports = {
         "one-var": "off",
         "one-var-declaration-per-line": "error",
         "operator-assignment": ["error", "always"],
-        "operator-linebreak": "error",
+        "operator-linebreak": "off",
         "padded-blocks": "off",
         "padding-line-between-statements": "error",
         "prefer-arrow-callback": "error",
@@ -218,7 +222,7 @@ module.exports = {
         "prefer-rest-params": "off",
         "prefer-spread": "error",
         "prefer-template": "error",
-        "prettier/prettier": "error",
+    //    "prettier/prettier": "error",
         "quote-props": "off",
         quotes: "off",
         radix: "error",
@@ -257,5 +261,8 @@ module.exports = {
         "wrap-regex": "error",
         "yield-star-spacing": "error",
         yoda: ["error", "never"],
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-explicit-any": ["warn", { "ignoreRestArgs": true }],
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     }
 }

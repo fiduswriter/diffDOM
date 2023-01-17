@@ -1,6 +1,5 @@
-import {nodeType} from "../types"
-
 import { cloneObj } from "./helpers"
+import { nodeType } from "../types"
 
 // ===== Apply a virtual diff =====
 
@@ -59,24 +58,24 @@ function applyVirtualDiff(
                 node.attributes = {}
             }
 
-            node.attributes[diff[options._const.name]] =
-                diff[options._const.value]
+            node.attributes[diff[options._const.name]]
+                = diff[options._const.value]
 
             if (diff[options._const.name] === "checked") {
                 node.checked = true
             } else if (diff[options._const.name] === "selected") {
                 node.selected = true
             } else if (
-                node.nodeName === "INPUT" &&
-                diff[options._const.name] === "value"
+                node.nodeName === "INPUT"
+                && diff[options._const.name] === "value"
             ) {
                 node.value = diff[options._const.value]
             }
 
             break
         case options._const.modifyAttribute:
-            node.attributes[diff[options._const.name]] =
-                diff[options._const.newValue]
+            node.attributes[diff[options._const.name]]
+                = diff[options._const.newValue]
             break
         case options._const.removeAttribute:
             delete node.attributes[diff[options._const.name]]
@@ -90,8 +89,8 @@ function applyVirtualDiff(
             } else if (diff[options._const.name] === "selected") {
                 delete node.selected
             } else if (
-                node.nodeName === "INPUT" &&
-                diff[options._const.name] === "value"
+                node.nodeName === "INPUT"
+                && diff[options._const.name] === "value"
             ) {
                 delete node.value
             }
@@ -123,18 +122,19 @@ function applyVirtualDiff(
             nodeArray = node.childNodes
                 .splice(diff[options._const.from], diff.groupLength)
                 .reverse()
-            nodeArray.forEach((movedNode: any) => node.childNodes.splice(diff[options._const.to], 0, movedNode)
+            nodeArray.forEach((movedNode: any) =>
+                node.childNodes.splice(diff[options._const.to], 0, movedNode)
             )
             if (node.subsets) {
                 node.subsets.forEach((map: any) => {
                     if (
-                        diff[options._const.from] < diff[options._const.to] &&
-                        map.oldValue <= diff[options._const.to] &&
-                        map.oldValue > diff[options._const.from]
+                        diff[options._const.from] < diff[options._const.to]
+                        && map.oldValue <= diff[options._const.to]
+                        && map.oldValue > diff[options._const.from]
                     ) {
                         map.oldValue -= diff.groupLength
-                        const splitLength =
-                            map.oldValue + map.length - diff[options._const.to]
+                        const splitLength
+                            = map.oldValue + map.length - diff[options._const.to]
                         if (splitLength > 0) {
                             // new insertion splits map.
                             newSubsets.push({
@@ -147,13 +147,13 @@ function applyVirtualDiff(
                             map.length -= splitLength
                         }
                     } else if (
-                        diff[options._const.from] > diff[options._const.to] &&
-                        map.oldValue > diff[options._const.to] &&
-                        map.oldValue < diff[options._const.from]
+                        diff[options._const.from] > diff[options._const.to]
+                        && map.oldValue > diff[options._const.to]
+                        && map.oldValue < diff[options._const.from]
                     ) {
                         map.oldValue += diff.groupLength
-                        const splitLength =
-                            map.oldValue + map.length - diff[options._const.to]
+                        const splitLength
+                            = map.oldValue + map.length - diff[options._const.to]
                         if (splitLength > 0) {
                             // new insertion splits map.
                             newSubsets.push({
@@ -181,8 +181,8 @@ function applyVirtualDiff(
                     } else if (map.oldValue === nodeIndex) {
                         map.delete = true
                     } else if (
-                        map.oldValue < nodeIndex &&
-                        map.oldValue + map.length > nodeIndex
+                        map.oldValue < nodeIndex
+                        && map.oldValue + map.length > nodeIndex
                     ) {
                         if (map.oldValue + map.length - 1 === nodeIndex) {
                             map.length--
@@ -225,8 +225,8 @@ function applyVirtualDiff(
                     if (map.oldValue >= c) {
                         map.oldValue += 1
                     } else if (
-                        map.oldValue < c &&
-                        map.oldValue + map.length > c
+                        map.oldValue < c
+                        && map.oldValue + map.length > c
                     ) {
                         const splitLength = map.oldValue + map.length - c
                         newSubsets.push({
@@ -251,8 +251,8 @@ function applyVirtualDiff(
                     } else if (map.oldValue === nodeIndex) {
                         map.delete = true
                     } else if (
-                        map.oldValue < nodeIndex &&
-                        map.oldValue + map.length > nodeIndex
+                        map.oldValue < nodeIndex
+                        && map.oldValue + map.length > nodeIndex
                     ) {
                         if (map.oldValue + map.length - 1 === nodeIndex) {
                             map.length--
