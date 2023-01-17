@@ -1,8 +1,10 @@
+import {DiffDOMOptions, nodeType} from "../types"
+
 import { objToNode } from "./fromVirtual"
 
 // ===== Apply a diff =====
 
-function getFromRoute(node: Element, route: number[]) {
+const getFromRoute = (node: Element, route: number[]) : (Element | Text | false) => {
     route = route.slice()
     while (route.length > 0) {
         if (!node.childNodes) {
@@ -16,11 +18,20 @@ function getFromRoute(node: Element, route: number[]) {
 }
 
 export function applyDiff(
-    tree: any,
+    tree: Element,
     diff: any,
-    options: any // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
+    options: DiffDOMOptions // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
-    let node = getFromRoute(tree, diff[options._const.route])
+    let node
+
+    if (![options._const.addElement, options._const.addTextElement].includes(diff[options._const.action])) {
+        // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
+        node = getFromRoute(tree, diff[options._const.route])
+        if (!node) {
+            return
+        }
+    }
+
     let newNode
     let reference: Element
     let route
@@ -39,7 +50,8 @@ export function applyDiff(
 
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
-            if (!node || !node.setAttribute) {
+
+            if (!node || !(node instanceof Element)) {
                 return false
             }
             node.setAttribute(
@@ -48,7 +60,7 @@ export function applyDiff(
             )
             break
         case options._const.modifyAttribute:
-            if (!node || !node.setAttribute) {
+            if (!node || !(node instanceof Element)) {
                 return false
             }
             node.setAttribute(
@@ -64,62 +76,52 @@ export function applyDiff(
             }
             break
         case options._const.removeAttribute:
-            if (!node || !node.removeAttribute) {
+            if (!node || !(node instanceof Element)) {
                 return false
             }
             node.removeAttribute(diff[options._const.name])
             break
         case options._const.modifyTextElement:
-            if (!node || node.nodeType !== 3) {
+            if (!node || !(node instanceof Text)) {
                 return false
             }
             options.textDiff(
                 node,
-                // @ts-expect-error TS(2339): Property 'data' does not exist on type 'Element'.
                 node.data,
                 diff[options._const.oldValue],
                 diff[options._const.newValue]
             )
             break
         case options._const.modifyValue:
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
             if (!node || typeof node.value === "undefined") {
                 return false
             }
-            // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
             node.value = diff[options._const.newValue]
             break
         case options._const.modifyComment:
-            // @ts-expect-error TS(2339): Property 'data' does not exist on type 'Element'.
-            if (!node || typeof node.data === "undefined") {
+            if (!node || !(node instanceof Comment)) {
                 return false
             }
             options.textDiff(
                 node,
-                // @ts-expect-error TS(2339): Property 'data' does not exist on type 'Element'.
                 node.data,
                 diff[options._const.oldValue],
                 diff[options._const.newValue]
             )
             break
         case options._const.modifyChecked:
-            // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'Element... Remove this comment to see the full error message
             if (!node || typeof node.checked === "undefined") {
                 return false
             }
-            // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'Element... Remove this comment to see the full error message
             node.checked = diff[options._const.newValue]
             break
         case options._const.modifySelected:
-            // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'Elemen... Remove this comment to see the full error message
             if (!node || typeof node.selected === "undefined") {
                 return false
             }
-            // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'Elemen... Remove this comment to see the full error message
             node.selected = diff[options._const.newValue]
             break
         case options._const.replaceElement:
-            // @ts-expect-error TS(2339): Property 'parentNode' does not exist on type 'fals... Remove this comment to see the full error message
             node.parentNode.replaceChild(
                 objToNode(
                     diff[options._const.newValue],
@@ -132,35 +134,31 @@ export function applyDiff(
             break
         case options._const.relocateGroup:
             nodeArray = Array(...new Array(diff.groupLength)).map(() =>
-                // @ts-expect-error TS(2339): Property 'removeChild' does not exist on type 'boo... Remove this comment to see the full error message
                 node.removeChild(node.childNodes[diff[options._const.from]])
             )
             nodeArray.forEach((childNode, index) => {
                 if (index === 0) {
-                    // @ts-expect-error TS(2339): Property 'childNodes' does not exist on type 'bool... Remove this comment to see the full error message
                     reference = node.childNodes[diff[options._const.to]]
                 }
-                // @ts-expect-error TS(2339): Property 'insertBefore' does not exist on type 'bo... Remove this comment to see the full error message
                 node.insertBefore(childNode, reference || null)
             })
             break
         case options._const.removeElement:
-            // @ts-expect-error TS(2339): Property 'parentNode' does not exist on type 'fals... Remove this comment to see the full error message
             node.parentNode.removeChild(node)
             break
         case options._const.addElement:
             route = diff[options._const.route].slice()
             c = route.splice(route.length - 1, 1)[0]
             node = getFromRoute(tree, route)
-            // @ts-expect-error TS(2339): Property 'insertBefore' does not exist on type 'fa... Remove this comment to see the full error message
+            if (!node || !(node instanceof Element)) {
+                return false
+            }
             node.insertBefore(
                 objToNode(
                     diff[options._const.element],
-                    // @ts-expect-error TS(2339): Property 'namespaceURI' does not exist on type 'fa... Remove this comment to see the full error message
                     node.namespaceURI === "http://www.w3.org/2000/svg",
                     options
                 ),
-                // @ts-expect-error TS(2339): Property 'childNodes' does not exist on type 'fals... Remove this comment to see the full error message
                 node.childNodes[c] || null
             )
             break
@@ -195,6 +193,6 @@ export function applyDiff(
     return true
 }
 
-export function applyDOM(tree: any, diffs: any, options: any) {
+export function applyDOM(tree: Element, diffs: any, options: DiffDOMOptions) {
     return diffs.every((diff: any) => applyDiff(tree, diff, options))
 }

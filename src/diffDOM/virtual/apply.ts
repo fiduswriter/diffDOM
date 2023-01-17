@@ -10,7 +10,7 @@ function getFromVirtualRoute(tree: nodeType, route: number[]) {
 
     route = route.slice()
     while (route.length > 0) {
-        if (!node.childNodes && (route.length > 1 || route[0] !== 0)) {
+        if (!node.childNodes) {
             return false
         }
         nodeIndex = route.splice(0, 1)[0]
@@ -29,14 +29,19 @@ function applyVirtualDiff(
     diff: any,
     options: any // {preVirtualDiffApply, postVirtualDiffApply, _const}
 ) {
-    const routeInfo = getFromVirtualRoute(tree, diff[options._const.route])
+    let node, parentNode, nodeIndex
 
-    if (!routeInfo) {
-        return
+    if (![options._const.addElement, options._const.addTextElement].includes(diff[options._const.action])) {
+        // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
+        const routeInfo = getFromVirtualRoute(tree, diff[options._const.route])
+        if (!routeInfo) {
+            return
+        }
+        node = routeInfo.node
+        parentNode = routeInfo.parentNode
+        nodeIndex = routeInfo.nodeIndex
     }
-    let node = routeInfo.node
-    const parentNode = routeInfo.parentNode
-    const nodeIndex = routeInfo.nodeIndex
+
     const newSubsets: any = []
 
     // pre-diff hook
