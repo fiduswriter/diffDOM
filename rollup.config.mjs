@@ -21,6 +21,7 @@ export default [
         ],
         plugins: [
             typescript({
+                //check: false,
                 useTsconfigDeclarationDir: true,
                 tsconfigDefaults: {
                     compilerOptions: {

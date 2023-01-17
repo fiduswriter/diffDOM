@@ -10,12 +10,12 @@ function getFromVirtualRoute(tree: nodeType, route: number[]) {
 
     route = route.slice()
     while (route.length > 0) {
-        if (!node.childNodes) {
+        if (!node.childNodes && (route.length > 1 || route[0] !== 0)) {
             return false
         }
         nodeIndex = route.splice(0, 1)[0]
         parentNode = node
-        node = node.childNodes[nodeIndex]
+        node = node.childNodes ? node.childNodes[nodeIndex] : undefined
     }
     return {
         node,
@@ -30,11 +30,12 @@ function applyVirtualDiff(
     options: any // {preVirtualDiffApply, postVirtualDiffApply, _const}
 ) {
     const routeInfo = getFromVirtualRoute(tree, diff[options._const.route])
-    // @ts-expect-error TS(2339): Property 'node' does not exist on type 'false | { ... Remove this comment to see the full error message
+
+    if (!routeInfo) {
+        return
+    }
     let node = routeInfo.node
-    // @ts-expect-error TS(2339): Property 'parentNode' does not exist on type 'fals... Remove this comment to see the full error message
     const parentNode = routeInfo.parentNode
-    // @ts-expect-error TS(2339): Property 'nodeIndex' does not exist on type 'false... Remove this comment to see the full error message
     const nodeIndex = routeInfo.nodeIndex
     const newSubsets: any = []
 
@@ -52,6 +53,7 @@ function applyVirtualDiff(
     let nodeArray
     let route
     let c: any
+
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
             if (!node.attributes) {
@@ -205,7 +207,11 @@ function applyVirtualDiff(
             route = diff[options._const.route].slice()
             c = route.splice(route.length - 1, 1)[0]
             // @ts-expect-error TS(2339): Property 'node' does not exist on type 'false | { ... Remove this comment to see the full error message
-            node = getFromVirtualRoute(tree, route).node
+            node = getFromVirtualRoute(tree, route)?.node
+            if (!node) {
+                return
+            }
+            //node = getFromVirtualRoute(tree, route).node
             newNode = cloneObj(diff[options._const.element])
             newNode.outerDone = true
             newNode.innerDone = true

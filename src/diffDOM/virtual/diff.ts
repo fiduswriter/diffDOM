@@ -26,19 +26,19 @@ export class DiffFinder {
     t2Orig: nodeType
     tracker: DiffTracker
     constructor(
-        t1Node: string | nodeType,
-        t2Node: string | nodeType,
+        t1Node: string | nodeType | Element,
+        t2Node: string | nodeType | Element,
         options: any
     ) {
         this.options = options
         this.t1 =
-            typeof HTMLElement !== "undefined" && t1Node instanceof HTMLElement
+            typeof HTMLElement !== "undefined" && t1Node instanceof Element
                 ? nodeToObj(t1Node, this.options)
                 : typeof t1Node === "string"
                 ? stringToObj(t1Node, this.options)
                 : JSON.parse(JSON.stringify(t1Node))
         this.t2 =
-            typeof HTMLElement !== "undefined" && t2Node instanceof HTMLElement
+            typeof HTMLElement !== "undefined" && t2Node instanceof Element
                 ? nodeToObj(t2Node, this.options)
                 : typeof t2Node === "string"
                 ? stringToObj(t2Node, this.options)
