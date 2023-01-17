@@ -8,12 +8,13 @@ module.exports = {
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
+        "prettier",
     ],
     parserOptions: {
         ecmaVersion: 2022,
         sourceType: "module",
     },
-    plugins: ["@typescript-eslint",],
+    plugins: ["prettier", "@typescript-eslint",],
     rules: {
         "no-console": "off",
         "accessor-pairs": "error",
@@ -222,7 +223,7 @@ module.exports = {
         "prefer-rest-params": "off",
         "prefer-spread": "error",
         "prefer-template": "error",
-    //    "prettier/prettier": "error",
+        "prettier/prettier": "error",
         "quote-props": "off",
         quotes: "off",
         radix: "error",

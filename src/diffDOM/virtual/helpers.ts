@@ -175,8 +175,8 @@ export function roughlyEqual(
             }
         }
         if (
-            e1.attributes["class"]
-            && e1.attributes["class"] === e2.attributes["class"]
+            e1.attributes["class"] &&
+            e1.attributes["class"] === e2.attributes["class"]
         ) {
             const classDescriptor = `${e1.nodeName}.${e1.attributes[
                 "class"
@@ -268,10 +268,10 @@ function findCommonSubsets(c1: any, c2: any, marked1: any, marked2: any) {
         for (let c2Index = 0; c2Index < c2Length; c2Index++) {
             const c2Element = c2[c2Index]
             if (
-                !marked1[c1Index]
-                && !marked2[c2Index]
+                !marked1[c1Index] &&
+                !marked2[c2Index] &&
                 // @ts-expect-error TS(2554): Expected 5 arguments, but got 4.
-                && roughlyEqual(
+                roughlyEqual(
                     c1Element,
                     c2Element,
                     uniqueDescriptors,

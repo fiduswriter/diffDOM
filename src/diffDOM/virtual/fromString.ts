@@ -147,17 +147,17 @@ export const stringToObj = (html: string, options = { components: empty }) => {
             current = parseTag(tag)
             level++
             if (
-                current.type === "tag"
-                && options.components[current.node.nodeName]
+                current.type === "tag" &&
+                options.components[current.node.nodeName]
             ) {
                 current.type = "component"
                 inComponent = true
             }
             if (
-                !current.voidElement
-                && !inComponent
-                && nextChar
-                && nextChar !== "<"
+                !current.voidElement &&
+                !inComponent &&
+                nextChar &&
+                nextChar !== "<"
             ) {
                 if (!current.node.childNodes) {
                     current.node.childNodes = []
@@ -184,9 +184,9 @@ export const stringToObj = (html: string, options = { components: empty }) => {
         }
         if (!isOpen || current.voidElement) {
             if (
-                level > -1
-                && (current.voidElement
-                    || current.node.nodeName === tag.slice(2, -1).toUpperCase())
+                level > -1 &&
+                (current.voidElement ||
+                    current.node.nodeName === tag.slice(2, -1).toUpperCase())
             ) {
                 level--
                 // move current up a level to match the end tag
@@ -198,8 +198,8 @@ export const stringToObj = (html: string, options = { components: empty }) => {
                 // trailing text node
                 // if we're at the root, push a base text node. otherwise add as
                 // a child to the current node.
-                const childNodes
-                    = level === -1 ? result : arr[level].node.childNodes || []
+                const childNodes =
+                    level === -1 ? result : arr[level].node.childNodes || []
 
                 // calculate correct end of the data slice in case there's
                 // no tag after the text node.

@@ -31,14 +31,14 @@ export class DiffFinder {
         options: any
     ) {
         this.options = options
-        this.t1
-            = typeof HTMLElement !== "undefined" && t1Node instanceof HTMLElement
+        this.t1 =
+            typeof HTMLElement !== "undefined" && t1Node instanceof HTMLElement
                 ? nodeToObj(t1Node, this.options)
                 : typeof t1Node === "string"
                 ? stringToObj(t1Node, this.options)
                 : JSON.parse(JSON.stringify(t1Node))
-        this.t2
-            = typeof HTMLElement !== "undefined" && t2Node instanceof HTMLElement
+        this.t2 =
+            typeof HTMLElement !== "undefined" && t2Node instanceof HTMLElement
                 ? nodeToObj(t2Node, this.options)
                 : typeof t2Node === "string"
                 ? stringToObj(t2Node, this.options)
@@ -169,9 +169,9 @@ export class DiffFinder {
             ]
         }
         if (
-            route.length
-            && this.options.maxNodeDiffCount
-                < Math.abs(
+            route.length &&
+            this.options.maxNodeDiffCount <
+                Math.abs(
                     (t1.childNodes || []).length - (t2.childNodes || []).length
                 )
         ) {
@@ -400,8 +400,8 @@ export class DiffFinder {
 
             if (e1 && e2) {
                 if (
-                    !this.options.maxChildCount
-                    || last < this.options.maxChildCount
+                    !this.options.maxChildCount ||
+                    last < this.options.maxChildCount
                 ) {
                     diffs = diffs.concat(
                         this.findNextDiff(e1, e2, route.concat(index))
@@ -525,8 +525,8 @@ export class DiffFinder {
             index1 += 1, index2 += 1
         ) {
             if (
-                cachedSubtrees
-                && (gaps1[index2] === true || gaps2[index2] === true)
+                cachedSubtrees &&
+                (gaps1[index2] === true || gaps2[index2] === true)
             ) {
                 // pass
             } else if (gaps1[index2] === true) {
@@ -536,13 +536,13 @@ export class DiffFinder {
                         if (node.data !== t2.childNodes[index2].data) {
                             testI = index1
                             while (
-                                t1.childNodes.length > testI + 1
-                                && t1.childNodes[testI + 1].nodeName === "#text"
+                                t1.childNodes.length > testI + 1 &&
+                                t1.childNodes[testI + 1].nodeName === "#text"
                             ) {
                                 testI += 1
                                 if (
-                                    t2.childNodes[index2].data
-                                    === t1.childNodes[testI].data
+                                    t2.childNodes[index2].data ===
+                                    t1.childNodes[testI].data
                                 ) {
                                     similarNode = true
                                     break
@@ -715,9 +715,9 @@ export class DiffFinder {
         }
 
         if (
-            (t1.value || t2.value)
-            && t1.value !== t2.value
-            && t1.nodeName !== "OPTION"
+            (t1.value || t2.value) &&
+            t1.value !== t2.value &&
+            t1.nodeName !== "OPTION"
         ) {
             diffs.push(
                 new Diff()

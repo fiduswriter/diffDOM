@@ -5,7 +5,7 @@ export function nodeToObj(aNode: Element, options = {}) {
         nodeName: aNode.nodeName,
     }
     if (aNode instanceof Text || aNode instanceof Comment) {
-        (objNode as unknown as textNodeType).data = aNode.data
+        ;(objNode as unknown as textNodeType).data = aNode.data
     } else {
         if (aNode.attributes && aNode.attributes.length > 0) {
             objNode.attributes = {}
@@ -27,20 +27,20 @@ export function nodeToObj(aNode: Element, options = {}) {
         // @ts-expect-error TS(2339): Property 'valueDiffing' does not exist on type '{}... Remove this comment to see the full error message
         if (options.valueDiffing) {
             if (
-                aNode instanceof HTMLInputElement
-                && ["radio", "checkbox"].includes(aNode.type.toLowerCase())
-                && aNode.checked !== undefined
+                aNode instanceof HTMLInputElement &&
+                ["radio", "checkbox"].includes(aNode.type.toLowerCase()) &&
+                aNode.checked !== undefined
             ) {
                 objNode.checked = aNode.checked
             } else if (
-                aNode instanceof HTMLButtonElement
-                || aNode instanceof HTMLDataElement
-                || aNode instanceof HTMLInputElement
-                || aNode instanceof HTMLLIElement
-                || aNode instanceof HTMLMeterElement
-                || aNode instanceof HTMLOptionElement
-                || aNode instanceof HTMLProgressElement
-                || aNode instanceof HTMLParamElement
+                aNode instanceof HTMLButtonElement ||
+                aNode instanceof HTMLDataElement ||
+                aNode instanceof HTMLInputElement ||
+                aNode instanceof HTMLLIElement ||
+                aNode instanceof HTMLMeterElement ||
+                aNode instanceof HTMLOptionElement ||
+                aNode instanceof HTMLProgressElement ||
+                aNode instanceof HTMLParamElement
             ) {
                 objNode.value = aNode.value
             }
