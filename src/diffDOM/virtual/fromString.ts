@@ -1,3 +1,5 @@
+import { nodeType } from "../types"
+
 // from html-parse-stringify (MIT)
 
 const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
@@ -6,7 +8,7 @@ const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
 const empty = Object.create ? Object.create(null) : {}
 const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g
 
-function unescape(string) {
+function unescape(string: string) {
     return string
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
@@ -35,17 +37,19 @@ const lookup = {
     wbr: true,
 }
 
-function parseTag(tag) {
+const parseTag = (tag: string) => {
     const res = {
         nodeName: "",
         attributes: {},
     }
+    let voidElement = false
+    let type = "tag"
 
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if (tagMatch) {
         res.nodeName = tagMatch[1].toUpperCase()
         if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === "/") {
-            res.voidElement = true
+            voidElement = true
         }
 
         // handle comment tag
@@ -53,7 +57,11 @@ function parseTag(tag) {
             const endIndex = tag.indexOf("-->")
             return {
                 type: "comment",
-                data: endIndex !== -1 ? tag.slice(4, endIndex) : "",
+                node: {
+                    nodeName: "#comment",
+                    data: endIndex !== -1 ? tag.slice(4, endIndex) : "",
+                },
+                voidElement,
             }
         }
     }
@@ -72,7 +80,6 @@ function parseTag(tag) {
                 let arr = [attr, ""]
 
                 if (attr.indexOf("=") > -1) arr = attr.split("=")
-
                 res.attributes[arr[0]] = arr[1]
                 reg.lastIndex--
             } else if (result[2])
@@ -82,14 +89,18 @@ function parseTag(tag) {
         }
     }
 
-    return res
+    return {
+        type,
+        node: res,
+        voidElement,
+    }
 }
 
-function parse(html, options = { components: empty }) {
-    const result = []
-    let current
+export const stringToObj = (html: string, options = { components: empty }) => {
+    const result: nodeType[] = []
+    let current: { type: string; node: nodeType; voidElement: boolean }
     let level = -1
-    const arr = []
+    const arr: { type: string; node: nodeType; voidElement: boolean }[] = []
     let inComponent = false
 
     // handle text at top level
@@ -101,10 +112,10 @@ function parse(html, options = { components: empty }) {
         })
     }
 
-    html.replace(tagRE, (tag, index) => {
+    html.replace(tagRE, (tag: string, index: number) => {
         if (inComponent) {
-            if (tag !== `</${current.nodeName}>`) {
-                return
+            if (tag !== `</${current.node.nodeName}>`) {
+                return ""
             } else {
                 inComponent = false
             }
@@ -113,25 +124,23 @@ function parse(html, options = { components: empty }) {
         const isComment = tag.startsWith("<!--")
         const start = index + tag.length
         const nextChar = html.charAt(start)
-        let parent
 
         if (isComment) {
-            const comment = parseTag(tag)
+            const comment = parseTag(tag).node
 
             // if we're at root, push new base node
             if (level < 0) {
                 result.push(comment)
-                return result
+                return ""
             }
-            parent = arr[level]
+            const parent = arr[level]
             if (parent) {
-                if (!parent.childNodes) {
-                    parent.childNodes = []
+                if (!parent.node.childNodes) {
+                    parent.node.childNodes = []
                 }
-                parent.childNodes.push(comment)
+                parent.node.childNodes.push(comment)
             }
-
-            return result
+            return ""
         }
 
         if (isOpen) {
@@ -139,59 +148,58 @@ function parse(html, options = { components: empty }) {
             level++
             if (
                 current.type === "tag" &&
-                options.components[current.nodeName]
+                options.components[current.node.nodeName]
             ) {
                 current.type = "component"
                 inComponent = true
             }
-
             if (
                 !current.voidElement &&
                 !inComponent &&
                 nextChar &&
                 nextChar !== "<"
             ) {
-                if (!current.childNodes) {
-                    current.childNodes = []
+                if (!current.node.childNodes) {
+                    current.node.childNodes = []
                 }
-                current.childNodes.push({
+                current.node.childNodes.push({
                     nodeName: "#text",
                     data: unescape(html.slice(start, html.indexOf("<", start))),
                 })
             }
-
             // if we're at root, push new base node
             if (level === 0) {
-                result.push(current)
+                result.push(current.node)
             }
 
-            parent = arr[level - 1]
+            const parent = arr[level - 1]
 
             if (parent) {
-                if (!parent.childNodes) {
-                    parent.childNodes = []
+                if (!parent.node.childNodes) {
+                    parent.node.childNodes = []
                 }
-                parent.childNodes.push(current)
+                parent.node.childNodes.push(current.node)
             }
-
             arr[level] = current
         }
-
         if (!isOpen || current.voidElement) {
             if (
                 level > -1 &&
                 (current.voidElement ||
-                    current.nodeName === tag.slice(2, -1).toUpperCase())
+                    current.node.nodeName === tag.slice(2, -1).toUpperCase())
             ) {
                 level--
                 // move current up a level to match the end tag
-                current = level === -1 ? result : arr[level]
+                if (level > -1) {
+                    current = arr[level]
+                }
             }
             if (!inComponent && nextChar !== "<" && nextChar) {
                 // trailing text node
                 // if we're at the root, push a base text node. otherwise add as
                 // a child to the current node.
-                parent = level === -1 ? result : arr[level].childNodes || []
+                const childNodes =
+                    level === -1 ? result : arr[level].node.childNodes || []
 
                 // calculate correct end of the data slice in case there's
                 // no tag after the text node.
@@ -199,25 +207,13 @@ function parse(html, options = { components: empty }) {
                 let data = unescape(
                     html.slice(start, end === -1 ? undefined : end)
                 )
-                parent.push({
+                childNodes.push({
                     nodeName: "#text",
                     data,
                 })
             }
         }
+        return ""
     })
-
     return result[0]
-}
-
-function cleanObj(obj) {
-    delete obj.voidElement
-    if (obj.childNodes) {
-        obj.childNodes.forEach((child) => cleanObj(child))
-    }
-    return obj
-}
-
-export function stringToObj(string) {
-    return cleanObj(parse(string))
 }

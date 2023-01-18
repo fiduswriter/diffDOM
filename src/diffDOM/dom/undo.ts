@@ -1,17 +1,19 @@
+import { DiffDOMOptions, diffType } from "../types"
+import { Diff } from "../helpers"
 import { applyDiff } from "./apply"
 
 // ===== Undo a diff =====
 
-function swap(obj, p1, p2) {
+function swap(obj: object, p1: string | number, p2: string | number) {
     const tmp = obj[p1]
     obj[p1] = obj[p2]
     obj[p2] = tmp
 }
 
 function undoDiff(
-    tree,
-    diff,
-    options // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
+    tree: Element,
+    diff: diffType,
+    options: DiffDOMOptions // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
@@ -75,13 +77,14 @@ function undoDiff(
     }
 }
 
-export function undoDOM(tree, diffs, options) {
-    if (!diffs.length) {
-        diffs = [diffs]
-    }
+export function undoDOM(
+    tree: Element,
+    diffs: (diffType | Diff)[],
+    options: DiffDOMOptions
+) {
     diffs = diffs.slice()
     diffs.reverse()
-    diffs.forEach((diff) => {
-        undoDiff(tree, diff, options)
+    diffs.forEach((diff: diffType | Diff) => {
+        undoDiff(tree, diff as diffType, options)
     })
 }
