@@ -1,7 +1,11 @@
 import { DiffDOMOptions, nodeType, textNodeType } from "../types"
 
-export function objToNode(objNode: nodeType, insideSvg: boolean, options: DiffDOMOptions) {
-    let node: (Element | Text | Comment)
+export function objToNode(
+    objNode: nodeType,
+    insideSvg: boolean,
+    options: DiffDOMOptions
+) {
+    let node: Element | Text | Comment
     if (objNode.nodeName === "#text") {
         node = options.document.createTextNode(objNode.data)
     } else if (objNode.nodeName === "#comment") {

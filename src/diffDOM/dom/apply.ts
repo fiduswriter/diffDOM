@@ -1,10 +1,13 @@
-import {DiffDOMOptions, nodeType} from "../types"
+import { DiffDOMOptions } from "../types"
 
 import { objToNode } from "./fromVirtual"
 
 // ===== Apply a diff =====
 
-const getFromRoute = (node: Element, route: number[]) : (Element | Text | false) => {
+const getFromRoute = (
+    node: Element,
+    route: number[]
+): Element | Text | false => {
     route = route.slice()
     while (route.length > 0) {
         if (!node.childNodes) {
@@ -24,7 +27,11 @@ export function applyDiff(
 ) {
     let node
 
-    if (![options._const.addElement, options._const.addTextElement].includes(diff[options._const.action])) {
+    if (
+        ![options._const.addElement, options._const.addTextElement].includes(
+            diff[options._const.action]
+        )
+    ) {
         // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
         node = getFromRoute(tree, diff[options._const.route])
         if (!node) {
@@ -50,7 +57,6 @@ export function applyDiff(
 
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
-
             if (!node || !(node instanceof Element)) {
                 return false
             }

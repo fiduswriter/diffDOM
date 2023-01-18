@@ -83,7 +83,6 @@ interface ConstNames {
     selected: string | number
 }
 
-
 interface DiffDOMOptions {
     debug: boolean
     diffcap: number // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
@@ -92,7 +91,7 @@ interface DiffDOMOptions {
     valueDiffing: boolean // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
     textDiff: (
-        node: (textNodeType | Text | Comment),
+        node: textNodeType | Text | Comment,
         currentValue: string,
         expectedValue: string,
         newValue: string
@@ -103,13 +102,21 @@ interface DiffDOMOptions {
     postDiffApply: PostDiffApply
     filterOuterDiff: null | ((t1, t2, diffs: Diff[]) => void | Diff[])
     compress: boolean // Whether to work with compressed diffs
-    _const: ConstNames// object with strings for every change types to be used in diffs.
+    _const: ConstNames // object with strings for every change types to be used in diffs.
     document: Document
     components: string[]
 }
 
-type DiffDOMOptionsPartial = Partial<DiffDOMOptions>;
+type DiffDOMOptionsPartial = Partial<DiffDOMOptions>
 
 type ConstNamesPartial = Partial<ConstNames>
 
-export { anyNodeType, ConstNames, ConstNamesPartial, DiffDOMOptions, DiffDOMOptionsPartial, nodeType, textNodeType }
+export {
+    anyNodeType,
+    ConstNames,
+    ConstNamesPartial,
+    DiffDOMOptions,
+    DiffDOMOptionsPartial,
+    nodeType,
+    textNodeType,
+}

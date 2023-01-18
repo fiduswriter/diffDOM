@@ -1,5 +1,6 @@
-import { applyDiff} from "./apply"
-import {DiffDOMOptions} from "../types"
+import { DiffDOMOptions } from "../types"
+import { applyDiff } from "./apply"
+
 // ===== Undo a diff =====
 
 function swap(obj: any, p1: any, p2: any) {

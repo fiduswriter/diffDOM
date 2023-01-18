@@ -8,9 +8,9 @@ import {
     removeDone,
     roughlyEqual,
 } from "./helpers"
+import { DiffDOMOptions, nodeType } from "../types"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
-import { DiffDOMOptions, nodeType } from "../types"
 import { stringToObj } from "./fromString"
 
 // ===== Create a diff =====

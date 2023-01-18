@@ -1,7 +1,5 @@
-import {DiffDOMOptions} from "../types"
-
+import { DiffDOMOptions, nodeType } from "../types"
 import { cloneObj } from "./helpers"
-import { nodeType } from "../types"
 
 // ===== Apply a virtual diff =====
 
@@ -33,7 +31,11 @@ function applyVirtualDiff(
 ) {
     let node, parentNode, nodeIndex
 
-    if (![options._const.addElement, options._const.addTextElement].includes(diff[options._const.action])) {
+    if (
+        ![options._const.addElement, options._const.addTextElement].includes(
+            diff[options._const.action]
+        )
+    ) {
         // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
         const routeInfo = getFromVirtualRoute(tree, diff[options._const.route])
         if (!routeInfo) {
@@ -342,7 +344,11 @@ function applyVirtualDiff(
     return
 }
 
-export function applyVirtual(tree: nodeType, diffs: any, options: DiffDOMOptions) {
+export function applyVirtual(
+    tree: nodeType,
+    diffs: any,
+    options: DiffDOMOptions
+) {
     diffs.forEach((diff: any) => {
         applyVirtualDiff(tree, diff, options)
     })

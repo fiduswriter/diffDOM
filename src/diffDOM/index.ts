@@ -1,9 +1,14 @@
+import {
+    ConstNames,
+    ConstNamesPartial,
+    DiffDOMOptions,
+    DiffDOMOptionsPartial,
+    nodeType,
+} from "./types"
 import { applyDOM, undoDOM } from "./dom/index"
 import { DiffFinder } from "./virtual/index"
-import {ConstNames, ConstNamesPartial, DiffDOMOptions, DiffDOMOptionsPartial, nodeType} from "./types"
 
 export { nodeToObj, stringToObj } from "./virtual/index"
-
 
 const DEFAULT_OPTIONS = {
     debug: false,
@@ -12,7 +17,12 @@ const DEFAULT_OPTIONS = {
     maxChildCount: 50, // False or a numeral. If set to a numeral, only does a simplified form of diffing of contents so that the number of diffs cannot be higher than the number of child nodes.
     valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
-    textDiff(node: nodeType, currentValue: string, expectedValue: string, newValue: string) {
+    textDiff(
+        node: nodeType,
+        currentValue: string,
+        expectedValue: string,
+        newValue: string
+    ) {
         node.data = newValue
         return
     },
@@ -34,7 +44,7 @@ const DEFAULT_OPTIONS = {
 
 export class DiffDOM {
     options: DiffDOMOptions
-    constructor(options : DiffDOMOptionsPartial = {}) {
+    constructor(options: DiffDOMOptionsPartial = {}) {
         // IE11 doesn't have Object.assign and buble doesn't translate object spreaders
         // by default, so this is the safest way of doing it currently.
         Object.entries(DEFAULT_OPTIONS).forEach(([key, value]) => {
@@ -76,21 +86,18 @@ export class DiffDOM {
                 "checked",
                 "selected",
             ]
-            const constNames : ConstNamesPartial = {}
+            const constNames: ConstNamesPartial = {}
             if (options.compress) {
                 varNames.forEach(
                     (varName, index) => (constNames[varName] = index)
                 )
             } else {
-                varNames.forEach(
-                    (varName) => (constNames[varName] = varName)
-                )
+                varNames.forEach((varName) => (constNames[varName] = varName))
             }
-            options._const = (constNames as ConstNames)
+            options._const = constNames as ConstNames
         }
 
-        this.options = (options as DiffDOMOptions)
-
+        this.options = options as DiffDOMOptions
     }
 
     apply(tree: Element, diffs: any) {
@@ -101,7 +108,10 @@ export class DiffDOM {
         return undoDOM(tree, diffs, this.options)
     }
 
-    diff(t1Node: (string | nodeType | Element), t2Node: (string | nodeType | Element)) {
+    diff(
+        t1Node: string | nodeType | Element,
+        t2Node: string | nodeType | Element
+    ) {
         const finder = new DiffFinder(t1Node, t2Node, this.options)
         return finder.init()
     }
