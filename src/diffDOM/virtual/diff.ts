@@ -8,7 +8,13 @@ import {
     removeDone,
     roughlyEqual,
 } from "./helpers"
-import { DiffDOMOptions, anyNodeType, nodeType, textNodeType } from "../types"
+import {
+    DiffDOMOptions,
+    anyNodeType,
+    nodeType,
+    subsetType,
+    textNodeType,
+} from "../types"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
 import { stringToObj } from "./fromString"
@@ -520,7 +526,7 @@ export class DiffFinder {
     attemptGroupRelocation(
         t1: nodeType,
         t2: nodeType,
-        subtrees: anyNodeType[],
+        subtrees: subsetType[],
         route: number[],
         cachedSubtrees: boolean
     ) {
@@ -676,7 +682,7 @@ export class DiffFinder {
                     return diffs
                 }
                 // group relocation
-                group = subtrees[gaps1[index2]]
+                group = subtrees[gaps1[index2] as number]
                 toGroup = Math.min(
                     group.newValue,
                     t1.childNodes.length - group.length
@@ -689,7 +695,7 @@ export class DiffFinder {
                             !roughlyEqual(
                                 t1.childNodes[toGroup + j],
                                 t1.childNodes[group.oldValue + j],
-                                [],
+                                {},
                                 false,
                                 true
                             )

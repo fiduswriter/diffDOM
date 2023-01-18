@@ -1,4 +1,4 @@
-import { anyNodeType, nodeType } from "../types"
+import { anyNodeType, nodeType, subsetType } from "../types"
 
 export class Diff {
     constructor(options = {}) {
@@ -9,7 +9,16 @@ export class Diff {
         return JSON.stringify(this)
     }
 
-    setValue(aKey: any, aValue: any) {
+    setValue(
+        aKey: string | number,
+        aValue:
+            | string
+            | number
+            | boolean
+            | number[]
+            | { [key: string]: string | { [key: string]: string } }
+            | nodeType
+    ) {
         this[aKey] = aValue
         return this
     }
@@ -37,11 +46,11 @@ function elementDescriptors(el: anyNodeType) {
     return output
 }
 
-function findUniqueDescriptors(li: any) {
+function findUniqueDescriptors(li: anyNodeType[]) {
     const uniqueDescriptors = {}
     const duplicateDescriptors = {}
 
-    li.forEach((node: any) => {
+    li.forEach((node: anyNodeType) => {
         elementDescriptors(node).forEach((descriptor) => {
             const inUnique = descriptor in uniqueDescriptors
             const inDupes = descriptor in duplicateDescriptors
@@ -57,7 +66,7 @@ function findUniqueDescriptors(li: any) {
     return uniqueDescriptors
 }
 
-function uniqueInBoth(l1: any, l2: any) {
+export const uniqueInBoth = (l1: anyNodeType[], l2: anyNodeType[]) => {
     const l1Unique = findUniqueDescriptors(l1)
     const l2Unique = findUniqueDescriptors(l2)
     const inBoth = {}
@@ -71,6 +80,13 @@ function uniqueInBoth(l1: any, l2: any) {
     return inBoth
 }
 
+export const cloneObj = (obj: object) => {
+    if (global.structuredClone) {
+        return structuredClone(obj)
+    }
+    return JSON.parse(JSON.stringify(obj))
+}
+
 export function removeDone(tree: nodeType) {
     delete tree.outerDone
     delete tree.innerDone
@@ -82,7 +98,7 @@ export function removeDone(tree: nodeType) {
     }
 }
 
-export function isEqual(e1: any, e2: any) {
+export function isEqual(e1: anyNodeType, e2: anyNodeType) {
     if (
         !["nodeName", "value", "checked", "selected", "data"].every(
             (element) => {
@@ -95,7 +111,12 @@ export function isEqual(e1: any, e2: any) {
     ) {
         return false
     }
-
+    if (Object.prototype.hasOwnProperty.call(e1, "data")) {
+        // Comment or Text
+        return true
+    }
+    e1 = e1 as nodeType
+    e2 = e2 as nodeType
     if (Boolean(e1.attributes) !== Boolean(e2.attributes)) {
         return false
     }
@@ -112,7 +133,10 @@ export function isEqual(e1: any, e2: any) {
         }
         if (
             !e1Attributes.every((attribute) => {
-                if (e1.attributes[attribute] !== e2.attributes[attribute]) {
+                if (
+                    (e1 as nodeType).attributes[attribute] !==
+                    (e2 as nodeType).attributes[attribute]
+                ) {
                     return false
                 }
                 return true
@@ -126,7 +150,7 @@ export function isEqual(e1: any, e2: any) {
             return false
         }
         if (
-            !e1.childNodes.every((childNode: any, index: any) =>
+            !e1.childNodes.every((childNode: anyNodeType, index: number) =>
                 isEqual(childNode, e2.childNodes[index])
             )
         ) {
@@ -137,13 +161,13 @@ export function isEqual(e1: any, e2: any) {
     return true
 }
 
-export function roughlyEqual(
-    e1: any,
-    e2: any,
-    uniqueDescriptors: any,
-    sameSiblings: any,
-    preventRecursion: any
-) {
+export const roughlyEqual = (
+    e1: anyNodeType,
+    e2: anyNodeType,
+    uniqueDescriptors: { [key: string]: boolean },
+    sameSiblings: boolean,
+    preventRecursion = false
+) => {
     if (!e1 || !e2) {
         return false
     }
@@ -152,12 +176,15 @@ export function roughlyEqual(
         return false
     }
 
-    if (e1.nodeName === "#text") {
+    if (["#text", "#comment"].includes(e1.nodeName)) {
         // Note that we initially don't care what the text content of a node is,
         // the mere fact that it's the same tag and "has text" means it's roughly
         // equal, and then we can find out the true text difference later.
         return preventRecursion ? true : e1.data === e2.data
     }
+
+    e1 = e1 as nodeType
+    e2 = e2 as nodeType
 
     if (e1.nodeName in uniqueDescriptors) {
         return true
@@ -200,14 +227,14 @@ export function roughlyEqual(
 
     if (preventRecursion) {
         return nodeList1.every(
-            (element: any, index: any) =>
+            (element: anyNodeType, index: number) =>
                 element.nodeName === nodeList2[index].nodeName
         )
     } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
         // was not set, we must explicitly force it to true for child iterations.
         const childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2)
-        return nodeList1.every((element: any, index: any) =>
+        return nodeList1.every((element: anyNodeType, index: number) =>
             roughlyEqual(
                 element,
                 nodeList2[index],
@@ -219,16 +246,17 @@ export function roughlyEqual(
     }
 }
 
-export function cloneObj(obj: any) {
-    //  TODO: Do we really need to clone here? Is it not enough to just return the original object?
-    return JSON.parse(JSON.stringify(obj))
-}
 /**
  * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
  */
-function findCommonSubsets(c1: any, c2: any, marked1: any, marked2: any) {
+const findCommonSubsets = (
+    c1: anyNodeType[],
+    c2: anyNodeType[],
+    marked1: boolean[],
+    marked2: boolean[]
+) => {
     let lcsSize = 0
-    let index: any = []
+    let index: number[] = []
     const c1Length = c1.length
     const c2Length = c2.length
 
@@ -243,7 +271,7 @@ function findCommonSubsets(c1: any, c2: any, marked1: any, marked2: any) {
         subsetsSame = c1Length === c2Length
 
     if (subsetsSame) {
-        c1.some((element: any, i: number) => {
+        c1.some((element: anyNodeType, i: number) => {
             const c1Desc = elementDescriptors(element)
             const c2Desc = elementDescriptors(c2[i])
             if (c1Desc.length !== c2Desc.length) {
@@ -270,7 +298,6 @@ function findCommonSubsets(c1: any, c2: any, marked1: any, marked2: any) {
             if (
                 !marked1[c1Index] &&
                 !marked2[c2Index] &&
-                // @ts-expect-error TS(2554): Expected 5 arguments, but got 4.
                 roughlyEqual(
                     c1Element,
                     c2Element,
@@ -302,12 +329,8 @@ function findCommonSubsets(c1: any, c2: any, marked1: any, marked2: any) {
     }
 }
 
-/**
- * This should really be a predefined function in Array...
- */
-function makeArray(n: any, v: any) {
-    return Array(...new Array(n)).map(() => v)
-}
+const makeBooleanArray = (n: number, v: boolean) =>
+    Array(...new Array(n)).map(() => v)
 
 /**
  * Generate arrays that indicate which node belongs to which subset,
@@ -329,13 +352,21 @@ function makeArray(n: any, v: any) {
  * gaps1 = [1, true, 0, 0], gaps2 = [true, 0, 0, 1]
  *
  */
-export function getGapInformation(t1: any, t2: any, stable: any) {
-    const gaps1 = t1.childNodes ? makeArray(t1.childNodes.length, true) : []
-    const gaps2 = t2.childNodes ? makeArray(t2.childNodes.length, true) : []
+export const getGapInformation = (
+    t1: nodeType,
+    t2: nodeType,
+    stable: subsetType[]
+) => {
+    const gaps1: (true | number)[] = t1.childNodes
+        ? (makeBooleanArray(t1.childNodes.length, true) as true[])
+        : []
+    const gaps2: (true | number)[] = t2.childNodes
+        ? (makeBooleanArray(t2.childNodes.length, true) as true[])
+        : []
     let group = 0
 
     // give elements from the same subset the same group number
-    stable.forEach((subset: any) => {
+    stable.forEach((subset: subsetType) => {
         const endOld = subset.oldValue + subset.length
         const endNew = subset.newValue + subset.length
 
@@ -357,37 +388,43 @@ export function getGapInformation(t1: any, t2: any, stable: any) {
 /**
  * Find all matching subsets, based on immediate child differences only.
  */
-export function markSubTrees(oldTree: nodeType, newTree: nodeType) {
+const markBoth = (marked1, marked2, subset: subsetType, i: number) => {
+    marked1[subset.oldValue + i] = true
+    marked2[subset.newValue + i] = true
+}
+
+export const markSubTrees = (oldTree: nodeType, newTree: nodeType) => {
     // note: the child lists are views, and so update as we update old/newTree
     const oldChildren = oldTree.childNodes ? oldTree.childNodes : []
 
     const newChildren = newTree.childNodes ? newTree.childNodes : []
-    const marked1 = makeArray(oldChildren.length, false)
-    const marked2 = makeArray(newChildren.length, false)
+    const marked1 = makeBooleanArray(oldChildren.length, false)
+    const marked2 = makeBooleanArray(newChildren.length, false)
     const subsets = []
-    let subset = true
 
     const returnIndex = function () {
         return arguments[1]
     }
 
-    const markBoth = (i: any) => {
-        // @ts-expect-error TS(2339): Property 'oldValue' does not exist on type 'boolea... Remove this comment to see the full error message
-        marked1[subset.oldValue + i] = true
-        // @ts-expect-error TS(2339): Property 'newValue' does not exist on type 'boolea... Remove this comment to see the full error message
-        marked2[subset.newValue + i] = true
-    }
+    let foundAllSubsets = false
 
-    while (subset) {
-        // @ts-expect-error TS(2322): Type 'false | { oldValue: number; newValue: number... Remove this comment to see the full error message
-        subset = findCommonSubsets(oldChildren, newChildren, marked1, marked2)
+    while (!foundAllSubsets) {
+        const subset = findCommonSubsets(
+            oldChildren,
+            newChildren,
+            marked1,
+            marked2
+        )
         if (subset) {
             subsets.push(subset)
-            // @ts-expect-error TS(2339): Property 'length' does not exist on type 'true'.
             const subsetArray = Array(...new Array(subset.length)).map(
                 returnIndex
             )
-            subsetArray.forEach((item) => markBoth(item))
+            subsetArray.forEach((item) =>
+                markBoth(marked1, marked2, subset, item)
+            )
+        } else {
+            foundAllSubsets = true
         }
     }
 
@@ -397,16 +434,16 @@ export function markSubTrees(oldTree: nodeType, newTree: nodeType) {
 }
 
 export class DiffTracker {
-    list: any
+    list: Diff[]
     constructor() {
         this.list = []
     }
 
-    add(diffs: any) {
+    add(diffs: Diff[]) {
         this.list.push(...diffs)
     }
-    forEach(fn: any) {
-        this.list.forEach((li: any) => fn(li))
+    forEach(fn: (Diff) => void) {
+        this.list.forEach((li: Diff) => fn(li))
     }
 }
 
