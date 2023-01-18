@@ -10,9 +10,6 @@ function getFromVirtualRoute(tree: nodeType, route: number[]) {
 
     route = route.slice()
     while (route.length > 0) {
-        if (!node.childNodes) {
-            return false
-        }
         nodeIndex = route.splice(0, 1)[0]
         parentNode = node
         node = node.childNodes ? node.childNodes[nodeIndex] : undefined
@@ -38,9 +35,6 @@ function applyVirtualDiff(
     ) {
         // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
         const routeInfo = getFromVirtualRoute(tree, diff[options._const.route])
-        if (!routeInfo) {
-            return
-        }
         node = routeInfo.node
         parentNode = routeInfo.parentNode
         nodeIndex = routeInfo.nodeIndex
@@ -215,12 +209,7 @@ function applyVirtualDiff(
         case options._const.addElement:
             route = diff[options._const.route].slice()
             c = route.splice(route.length - 1, 1)[0]
-            // @ts-expect-error TS(2339): Property 'node' does not exist on type 'false | { ... Remove this comment to see the full error message
             node = getFromVirtualRoute(tree, route)?.node
-            if (!node) {
-                return
-            }
-            //node = getFromVirtualRoute(tree, route).node
             newNode = cloneObj(diff[options._const.element])
             newNode.outerDone = true
             newNode.innerDone = true
@@ -292,7 +281,6 @@ function applyVirtualDiff(
             newNode = {}
             newNode.nodeName = "#text"
             newNode.data = diff[options._const.value]
-            // @ts-expect-error TS(2339): Property 'node' does not exist on type 'false | { ... Remove this comment to see the full error message
             node = getFromVirtualRoute(tree, route).node
             if (!node.childNodes) {
                 node.childNodes = []

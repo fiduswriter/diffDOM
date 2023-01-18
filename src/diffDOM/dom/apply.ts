@@ -10,9 +10,6 @@ const getFromRoute = (
 ): Element | Text | false => {
     route = route.slice()
     while (route.length > 0) {
-        if (!node.childNodes) {
-            return false
-        }
         const c = route.splice(0, 1)[0]
         // @ts-expect-error TS(2740): Type 'ChildNode' is missing the following properti... Remove this comment to see the full error message
         node = node.childNodes[c]
@@ -34,9 +31,6 @@ export function applyDiff(
     ) {
         // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
         node = getFromRoute(tree, diff[options._const.route])
-        if (!node) {
-            return
-        }
     }
 
     let newNode
@@ -156,7 +150,7 @@ export function applyDiff(
             route = diff[options._const.route].slice()
             c = route.splice(route.length - 1, 1)[0]
             node = getFromRoute(tree, route)
-            if (!node || !(node instanceof Element)) {
+            if (!(node instanceof Element)) {
                 return false
             }
             node.insertBefore(
@@ -181,7 +175,7 @@ export function applyDiff(
                 diff[options._const.value]
             )
             node = getFromRoute(tree, route)
-            if (!node || !node.childNodes) {
+            if (!node.childNodes) {
                 return false
             }
             node.insertBefore(newNode, node.childNodes[c] || null)
