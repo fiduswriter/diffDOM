@@ -1,4 +1,4 @@
-import { DiffDOMOptions } from "../types"
+import { DiffDOMOptions, anyNodeType, diffType } from "../types"
 
 import { objToNode } from "./fromVirtual"
 
@@ -19,25 +19,25 @@ const getFromRoute = (
 
 export function applyDiff(
     tree: Element,
-    diff: any,
+    diff: diffType,
     options: DiffDOMOptions // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
+    const action = diff[options._const.action] as string | number
+    const route = diff[options._const.route] as number[]
     let node
 
     if (
         ![options._const.addElement, options._const.addTextElement].includes(
-            diff[options._const.action]
+            action
         )
     ) {
         // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
-        node = getFromRoute(tree, diff[options._const.route])
+        node = getFromRoute(tree, route)
     }
 
     let newNode
     let reference: Element
-    let route
     let nodeArray
-    let c
 
     // pre-diff hook
     const info = {
@@ -49,14 +49,14 @@ export function applyDiff(
         return true
     }
 
-    switch (diff[options._const.action]) {
+    switch (action) {
         case options._const.addAttribute:
             if (!node || !(node instanceof Element)) {
                 return false
             }
             node.setAttribute(
-                diff[options._const.name],
-                diff[options._const.value]
+                diff[options._const.name] as string,
+                diff[options._const.value] as string
             )
             break
         case options._const.modifyAttribute:
@@ -64,8 +64,8 @@ export function applyDiff(
                 return false
             }
             node.setAttribute(
-                diff[options._const.name],
-                diff[options._const.newValue]
+                diff[options._const.name] as string,
+                diff[options._const.newValue] as string
             )
             if (
                 node.nodeName === "INPUT" &&
@@ -79,7 +79,7 @@ export function applyDiff(
             if (!node || !(node instanceof Element)) {
                 return false
             }
-            node.removeAttribute(diff[options._const.name])
+            node.removeAttribute(diff[options._const.name] as string)
             break
         case options._const.modifyTextElement:
             if (!node || !(node instanceof Text)) {
@@ -88,8 +88,8 @@ export function applyDiff(
             options.textDiff(
                 node,
                 node.data,
-                diff[options._const.oldValue],
-                diff[options._const.newValue]
+                diff[options._const.oldValue] as string,
+                diff[options._const.newValue] as string
             )
             break
         case options._const.modifyValue:
@@ -105,8 +105,8 @@ export function applyDiff(
             options.textDiff(
                 node,
                 node.data,
-                diff[options._const.oldValue],
-                diff[options._const.newValue]
+                diff[options._const.oldValue] as string,
+                diff[options._const.newValue] as string
             )
             break
         case options._const.modifyChecked:
@@ -124,9 +124,10 @@ export function applyDiff(
         case options._const.replaceElement:
             node.parentNode.replaceChild(
                 objToNode(
-                    diff[options._const.newValue],
-                    diff[options._const.newValue].nodeName.toLowerCase() ===
-                        "svg",
+                    diff[options._const.newValue] as anyNodeType,
+                    (
+                        diff[options._const.newValue] as anyNodeType
+                    ).nodeName.toLowerCase() === "svg",
                     options
                 ),
                 node
@@ -136,11 +137,14 @@ export function applyDiff(
             nodeArray = Array(
                 ...new Array(diff[options._const.groupLength])
             ).map(() =>
-                node.removeChild(node.childNodes[diff[options._const.from]])
+                node.removeChild(
+                    node.childNodes[diff[options._const.from] as number]
+                )
             )
             nodeArray.forEach((childNode, index) => {
                 if (index === 0) {
-                    reference = node.childNodes[diff[options._const.to]]
+                    reference =
+                        node.childNodes[diff[options._const.to] as number]
                 }
                 node.insertBefore(childNode, reference || null)
             })
@@ -148,40 +152,42 @@ export function applyDiff(
         case options._const.removeElement:
             node.parentNode.removeChild(node)
             break
-        case options._const.addElement:
-            route = diff[options._const.route].slice()
-            c = route.splice(route.length - 1, 1)[0]
-            node = getFromRoute(tree, route)
+        case options._const.addElement: {
+            const parentRoute = route.slice()
+            const c: number = parentRoute.splice(parentRoute.length - 1, 1)[0]
+            node = getFromRoute(tree, parentRoute)
             if (!(node instanceof Element)) {
                 return false
             }
             node.insertBefore(
                 objToNode(
-                    diff[options._const.element],
+                    diff[options._const.element] as anyNodeType,
                     node.namespaceURI === "http://www.w3.org/2000/svg",
                     options
                 ),
                 node.childNodes[c] || null
             )
             break
+        }
         case options._const.removeTextElement:
             if (!node || node.nodeType !== 3) {
                 return false
             }
             node.parentNode.removeChild(node)
             break
-        case options._const.addTextElement:
-            route = diff[options._const.route].slice()
-            c = route.splice(route.length - 1, 1)[0]
+        case options._const.addTextElement: {
+            const parentRoute = route.slice()
+            const c: number = parentRoute.splice(parentRoute.length - 1, 1)[0]
             newNode = options.document.createTextNode(
-                diff[options._const.value]
+                diff[options._const.value] as string
             )
-            node = getFromRoute(tree, route)
+            node = getFromRoute(tree, parentRoute)
             if (!node.childNodes) {
                 return false
             }
             node.insertBefore(newNode, node.childNodes[c] || null)
             break
+        }
         default:
             console.log("unknown action")
     }
@@ -195,6 +201,10 @@ export function applyDiff(
     return true
 }
 
-export function applyDOM(tree: Element, diffs: any, options: DiffDOMOptions) {
-    return diffs.every((diff: any) => applyDiff(tree, diff, options))
+export function applyDOM(
+    tree: Element,
+    diffs: diffType[],
+    options: DiffDOMOptions
+) {
+    return diffs.every((diff: diffType) => applyDiff(tree, diff, options))
 }

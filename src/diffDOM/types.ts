@@ -119,12 +119,23 @@ type DiffDOMOptionsPartial = Partial<DiffDOMOptions>
 
 type ConstNamesPartial = Partial<ConstNames>
 
+type diffType = {
+    [key: string | number]:
+        | string
+        | number
+        | boolean
+        | number[]
+        | { [key: string]: string | { [key: string]: string } }
+        | nodeType
+}
+
 export {
     anyNodeType,
     ConstNames,
     ConstNamesPartial,
     DiffDOMOptions,
     DiffDOMOptionsPartial,
+    diffType,
     nodeType,
     subsetType,
     textNodeType,

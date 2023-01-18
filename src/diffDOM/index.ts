@@ -3,6 +3,7 @@ import {
     ConstNamesPartial,
     DiffDOMOptions,
     DiffDOMOptionsPartial,
+    diffType,
     nodeType,
 } from "./types"
 import { applyDOM, undoDOM } from "./dom/index"
@@ -101,11 +102,11 @@ export class DiffDOM {
         this.options = options as DiffDOMOptions
     }
 
-    apply(tree: Element, diffs: any) {
+    apply(tree: Element, diffs: diffType[]) {
         return applyDOM(tree, diffs, this.options)
     }
 
-    undo(tree: Element, diffs: any) {
+    undo(tree: Element, diffs: diffType[]) {
         return undoDOM(tree, diffs, this.options)
     }
 

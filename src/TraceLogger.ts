@@ -29,7 +29,16 @@ export class TraceLogger {
             // trace this function
             const oldfn = obj[key]
             obj[key] = (
-                ...args: ((...args: (string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[])[]) => void)[]
+                ...args: ((
+                    ...args: (
+                        | string
+                        | HTMLElement
+                        | number
+                        | boolean
+                        | false
+                        | (string | HTMLElement | number | boolean | false)[]
+                    )[]
+                ) => void)[]
             ) => {
                 this.fin(key, Array.prototype.slice.call(args))
                 const result = oldfn.apply(obj, args)
@@ -46,12 +55,30 @@ export class TraceLogger {
         this.log("┌ TRACELOG START")
     }
     // called when entering a function
-    fin(fn: string, args: string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[]) {
+    fin(
+        fn: string,
+        args:
+            | string
+            | HTMLElement
+            | number
+            | boolean
+            | false
+            | (string | HTMLElement | number | boolean | false)[]
+    ) {
         this.padding += this.pad
         this.log(`├─> entering ${fn}`, args)
     }
     // called when exiting a function
-    fout(fn: string, result: string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[]) {
+    fout(
+        fn: string,
+        result:
+            | string
+            | HTMLElement
+            | number
+            | boolean
+            | false
+            | (string | HTMLElement | number | boolean | false)[]
+    ) {
         this.log("│<──┘ generated return value", result)
         this.padding = this.padding.substring(
             0,
@@ -71,7 +98,15 @@ export class TraceLogger {
     }
     // log a trace message
     log(...args) {
-        const stringCollapse = function (v: string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[]) {
+        const stringCollapse = function (
+            v:
+                | string
+                | HTMLElement
+                | number
+                | boolean
+                | false
+                | (string | HTMLElement | number | boolean | false)[]
+        ) {
             if (!v) {
                 return "<falsey>"
             }
