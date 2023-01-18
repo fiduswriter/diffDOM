@@ -14,7 +14,7 @@
         "lint": "eslint src/",
         "build": "rollup -c",
         "postversion": "echo remember to run 'git push --follow-tags'",
-        "prepublishOnly": "npm run lint && npm run transpile"
+        "prepublishOnly": "npm run lint && npm run build"
     },
     "repository": {
         "type": "git",
