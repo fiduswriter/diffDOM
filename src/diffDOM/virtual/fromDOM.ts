@@ -1,6 +1,6 @@
-import { nodeType, textNodeType } from "../types"
+import { DiffDOMOptionsPartial, nodeType, textNodeType } from "../types"
 
-export function nodeToObj(aNode: Element, options = {}) {
+export function nodeToObj(aNode: Element, options: DiffDOMOptionsPartial = {}) {
     const objNode: nodeType | textNodeType = {
         nodeName: aNode.nodeName,
     }
@@ -24,7 +24,6 @@ export function nodeToObj(aNode: Element, options = {}) {
                 objNode.childNodes.push(nodeToObj(childNode, options))
             )
         }
-        // @ts-expect-error TS(2339): Property 'valueDiffing' does not exist on type '{}... Remove this comment to see the full error message
         if (options.valueDiffing) {
             if (
                 aNode instanceof HTMLInputElement &&

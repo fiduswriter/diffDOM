@@ -11,8 +11,7 @@ const getFromRoute = (
     route = route.slice()
     while (route.length > 0) {
         const c = route.splice(0, 1)[0]
-        // @ts-expect-error TS(2740): Type 'ChildNode' is missing the following properti... Remove this comment to see the full error message
-        node = node.childNodes[c]
+        node = node.childNodes[c] as Element
     }
     return node
 }
@@ -68,11 +67,10 @@ export function applyDiff(
                 diff[options._const.newValue] as string
             )
             if (
-                node.nodeName === "INPUT" &&
+                node instanceof HTMLInputElement &&
                 diff[options._const.name] === "value"
             ) {
-                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
-                node.value = diff[options._const.newValue]
+                node.value = diff[options._const.newValue] as string
             }
             break
         case options._const.removeAttribute:
@@ -194,9 +192,11 @@ export function applyDiff(
 
     // if a new node was created, we might be interested in its
     // post diff hook
-    // @ts-expect-error TS(2339): Property 'newNode' does not exist on type '{ diff:... Remove this comment to see the full error message
-    info.newNode = newNode
-    options.postDiffApply(info)
+    options.postDiffApply({
+        diff: info.diff,
+        node: info.node,
+        newNode,
+    })
 
     return true
 }

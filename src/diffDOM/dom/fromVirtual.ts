@@ -37,16 +37,23 @@ export function objToNode(
             )
         }
         if (options.valueDiffing) {
-            if (objNode.value) {
-                // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
+            if (
+                objNode.value &&
+                (node instanceof HTMLButtonElement ||
+                    node instanceof HTMLDataElement ||
+                    node instanceof HTMLInputElement ||
+                    node instanceof HTMLLIElement ||
+                    node instanceof HTMLMeterElement ||
+                    node instanceof HTMLOptionElement ||
+                    node instanceof HTMLProgressElement ||
+                    node instanceof HTMLParamElement)
+            ) {
                 node.value = objNode.value
             }
-            if (objNode.checked) {
-                // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'Element... Remove this comment to see the full error message
+            if (objNode.checked && node instanceof HTMLInputElement) {
                 node.checked = objNode.checked
             }
-            if (objNode.selected) {
-                // @ts-expect-error TS(2339): Property 'selected' does not exist on type 'Elemen... Remove this comment to see the full error message
+            if (objNode.selected && node instanceof HTMLOptionElement) {
                 node.selected = objNode.selected
             }
         }
