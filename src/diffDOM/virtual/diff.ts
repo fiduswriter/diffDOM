@@ -10,7 +10,7 @@ import {
 } from "./helpers"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
-import { nodeType } from "../types"
+import { DiffDOMOptions, nodeType } from "../types"
 import { stringToObj } from "./fromString"
 
 // ===== Create a diff =====
@@ -19,7 +19,7 @@ export class DiffFinder {
     debug: boolean
     diffcount: number
     foundAll: boolean
-    options: any
+    options: DiffDOMOptions
     t1: nodeType
     t1Orig: nodeType
     t2: nodeType
@@ -28,7 +28,7 @@ export class DiffFinder {
     constructor(
         t1Node: string | nodeType | Element,
         t2Node: string | nodeType | Element,
-        options: any
+        options: DiffDOMOptions
     ) {
         this.options = options
         this.t1 =
@@ -170,7 +170,7 @@ export class DiffFinder {
         }
         if (
             route.length &&
-            this.options.maxNodeDiffCount <
+            this.options.diffcap <
                 Math.abs(
                     (t1.childNodes || []).length - (t2.childNodes || []).length
                 )

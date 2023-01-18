@@ -28,7 +28,7 @@ type anyNodeType = nodeType | textNodeType
 
 interface Document {
     createElement: (arg: string) => Element
-    createElementNS: (arg: string) => Element
+    createElementNS: (namespaceURI: string, qualifiedName: string) => Element
     createTextNode: (arg: string) => Text
     createComment: (arg: string) => Comment
 }

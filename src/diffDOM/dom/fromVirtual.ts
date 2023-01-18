@@ -1,7 +1,7 @@
-import { nodeType, textNodeType } from "../types"
+import { DiffDOMOptions, nodeType, textNodeType } from "../types"
 
-export function objToNode(objNode: nodeType, insideSvg: boolean, options: any) {
-    let node: Element
+export function objToNode(objNode: nodeType, insideSvg: boolean, options: DiffDOMOptions) {
+    let node: (Element | Text | Comment)
     if (objNode.nodeName === "#text") {
         node = options.document.createTextNode(objNode.data)
     } else if (objNode.nodeName === "#comment") {
@@ -23,10 +23,11 @@ export function objToNode(objNode: nodeType, insideSvg: boolean, options: any) {
         }
         if (objNode.attributes) {
             Object.entries(objNode.attributes).forEach(([key, value]) =>
-                node.setAttribute(key, value)
+                (node as Element).setAttribute(key, value)
             )
         }
         if (objNode.childNodes) {
+            node = node as Element
             objNode.childNodes.forEach((childNode: nodeType | textNodeType) =>
                 node.appendChild(objToNode(childNode, insideSvg, options))
             )
