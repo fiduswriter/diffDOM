@@ -71,7 +71,7 @@ function uniqueInBoth(l1: any, l2: any) {
     return inBoth
 }
 
-export function removeDone(tree: any) {
+export function removeDone(tree: nodeType) {
     delete tree.outerDone
     delete tree.innerDone
     delete tree.valueDone

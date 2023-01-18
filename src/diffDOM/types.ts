@@ -14,8 +14,12 @@ interface nodeType {
     checked?: boolean
     value?: string | number
     selected?: boolean
+    // The following are only used durign diffing.
     subsets?: subset[]
     subsetsAge?: number
+    outerDone?: boolean
+    innerDone?: boolean
+    valueDone?: boolean
 }
 
 interface textNodeType {

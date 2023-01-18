@@ -10,7 +10,7 @@ function swap(obj: any, p1: any, p2: any) {
 }
 
 function undoDiff(
-    tree: any,
+    tree: Element,
     diff: any,
     options: DiffDOMOptions // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
@@ -76,7 +76,7 @@ function undoDiff(
     }
 }
 
-export function undoDOM(tree: any, diffs: any, options: DiffDOMOptions) {
+export function undoDOM(tree: Element, diffs: any, options: DiffDOMOptions) {
     if (!diffs.length) {
         diffs = [diffs]
     }
