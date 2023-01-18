@@ -11,10 +11,21 @@ interface elementNodeType {
     nodeName: string
     attributes?: { [key: string]: string }
     childNodes?: nodeType[] // eslint-disable-line no-use-before-define
-    data?: string
     checked?: boolean
     value?: string | number
     selected?: boolean
+}
+
+interface textNodeType {
+    nodeName: "#text" | "#comment"
+    data: string
+    childNodes?: never
+}
+
+type nodeType = elementNodeType | textNodeType
+
+interface elementDiffNodeType extends elementNodeType {
+    childNodes?: diffNodeType[] // eslint-disable-line no-use-before-define
     // The following are only used during diffing.
     subsets?: subsetType[]
     subsetsAge?: number
@@ -23,15 +34,12 @@ interface elementNodeType {
     valueDone?: boolean
 }
 
-interface textNodeType {
-    nodeName: "#text" | "#comment"
-    data: string
-    childNodes?: never
+interface textDiffNodeType extends textNodeType {
     // The following are only used during diffing.
     outerDone?: boolean
 }
 
-type nodeType = elementNodeType | textNodeType
+type diffNodeType = elementDiffNodeType | textDiffNodeType
 
 interface Document {
     createElement: (arg: string) => Element
@@ -136,7 +144,10 @@ export {
     DiffDOMOptions,
     DiffDOMOptionsPartial,
     diffType,
+    diffNodeType,
+    elementDiffNodeType,
     elementNodeType,
     subsetType,
+    textDiffNodeType,
     textNodeType,
 }

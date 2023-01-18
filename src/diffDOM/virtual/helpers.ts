@@ -1,4 +1,12 @@
-import { elementNodeType, nodeType, subsetType } from "../types"
+import {
+    diffNodeType,
+    elementDiffNodeType,
+    elementNodeType,
+    nodeType,
+    subsetType,
+    textDiffNodeType,
+    textNodeType,
+} from "../types"
 
 export class Diff {
     constructor(options = {}) {
@@ -24,11 +32,11 @@ export class Diff {
     }
 }
 
-function elementDescriptors(el: nodeType) {
+const elementDescriptors = (el: diffNodeType) => {
     const output = []
     output.push(el.nodeName)
     if (el.nodeName !== "#text" && el.nodeName !== "#comment") {
-        el = el as elementNodeType
+        el = el as elementDiffNodeType
         if (el.attributes) {
             if (el.attributes["class"]) {
                 output.push(
@@ -46,7 +54,7 @@ function elementDescriptors(el: nodeType) {
     return output
 }
 
-function findUniqueDescriptors(li: nodeType[]) {
+const findUniqueDescriptors = (li: diffNodeType[]) => {
     const uniqueDescriptors = {}
     const duplicateDescriptors = {}
 
@@ -66,7 +74,7 @@ function findUniqueDescriptors(li: nodeType[]) {
     return uniqueDescriptors
 }
 
-export const uniqueInBoth = (l1: nodeType[], l2: nodeType[]) => {
+export const uniqueInBoth = (l1: diffNodeType[], l2: diffNodeType[]) => {
     const l1Unique = findUniqueDescriptors(l1)
     const l2Unique = findUniqueDescriptors(l2)
     const inBoth = {}
@@ -87,7 +95,7 @@ export const cloneObj = (obj: object) => {
     return JSON.parse(JSON.stringify(obj))
 }
 
-export function removeDone(tree: elementNodeType) {
+export const removeDone = (tree: elementDiffNodeType) => {
     delete tree.outerDone
     delete tree.innerDone
     delete tree.valueDone
@@ -98,7 +106,40 @@ export function removeDone(tree: elementNodeType) {
     }
 }
 
-export function isEqual(e1: nodeType, e2: nodeType) {
+export const cleanNode = (diffNode: diffNodeType) => {
+    if (Object.prototype.hasOwnProperty.call(diffNode, "data")) {
+        const textNode: textNodeType = {
+            nodeName: diffNode.nodeName === "#text" ? "#text" : "#comment",
+            data: (diffNode as textDiffNodeType).data,
+        }
+        return textNode
+    } else {
+        const elementNode: elementNodeType = {
+            nodeName: diffNode.nodeName,
+        }
+        diffNode = diffNode as elementDiffNodeType
+        if (Object.prototype.hasOwnProperty.call(diffNode, "attributes")) {
+            elementNode.attributes = diffNode.attributes
+        }
+        if (Object.prototype.hasOwnProperty.call(diffNode, "checked")) {
+            elementNode.checked = diffNode.checked
+        }
+        if (Object.prototype.hasOwnProperty.call(diffNode, "value")) {
+            elementNode.value = diffNode.value
+        }
+        if (Object.prototype.hasOwnProperty.call(diffNode, "selected")) {
+            elementNode.selected = diffNode.selected
+        }
+        if (Object.prototype.hasOwnProperty.call(diffNode, "childNodes")) {
+            elementNode.childNodes = diffNode.childNodes.map((diffChildNode) =>
+                cleanNode(diffChildNode)
+            )
+        }
+        return elementNode
+    }
+}
+
+export const isEqual = (e1: diffNodeType, e2: diffNodeType) => {
     if (
         !["nodeName", "value", "checked", "selected", "data"].every(
             (element) => {
@@ -115,8 +156,8 @@ export function isEqual(e1: nodeType, e2: nodeType) {
         // Comment or Text
         return true
     }
-    e1 = e1 as elementNodeType
-    e2 = e2 as elementNodeType
+    e1 = e1 as elementDiffNodeType
+    e2 = e2 as elementDiffNodeType
     if (Boolean(e1.attributes) !== Boolean(e2.attributes)) {
         return false
     }
@@ -134,8 +175,8 @@ export function isEqual(e1: nodeType, e2: nodeType) {
         if (
             !e1Attributes.every((attribute) => {
                 if (
-                    (e1 as elementNodeType).attributes[attribute] !==
-                    (e2 as elementNodeType).attributes[attribute]
+                    (e1 as elementDiffNodeType).attributes[attribute] !==
+                    (e2 as elementDiffNodeType).attributes[attribute]
                 ) {
                     return false
                 }
@@ -162,8 +203,8 @@ export function isEqual(e1: nodeType, e2: nodeType) {
 }
 
 export const roughlyEqual = (
-    e1: nodeType,
-    e2: nodeType,
+    e1: diffNodeType,
+    e2: diffNodeType,
     uniqueDescriptors: { [key: string]: boolean },
     sameSiblings: boolean,
     preventRecursion = false
@@ -180,11 +221,13 @@ export const roughlyEqual = (
         // Note that we initially don't care what the text content of a node is,
         // the mere fact that it's the same tag and "has text" means it's roughly
         // equal, and then we can find out the true text difference later.
-        return preventRecursion ? true : e1.data === e2.data
+        return preventRecursion
+            ? true
+            : (e1 as textDiffNodeType).data === (e2 as textDiffNodeType).data
     }
 
-    e1 = e1 as elementNodeType
-    e2 = e2 as elementNodeType
+    e1 = e1 as elementDiffNodeType
+    e2 = e2 as elementDiffNodeType
 
     if (e1.nodeName in uniqueDescriptors) {
         return true
@@ -250,8 +293,8 @@ export const roughlyEqual = (
  * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
  */
 const findCommonSubsets = (
-    c1: nodeType[],
-    c2: nodeType[],
+    c1: diffNodeType[],
+    c2: diffNodeType[],
     marked1: boolean[],
     marked2: boolean[]
 ) => {
@@ -353,8 +396,8 @@ const makeBooleanArray = (n: number, v: boolean) =>
  *
  */
 export const getGapInformation = (
-    t1: elementNodeType,
-    t2: elementNodeType,
+    t1: elementDiffNodeType,
+    t2: elementDiffNodeType,
     stable: subsetType[]
 ) => {
     const gaps1: (true | number)[] = t1.childNodes
@@ -394,8 +437,8 @@ const markBoth = (marked1, marked2, subset: subsetType, i: number) => {
 }
 
 export const markSubTrees = (
-    oldTree: elementNodeType,
-    newTree: elementNodeType
+    oldTree: elementDiffNodeType,
+    newTree: elementDiffNodeType
 ) => {
     // note: the child lists are views, and so update as we update old/newTree
     const oldChildren = oldTree.childNodes ? oldTree.childNodes : []

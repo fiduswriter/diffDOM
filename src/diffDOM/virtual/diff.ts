@@ -1,7 +1,8 @@
 import {
     Diff,
     DiffTracker,
-    cloneObj,
+    cleanNode,
+    //cloneObj,
     getGapInformation,
     isEqual,
     markSubTrees,
@@ -10,10 +11,11 @@ import {
 } from "./helpers"
 import {
     DiffDOMOptions,
+    diffNodeType,
+    elementDiffNodeType,
     elementNodeType,
-    nodeType,
     subsetType,
-    textNodeType,
+    textDiffNodeType,
 } from "../types"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
@@ -26,9 +28,9 @@ export class DiffFinder {
     diffcount: number
     foundAll: boolean
     options: DiffDOMOptions
-    t1: elementNodeType
+    t1: elementDiffNodeType
     t1Orig: elementNodeType
-    t2: elementNodeType
+    t2: elementDiffNodeType
     t2Orig: elementNodeType
     tracker: DiffTracker
     constructor(
@@ -37,18 +39,20 @@ export class DiffFinder {
         options: DiffDOMOptions
     ) {
         this.options = options
-        this.t1 =
+        this.t1 = (
             typeof Element !== "undefined" && t1Node instanceof Element
                 ? nodeToObj(t1Node, this.options)
                 : typeof t1Node === "string"
                 ? stringToObj(t1Node, this.options)
                 : JSON.parse(JSON.stringify(t1Node))
-        this.t2 =
+        ) as elementDiffNodeType
+        this.t2 = (
             typeof Element !== "undefined" && t2Node instanceof Element
                 ? nodeToObj(t2Node, this.options)
                 : typeof t2Node === "string"
                 ? stringToObj(t2Node, this.options)
                 : JSON.parse(JSON.stringify(t2Node))
+        ) as elementDiffNodeType
         this.diffcount = 0
         this.foundAll = false
         if (this.debug) {
@@ -73,7 +77,7 @@ export class DiffFinder {
         return this.findDiffs(this.t1, this.t2)
     }
 
-    findDiffs(t1: elementNodeType, t2: elementNodeType) {
+    findDiffs(t1: elementDiffNodeType, t2: elementDiffNodeType) {
         let diffs
         do {
             if (this.options.debug) {
@@ -112,7 +116,7 @@ export class DiffFinder {
         return this.tracker.list
     }
 
-    findNextDiff(t1: nodeType, t2: nodeType, route: number[]) {
+    findNextDiff(t1: diffNodeType, t2: diffNodeType, route: number[]) {
         let diffs
         let fdiffs
 
@@ -137,8 +141,8 @@ export class DiffFinder {
             // Comment or Text
             return []
         }
-        t1 = t1 as elementNodeType
-        t2 = t2 as elementNodeType
+        t1 = t1 as elementDiffNodeType
+        t2 = t2 as elementDiffNodeType
 
         // inner differences?
         if (!t1.innerDone) {
@@ -166,7 +170,7 @@ export class DiffFinder {
         return []
     }
 
-    findOuterDiff(t1: nodeType, t2: nodeType, route: number[]) {
+    findOuterDiff(t1: diffNodeType, t2: diffNodeType, route: number[]) {
         const diffs = []
         let attr
         let attr1
@@ -184,8 +188,8 @@ export class DiffFinder {
                         this.options._const.action,
                         this.options._const.replaceElement
                     )
-                    .setValue(this.options._const.oldValue, cloneObj(t1))
-                    .setValue(this.options._const.newValue, cloneObj(t2))
+                    .setValue(this.options._const.oldValue, cleanNode(t1))
+                    .setValue(this.options._const.newValue, cleanNode(t2))
                     .setValue(this.options._const.route, route),
             ]
         }
@@ -202,18 +206,16 @@ export class DiffFinder {
                         this.options._const.action,
                         this.options._const.replaceElement
                     )
-                    .setValue(this.options._const.oldValue, cloneObj(t1))
-                    .setValue(this.options._const.newValue, cloneObj(t2))
+                    .setValue(this.options._const.oldValue, cleanNode(t1))
+                    .setValue(this.options._const.newValue, cleanNode(t2))
                     .setValue(this.options._const.route, route),
             ]
         }
 
         if (
             Object.prototype.hasOwnProperty.call(t1, "data") &&
-            (t1 as textNodeType).data !== (t2 as textNodeType).data
+            (t1 as textDiffNodeType).data !== (t2 as textDiffNodeType).data
         ) {
-            t1 = t1 as textNodeType
-            t2 = t2 as textNodeType
             // Comment or text node.
             if (t1.nodeName === "#text") {
                 return [
@@ -223,8 +225,14 @@ export class DiffFinder {
                             this.options._const.modifyTextElement
                         )
                         .setValue(this.options._const.route, route)
-                        .setValue(this.options._const.oldValue, t1.data)
-                        .setValue(this.options._const.newValue, t2.data),
+                        .setValue(
+                            this.options._const.oldValue,
+                            (t1 as textDiffNodeType).data
+                        )
+                        .setValue(
+                            this.options._const.newValue,
+                            (t2 as textDiffNodeType).data
+                        ),
                 ]
             } else {
                 return [
@@ -234,14 +242,20 @@ export class DiffFinder {
                             this.options._const.modifyComment
                         )
                         .setValue(this.options._const.route, route)
-                        .setValue(this.options._const.oldValue, t1.data)
-                        .setValue(this.options._const.newValue, t2.data),
+                        .setValue(
+                            this.options._const.oldValue,
+                            (t1 as textDiffNodeType).data
+                        )
+                        .setValue(
+                            this.options._const.newValue,
+                            (t2 as textDiffNodeType).data
+                        ),
                 ]
             }
         }
 
-        t1 = t1 as elementNodeType
-        t2 = t2 as elementNodeType
+        t1 = t1 as elementDiffNodeType
+        t2 = t2 as elementDiffNodeType
 
         attr1 = t1.attributes ? Object.keys(t1.attributes).sort() : []
         attr2 = t2.attributes ? Object.keys(t2.attributes).sort() : []
@@ -306,7 +320,11 @@ export class DiffFinder {
         return diffs
     }
 
-    findInnerDiff(t1: elementNodeType, t2: elementNodeType, route: number[]) {
+    findInnerDiff(
+        t1: elementDiffNodeType,
+        t2: elementDiffNodeType,
+        route: number[]
+    ) {
         const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
         const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
         const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
@@ -365,7 +383,10 @@ export class DiffFinder {
                                     this.options._const.route,
                                     route.concat(index)
                                 )
-                                .setValue(this.options._const.value, e1.data)
+                                .setValue(
+                                    this.options._const.value,
+                                    (e1 as textDiffNodeType).data
+                                )
                         )
                         index -= 1
                     } else {
@@ -381,7 +402,7 @@ export class DiffFinder {
                                 )
                                 .setValue(
                                     this.options._const.element,
-                                    cloneObj(e1)
+                                    cleanNode(e1)
                                 )
                         )
                         index -= 1
@@ -398,7 +419,10 @@ export class DiffFinder {
                                     this.options._const.route,
                                     route.concat(index)
                                 )
-                                .setValue(this.options._const.value, e2.data)
+                                .setValue(
+                                    this.options._const.value,
+                                    (e2 as textDiffNodeType).data
+                                )
                         )
                     } else {
                         diffs.push(
@@ -413,7 +437,7 @@ export class DiffFinder {
                                 )
                                 .setValue(
                                     this.options._const.element,
-                                    cloneObj(e2)
+                                    cleanNode(e2)
                                 )
                         )
                     }
@@ -450,7 +474,7 @@ export class DiffFinder {
                                     )
                                     .setValue(
                                         this.options._const.value,
-                                        e1.data
+                                        (e1 as textDiffNodeType).data
                                     )
                             )
                         } else {
@@ -462,7 +486,7 @@ export class DiffFinder {
                                     )
                                     .setValue(
                                         this.options._const.element,
-                                        cloneObj(e1)
+                                        cleanNode(e1)
                                     )
                                     .setValue(
                                         this.options._const.route,
@@ -476,7 +500,7 @@ export class DiffFinder {
 
                         childNodesLengthDifference -= 1
                     } else if (t1ChildNodes.length < t2ChildNodes.length) {
-                        const cloneChild = cloneObj(e2)
+                        const cloneChild = cleanNode(e2)
                         diffs = diffs.concat([
                             new Diff()
                                 .setValue(
@@ -503,11 +527,11 @@ export class DiffFinder {
                                 )
                                 .setValue(
                                     this.options._const.oldValue,
-                                    cloneObj(e1)
+                                    cleanNode(e1)
                                 )
                                 .setValue(
                                     this.options._const.newValue,
-                                    cloneObj(e2)
+                                    cleanNode(e2)
                                 )
                                 .setValue(
                                     this.options._const.route,
@@ -524,8 +548,8 @@ export class DiffFinder {
     }
 
     attemptGroupRelocation(
-        t1: elementNodeType,
-        t2: elementNodeType,
+        t1: elementDiffNodeType,
+        t2: elementDiffNodeType,
         subtrees: subsetType[],
         route: number[],
         cachedSubtrees: boolean
@@ -563,7 +587,10 @@ export class DiffFinder {
                 node = t1.childNodes[index1]
                 if (node.nodeName === "#text") {
                     if (t2.childNodes[index2].nodeName === "#text") {
-                        if (node.data !== t2.childNodes[index2].data) {
+                        if (
+                            (node as textDiffNodeType).data !==
+                            (t2.childNodes[index2] as textDiffNodeType).data
+                        ) {
                             testI = index1
                             while (
                                 t1.childNodes.length > testI + 1 &&
@@ -571,8 +598,10 @@ export class DiffFinder {
                             ) {
                                 testI += 1
                                 if (
-                                    t2.childNodes[index2].data ===
-                                    t1.childNodes[testI].data
+                                    (t2.childNodes[index2] as textDiffNodeType)
+                                        .data ===
+                                    (t1.childNodes[testI] as textDiffNodeType)
+                                        .data
                                 ) {
                                     similarNode = true
                                     break
@@ -596,7 +625,11 @@ export class DiffFinder {
                                         )
                                         .setValue(
                                             this.options._const.newValue,
-                                            t2.childNodes[index2].data
+                                            (
+                                                t2.childNodes[
+                                                    index2
+                                                ] as textDiffNodeType
+                                            ).data
                                         )
                                 )
                                 return diffs
@@ -632,7 +665,7 @@ export class DiffFinder {
                             )
                             .setValue(
                                 this.options._const.element,
-                                cloneObj(node)
+                                cleanNode(node)
                             )
                     )
                     gaps1.splice(index2, 1)
@@ -670,7 +703,7 @@ export class DiffFinder {
                             )
                             .setValue(
                                 this.options._const.element,
-                                cloneObj(node)
+                                cleanNode(node)
                             )
                     )
                     gaps1.splice(index2, 0, true)
@@ -728,7 +761,11 @@ export class DiffFinder {
         return diffs
     }
 
-    findValueDiff(t1: elementNodeType, t2: elementNodeType, route: number[]) {
+    findValueDiff(
+        t1: elementDiffNodeType,
+        t2: elementDiffNodeType,
+        route: number[]
+    ) {
         // Differences of value. Only useful if the value/selection/checked value
         // differs from what is represented in the DOM. For example in the case
         // of filled out forms, etc.

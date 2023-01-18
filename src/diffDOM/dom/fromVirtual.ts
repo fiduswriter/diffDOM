@@ -7,9 +7,9 @@ export function objToNode(
 ) {
     let node: Element | Text | Comment
     if (objNode.nodeName === "#text") {
-        node = options.document.createTextNode(objNode.data)
+        node = options.document.createTextNode((objNode as textNodeType).data)
     } else if (objNode.nodeName === "#comment") {
-        node = options.document.createComment(objNode.data)
+        node = options.document.createComment((objNode as textNodeType).data)
     } else {
         if (insideSvg) {
             node = options.document.createElementNS(
