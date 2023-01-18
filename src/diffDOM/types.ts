@@ -1,4 +1,4 @@
-import { Diff } from "./virtual/helpers"
+import { Diff } from "./helpers"
 
 interface subsetType {
     oldValue: number

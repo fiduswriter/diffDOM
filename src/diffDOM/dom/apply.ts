@@ -1,4 +1,5 @@
 import { DiffDOMOptions, diffType, nodeType } from "../types"
+import { Diff } from "../helpers"
 
 import { objToNode } from "./fromVirtual"
 
@@ -203,8 +204,10 @@ export function applyDiff(
 
 export function applyDOM(
     tree: Element,
-    diffs: diffType[],
+    diffs: (Diff | diffType)[],
     options: DiffDOMOptions
 ) {
-    return diffs.every((diff: diffType) => applyDiff(tree, diff, options))
+    return diffs.every((diff: Diff | diffType) =>
+        applyDiff(tree, diff as diffType, options)
+    )
 }

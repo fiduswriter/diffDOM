@@ -1,15 +1,4 @@
 import {
-    Diff,
-    DiffTracker,
-    cleanNode,
-    //cloneObj,
-    getGapInformation,
-    isEqual,
-    markSubTrees,
-    removeDone,
-    roughlyEqual,
-} from "./helpers"
-import {
     DiffDOMOptions,
     diffNodeType,
     elementDiffNodeType,
@@ -17,6 +6,16 @@ import {
     subsetType,
     textDiffNodeType,
 } from "../types"
+import {
+    DiffTracker,
+    cleanNode,
+    getGapInformation,
+    isEqual,
+    markSubTrees,
+    removeDone,
+    roughlyEqual,
+} from "./helpers"
+import { Diff } from "../helpers"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
 import { stringToObj } from "./fromString"

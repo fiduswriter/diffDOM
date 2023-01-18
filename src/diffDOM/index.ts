@@ -8,8 +8,8 @@ import {
     textNodeType,
 } from "./types"
 import { applyDOM, undoDOM } from "./dom/index"
+import { Diff } from "./helpers"
 import { DiffFinder } from "./virtual/index"
-
 export { nodeToObj, stringToObj } from "./virtual/index"
 
 const DEFAULT_OPTIONS = {
@@ -103,11 +103,11 @@ export class DiffDOM {
         this.options = options as DiffDOMOptions
     }
 
-    apply(tree: Element, diffs: diffType[]) {
+    apply(tree: Element, diffs: (Diff | diffType)[]) {
         return applyDOM(tree, diffs, this.options)
     }
 
-    undo(tree: Element, diffs: diffType[]) {
+    undo(tree: Element, diffs: (Diff | diffType)[]) {
         return undoDOM(tree, diffs, this.options)
     }
 

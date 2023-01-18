@@ -1,4 +1,5 @@
 import { DiffDOMOptions, diffType } from "../types"
+import { Diff } from "../helpers"
 import { applyDiff } from "./apply"
 
 // ===== Undo a diff =====
@@ -78,15 +79,12 @@ function undoDiff(
 
 export function undoDOM(
     tree: Element,
-    diffs: diffType | diffType[],
+    diffs: (diffType | Diff)[],
     options: DiffDOMOptions
 ) {
-    if (!Array.isArray(diffs)) {
-        diffs = [diffs]
-    }
     diffs = diffs.slice()
     diffs.reverse()
-    diffs.forEach((diff: diffType) => {
-        undoDiff(tree, diff, options)
+    diffs.forEach((diff: diffType | Diff) => {
+        undoDiff(tree, diff as diffType, options)
     })
 }

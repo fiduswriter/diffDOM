@@ -1,6 +1,6 @@
-import { Diff, cloneObj } from "./helpers"
 import { DiffDOMOptions, elementNodeType, nodeType, subsetType } from "../types"
-
+import { Diff } from "../helpers"
+import { cloneObj } from "./helpers"
 // ===== Apply a virtual diff =====
 
 function getFromVirtualRoute(tree: elementNodeType, route: number[]) {
