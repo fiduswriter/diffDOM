@@ -16,19 +16,21 @@
  * what's going on.
  */
 export class TraceLogger {
-    messages: any
-    pad: any
-    padding: any
-    tick: any
+    messages: string[]
+    pad: string
+    padding: string
+    tick: number
     constructor(obj = {}) {
         this.pad = "│   "
         this.padding = ""
         this.tick = 1
         this.messages = []
-        const wrapkey = (obj: any, key: any) => {
+        const wrapkey = (obj: object, key: string) => {
             // trace this function
             const oldfn = obj[key]
-            obj[key] = (...args: any[]) => {
+            obj[key] = (
+                ...args: ((...args: (string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[])[]) => void)[]
+            ) => {
                 this.fin(key, Array.prototype.slice.call(args))
                 const result = oldfn.apply(obj, args)
                 this.fout(key, result)
@@ -41,18 +43,15 @@ export class TraceLogger {
                 wrapkey(obj, key)
             }
         }
-        // @ts-expect-error TS(2554): Expected 0 arguments, but got 1.
         this.log("┌ TRACELOG START")
     }
     // called when entering a function
-    fin(fn: any, args: any) {
+    fin(fn: string, args: string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[]) {
         this.padding += this.pad
-        // @ts-expect-error TS(2554): Expected 0 arguments, but got 2.
         this.log(`├─> entering ${fn}`, args)
     }
     // called when exiting a function
-    fout(fn: any, result: any) {
-        // @ts-expect-error TS(2554): Expected 0 arguments, but got 2.
+    fout(fn: string, result: string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[]) {
         this.log("│<──┘ generated return value", result)
         this.padding = this.padding.substring(
             0,
@@ -60,20 +59,19 @@ export class TraceLogger {
         )
     }
     // log message formatting
-    format(s: any, tick: any) {
-        let nf = function (t: any) {
-            t = `${t}`
-            while (t.length < 4) {
-                t = `0${t}`
+    format(s: string, tick: number) {
+        let nf = function (t: number) {
+            let tStr = `${t}`
+            while (tStr.length < 4) {
+                tStr = `0${t}`
             }
-            return t
+            return tStr
         }
         return `${nf(tick)}> ${this.padding}${s}`
     }
     // log a trace message
-    log() {
-        let s = Array.prototype.slice.call(arguments)
-        const stringCollapse = function (v: any) {
+    log(...args) {
+        const stringCollapse = function (v: string | HTMLElement | number | boolean | false | (string | HTMLElement | number | boolean | false)[]) {
             if (!v) {
                 return "<falsey>"
             }
@@ -88,7 +86,7 @@ export class TraceLogger {
             }
             return v.toString() || v.valueOf() || "<unknown>"
         }
-        s = s.map(stringCollapse).join(", ")
+        const s = args.map(stringCollapse).join(", ")
         this.messages.push(this.format(s, this.tick++))
     }
     // turn the log into a structured string with
