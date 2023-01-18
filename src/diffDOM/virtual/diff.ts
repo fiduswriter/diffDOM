@@ -8,7 +8,7 @@ import {
     removeDone,
     roughlyEqual,
 } from "./helpers"
-import { DiffDOMOptions, nodeType } from "../types"
+import { DiffDOMOptions, anyNodeType, nodeType, textNodeType } from "../types"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
 import { stringToObj } from "./fromString"
@@ -32,13 +32,13 @@ export class DiffFinder {
     ) {
         this.options = options
         this.t1 =
-            typeof HTMLElement !== "undefined" && t1Node instanceof Element
+            typeof Element !== "undefined" && t1Node instanceof Element
                 ? nodeToObj(t1Node, this.options)
                 : typeof t1Node === "string"
                 ? stringToObj(t1Node, this.options)
                 : JSON.parse(JSON.stringify(t1Node))
         this.t2 =
-            typeof HTMLElement !== "undefined" && t2Node instanceof Element
+            typeof Element !== "undefined" && t2Node instanceof Element
                 ? nodeToObj(t2Node, this.options)
                 : typeof t2Node === "string"
                 ? stringToObj(t2Node, this.options)
@@ -46,10 +46,18 @@ export class DiffFinder {
         this.diffcount = 0
         this.foundAll = false
         if (this.debug) {
-            // @ts-expect-error TS(2741): Property 'nodeName' is missing in type '{}' but re... Remove this comment to see the full error message
-            this.t1Orig = nodeToObj(t1Node, this.options)
-            // @ts-expect-error TS(2322): Type '{}' is not assignable to type 'nodeType'.
-            this.t2Orig = nodeToObj(t2Node, this.options)
+            this.t1Orig =
+                typeof Element !== "undefined" && t1Node instanceof Element
+                    ? nodeToObj(t1Node, this.options)
+                    : typeof t1Node === "string"
+                    ? stringToObj(t1Node, this.options)
+                    : JSON.parse(JSON.stringify(t1Node))
+            this.t2Orig =
+                typeof Element !== "undefined" && t2Node instanceof Element
+                    ? nodeToObj(t2Node, this.options)
+                    : typeof t2Node === "string"
+                    ? stringToObj(t2Node, this.options)
+                    : JSON.parse(JSON.stringify(t2Node))
         }
 
         this.tracker = new DiffTracker()
@@ -98,7 +106,7 @@ export class DiffFinder {
         return this.tracker.list
     }
 
-    findNextDiff(t1: any, t2: any, route: any) {
+    findNextDiff(t1: anyNodeType, t2: anyNodeType, route: number[]) {
         let diffs
         let fdiffs
 
@@ -119,6 +127,13 @@ export class DiffFinder {
                 t1.outerDone = true
             }
         }
+        if (Object.prototype.hasOwnProperty.call(t1, "data")) {
+            // Comment or Text
+            return []
+        }
+        t1 = t1 as nodeType
+        t2 = t2 as nodeType
+
         // inner differences?
         if (!t1.innerDone) {
             diffs = this.findInnerDiff(t1, t2, route)
@@ -145,7 +160,7 @@ export class DiffFinder {
         return []
     }
 
-    findOuterDiff(t1: any, t2: any, route: any) {
+    findOuterDiff(t1: anyNodeType, t2: anyNodeType, route: number[]) {
         const diffs = []
         let attr
         let attr1
@@ -187,7 +202,12 @@ export class DiffFinder {
             ]
         }
 
-        if (t1.data !== t2.data) {
+        if (
+            Object.prototype.hasOwnProperty.call(t1, "data") &&
+            (t1 as textNodeType).data !== (t2 as textNodeType).data
+        ) {
+            t1 = t1 as textNodeType
+            t2 = t2 as textNodeType
             // Comment or text node.
             if (t1.nodeName === "#text") {
                 return [
@@ -213,6 +233,9 @@ export class DiffFinder {
                 ]
             }
         }
+
+        t1 = t1 as nodeType
+        t2 = t2 as nodeType
 
         attr1 = t1.attributes ? Object.keys(t1.attributes).sort() : []
         attr2 = t2.attributes ? Object.keys(t2.attributes).sort() : []
@@ -277,17 +300,17 @@ export class DiffFinder {
         return diffs
     }
 
-    findInnerDiff(t1: any, t2: any, route: any) {
+    findInnerDiff(t1: nodeType, t2: nodeType, route: number[]) {
         const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
         const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
         const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
         let childNodesLengthDifference = Math.abs(
             t1ChildNodes.length - t2ChildNodes.length
         )
-        let diffs: any = []
+        let diffs: Diff[] = []
         let index = 0
         if (!this.options.maxChildCount || last < this.options.maxChildCount) {
-            const cachedSubtrees = t1.subsets && t1.subsetsAge--
+            const cachedSubtrees = Boolean(t1.subsets && t1.subsetsAge--)
             const subtrees = cachedSubtrees
                 ? t1.subsets
                 : t1.childNodes && t2.childNodes
@@ -447,6 +470,7 @@ export class DiffFinder {
 
                         childNodesLengthDifference -= 1
                     } else if (t1ChildNodes.length < t2ChildNodes.length) {
+                        const cloneChild = cloneObj(e2)
                         diffs = diffs.concat([
                             new Diff()
                                 .setValue(
@@ -455,14 +479,14 @@ export class DiffFinder {
                                 )
                                 .setValue(
                                     this.options._const.element,
-                                    cloneObj(e2)
+                                    cloneChild
                                 )
                                 .setValue(
                                     this.options._const.route,
                                     route.concat(index)
                                 ),
                         ])
-                        t1ChildNodes.splice(i, 0, {})
+                        t1ChildNodes.splice(i, 0, cloneChild)
                         childNodesLengthDifference -= 1
                     } else {
                         diffs = diffs.concat([
@@ -494,11 +518,11 @@ export class DiffFinder {
     }
 
     attemptGroupRelocation(
-        t1: any,
-        t2: any,
-        subtrees: any,
-        route: any,
-        cachedSubtrees: any
+        t1: nodeType,
+        t2: nodeType,
+        subtrees: anyNodeType[],
+        route: number[],
+        cachedSubtrees: boolean
     ) {
         /* Either t1.childNodes and t2.childNodes have the same length, or
          * there are at least two groups of similar elements can be found.
@@ -695,7 +719,7 @@ export class DiffFinder {
         return diffs
     }
 
-    findValueDiff(t1: any, t2: any, route: any) {
+    findValueDiff(t1: nodeType, t2: nodeType, route: number[]) {
         // Differences of value. Only useful if the value/selection/checked value
         // differs from what is represented in the DOM. For example in the case
         // of filled out forms, etc.

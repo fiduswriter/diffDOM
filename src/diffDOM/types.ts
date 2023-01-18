@@ -1,6 +1,6 @@
 import { Diff } from "./virtual/helpers"
 
-interface subset {
+interface subsetType {
     oldValue: number
     newValue: number
     length: number
@@ -14,8 +14,8 @@ interface nodeType {
     checked?: boolean
     value?: string | number
     selected?: boolean
-    // The following are only used durign diffing.
-    subsets?: subset[]
+    // The following are only used during diffing.
+    subsets?: subsetType[]
     subsetsAge?: number
     outerDone?: boolean
     innerDone?: boolean
@@ -26,6 +26,8 @@ interface textNodeType {
     nodeName: "#text" | "#comment"
     data: string
     childNodes?: never
+    // The following are only used during diffing.
+    outerDone?: boolean
 }
 
 type anyNodeType = nodeType | textNodeType
@@ -90,7 +92,7 @@ interface ConstNames {
 interface DiffDOMOptions {
     debug: boolean
     diffcap: number // Limit for how many diffs are accepting when debugging. Inactive when debug is false.
-    maxDepth: boolean // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
+    maxDepth: number | false // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
     maxChildCount: number // False or a numeral. If set to a numeral, only does a simplified form of diffing of contents so that the number of diffs cannot be higher than the number of child nodes.
     valueDiffing: boolean // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
@@ -122,5 +124,6 @@ export {
     DiffDOMOptions,
     DiffDOMOptionsPartial,
     nodeType,
+    subsetType,
     textNodeType,
 }
