@@ -704,7 +704,10 @@ export class DiffFinder {
                                     this.options._const.action,
                                     this.options._const.relocateGroup
                                 )
-                                .setValue("groupLength", group.length)
+                                .setValue(
+                                    this.options._const.groupLength,
+                                    group.length
+                                )
                                 .setValue(
                                     this.options._const.from,
                                     group.oldValue

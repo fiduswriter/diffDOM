@@ -75,6 +75,7 @@ export class DiffDOM {
                 "newValue",
                 "element",
                 "group",
+                "groupLength",
                 "from",
                 "to",
                 "name",

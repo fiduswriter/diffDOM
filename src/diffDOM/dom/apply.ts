@@ -133,7 +133,9 @@ export function applyDiff(
             )
             break
         case options._const.relocateGroup:
-            nodeArray = Array(...new Array(diff.groupLength)).map(() =>
+            nodeArray = Array(
+                ...new Array(diff[options._const.groupLength])
+            ).map(() =>
                 node.removeChild(node.childNodes[diff[options._const.from]])
             )
             nodeArray.forEach((childNode, index) => {

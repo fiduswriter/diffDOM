@@ -4,6 +4,7 @@ interface subsetType {
     oldValue: number
     newValue: number
     length: number
+    delete?: true
 }
 
 interface nodeType {
@@ -77,6 +78,7 @@ interface ConstNames {
     newValue: string | number
     element: string | number
     group: string | number
+    groupLength: string | number
     from: string | number
     to: string | number
     name: string | number

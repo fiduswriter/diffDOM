@@ -1,5 +1,5 @@
-import { DiffDOMOptions, nodeType } from "../types"
-import { cloneObj } from "./helpers"
+import { Diff, cloneObj } from "./helpers"
+import { DiffDOMOptions, anyNodeType, nodeType, subsetType } from "../types"
 
 // ===== Apply a virtual diff =====
 
@@ -23,7 +23,7 @@ function getFromVirtualRoute(tree: nodeType, route: number[]) {
 
 function applyVirtualDiff(
     tree: nodeType,
-    diff: any,
+    diff: Diff,
     options: DiffDOMOptions // {preVirtualDiffApply, postVirtualDiffApply, _const}
 ) {
     let node, parentNode, nodeIndex
@@ -40,7 +40,7 @@ function applyVirtualDiff(
         nodeIndex = routeInfo.nodeIndex
     }
 
-    const newSubsets: any = []
+    const newSubsets: subsetType[] = []
 
     // pre-diff hook
     const info = {
@@ -55,7 +55,6 @@ function applyVirtualDiff(
     let newNode
     let nodeArray
     let route
-    let c: any
 
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
@@ -125,26 +124,30 @@ function applyVirtualDiff(
             break
         case options._const.relocateGroup:
             nodeArray = node.childNodes
-                .splice(diff[options._const.from], diff.groupLength)
+                .splice(
+                    diff[options._const.from],
+                    diff[options._const.groupLength]
+                )
                 .reverse()
-            nodeArray.forEach((movedNode: any) =>
+            nodeArray.forEach((movedNode: anyNodeType) =>
                 node.childNodes.splice(diff[options._const.to], 0, movedNode)
             )
             if (node.subsets) {
-                node.subsets.forEach((map: any) => {
+                node.subsets.forEach((map: subsetType) => {
                     if (
                         diff[options._const.from] < diff[options._const.to] &&
                         map.oldValue <= diff[options._const.to] &&
                         map.oldValue > diff[options._const.from]
                     ) {
-                        map.oldValue -= diff.groupLength
+                        map.oldValue -= diff[options._const.groupLength]
                         const splitLength =
                             map.oldValue + map.length - diff[options._const.to]
                         if (splitLength > 0) {
                             // new insertion splits map.
                             newSubsets.push({
                                 oldValue:
-                                    diff[options._const.to] + diff.groupLength,
+                                    diff[options._const.to] +
+                                    diff[options._const.groupLength],
                                 newValue:
                                     map.newValue + map.length - splitLength,
                                 length: splitLength,
@@ -156,14 +159,15 @@ function applyVirtualDiff(
                         map.oldValue > diff[options._const.to] &&
                         map.oldValue < diff[options._const.from]
                     ) {
-                        map.oldValue += diff.groupLength
+                        map.oldValue += diff[options._const.groupLength]
                         const splitLength =
                             map.oldValue + map.length - diff[options._const.to]
                         if (splitLength > 0) {
                             // new insertion splits map.
                             newSubsets.push({
                                 oldValue:
-                                    diff[options._const.to] + diff.groupLength,
+                                    diff[options._const.to] +
+                                    diff[options._const.groupLength],
                                 newValue:
                                     map.newValue + map.length - splitLength,
                                 length: splitLength,
@@ -180,7 +184,7 @@ function applyVirtualDiff(
         case options._const.removeElement:
             parentNode.childNodes.splice(nodeIndex, 1)
             if (parentNode.subsets) {
-                parentNode.subsets.forEach((map: any) => {
+                parentNode.subsets.forEach((map: subsetType) => {
                     if (map.oldValue > nodeIndex) {
                         map.oldValue -= 1
                     } else if (map.oldValue === nodeIndex) {
@@ -206,9 +210,9 @@ function applyVirtualDiff(
             }
             node = parentNode
             break
-        case options._const.addElement:
+        case options._const.addElement: {
             route = diff[options._const.route].slice()
-            c = route.splice(route.length - 1, 1)[0]
+            const c: number = route.splice(route.length - 1, 1)[0]
             node = getFromVirtualRoute(tree, route)?.node
             newNode = cloneObj(diff[options._const.element])
             newNode.outerDone = true
@@ -225,7 +229,7 @@ function applyVirtualDiff(
                 node.childNodes.splice(c, 0, newNode)
             }
             if (node.subsets) {
-                node.subsets.forEach((map: any) => {
+                node.subsets.forEach((map: subsetType) => {
                     if (map.oldValue >= c) {
                         map.oldValue += 1
                     } else if (
@@ -243,13 +247,14 @@ function applyVirtualDiff(
                 })
             }
             break
+        }
         case options._const.removeTextElement:
             parentNode.childNodes.splice(nodeIndex, 1)
             if (parentNode.nodeName === "TEXTAREA") {
                 delete parentNode.value
             }
             if (parentNode.subsets) {
-                parentNode.subsets.forEach((map: any) => {
+                parentNode.subsets.forEach((map: subsetType) => {
                     if (map.oldValue > nodeIndex) {
                         map.oldValue -= 1
                     } else if (map.oldValue === nodeIndex) {
@@ -275,9 +280,9 @@ function applyVirtualDiff(
             }
             node = parentNode
             break
-        case options._const.addTextElement:
+        case options._const.addTextElement: {
             route = diff[options._const.route].slice()
-            c = route.splice(route.length - 1, 1)[0]
+            const c: number = route.splice(route.length - 1, 1)[0]
             newNode = {}
             newNode.nodeName = "#text"
             newNode.data = diff[options._const.value]
@@ -295,7 +300,7 @@ function applyVirtualDiff(
                 node.value = diff[options._const.newValue]
             }
             if (node.subsets) {
-                node.subsets.forEach((map: any) => {
+                node.subsets.forEach((map: subsetType) => {
                     if (map.oldValue >= c) {
                         map.oldValue += 1
                     }
@@ -311,33 +316,35 @@ function applyVirtualDiff(
                 })
             }
             break
+        }
         default:
             console.log("unknown action")
     }
 
     if (node.subsets) {
         node.subsets = node.subsets.filter(
-            (map: any) => !map.delete && map.oldValue !== map.newValue
+            (map: subsetType) => !map.delete && map.oldValue !== map.newValue
         )
         if (newSubsets.length) {
             node.subsets = node.subsets.concat(newSubsets)
         }
     }
 
-    // capture newNode for the callback
-    // @ts-expect-error TS(2339): Property 'newNode' does not exist on type '{ diff:... Remove this comment to see the full error message
-    info.newNode = newNode
-    options.postVirtualDiffApply(info)
+    options.postVirtualDiffApply({
+        node: info.node,
+        diff: info.diff,
+        newNode,
+    })
 
     return
 }
 
 export function applyVirtual(
     tree: nodeType,
-    diffs: any,
+    diffs: Diff[],
     options: DiffDOMOptions
 ) {
-    diffs.forEach((diff: any) => {
+    diffs.forEach((diff: Diff) => {
         applyVirtualDiff(tree, diff, options)
     })
     return true
