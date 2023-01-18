@@ -10,7 +10,7 @@ import {
 } from "./helpers"
 import {
     DiffDOMOptions,
-    anyNodeType,
+    elementNodeType,
     nodeType,
     subsetType,
     textNodeType,
@@ -26,14 +26,14 @@ export class DiffFinder {
     diffcount: number
     foundAll: boolean
     options: DiffDOMOptions
-    t1: nodeType
-    t1Orig: nodeType
-    t2: nodeType
-    t2Orig: nodeType
+    t1: elementNodeType
+    t1Orig: elementNodeType
+    t2: elementNodeType
+    t2Orig: elementNodeType
     tracker: DiffTracker
     constructor(
-        t1Node: string | nodeType | Element,
-        t2Node: string | nodeType | Element,
+        t1Node: string | elementNodeType | Element,
+        t2Node: string | elementNodeType | Element,
         options: DiffDOMOptions
     ) {
         this.options = options
@@ -73,7 +73,7 @@ export class DiffFinder {
         return this.findDiffs(this.t1, this.t2)
     }
 
-    findDiffs(t1: nodeType, t2: nodeType) {
+    findDiffs(t1: elementNodeType, t2: elementNodeType) {
         let diffs
         do {
             if (this.options.debug) {
@@ -112,7 +112,7 @@ export class DiffFinder {
         return this.tracker.list
     }
 
-    findNextDiff(t1: anyNodeType, t2: anyNodeType, route: number[]) {
+    findNextDiff(t1: nodeType, t2: nodeType, route: number[]) {
         let diffs
         let fdiffs
 
@@ -137,8 +137,8 @@ export class DiffFinder {
             // Comment or Text
             return []
         }
-        t1 = t1 as nodeType
-        t2 = t2 as nodeType
+        t1 = t1 as elementNodeType
+        t2 = t2 as elementNodeType
 
         // inner differences?
         if (!t1.innerDone) {
@@ -166,7 +166,7 @@ export class DiffFinder {
         return []
     }
 
-    findOuterDiff(t1: anyNodeType, t2: anyNodeType, route: number[]) {
+    findOuterDiff(t1: nodeType, t2: nodeType, route: number[]) {
         const diffs = []
         let attr
         let attr1
@@ -240,8 +240,8 @@ export class DiffFinder {
             }
         }
 
-        t1 = t1 as nodeType
-        t2 = t2 as nodeType
+        t1 = t1 as elementNodeType
+        t2 = t2 as elementNodeType
 
         attr1 = t1.attributes ? Object.keys(t1.attributes).sort() : []
         attr2 = t2.attributes ? Object.keys(t2.attributes).sort() : []
@@ -306,7 +306,7 @@ export class DiffFinder {
         return diffs
     }
 
-    findInnerDiff(t1: nodeType, t2: nodeType, route: number[]) {
+    findInnerDiff(t1: elementNodeType, t2: elementNodeType, route: number[]) {
         const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
         const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
         const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
@@ -524,8 +524,8 @@ export class DiffFinder {
     }
 
     attemptGroupRelocation(
-        t1: nodeType,
-        t2: nodeType,
+        t1: elementNodeType,
+        t2: elementNodeType,
         subtrees: subsetType[],
         route: number[],
         cachedSubtrees: boolean
@@ -728,7 +728,7 @@ export class DiffFinder {
         return diffs
     }
 
-    findValueDiff(t1: nodeType, t2: nodeType, route: number[]) {
+    findValueDiff(t1: elementNodeType, t2: elementNodeType, route: number[]) {
         // Differences of value. Only useful if the value/selection/checked value
         // differs from what is represented in the DOM. For example in the case
         // of filled out forms, etc.

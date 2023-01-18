@@ -1,9 +1,9 @@
 import { Diff, cloneObj } from "./helpers"
-import { DiffDOMOptions, anyNodeType, nodeType, subsetType } from "../types"
+import { DiffDOMOptions, elementNodeType, nodeType, subsetType } from "../types"
 
 // ===== Apply a virtual diff =====
 
-function getFromVirtualRoute(tree: nodeType, route: number[]) {
+function getFromVirtualRoute(tree: elementNodeType, route: number[]) {
     let node = tree
     let parentNode
     let nodeIndex
@@ -22,7 +22,7 @@ function getFromVirtualRoute(tree: nodeType, route: number[]) {
 }
 
 function applyVirtualDiff(
-    tree: nodeType,
+    tree: elementNodeType,
     diff: Diff,
     options: DiffDOMOptions // {preVirtualDiffApply, postVirtualDiffApply, _const}
 ) {
@@ -129,7 +129,7 @@ function applyVirtualDiff(
                     diff[options._const.groupLength]
                 )
                 .reverse()
-            nodeArray.forEach((movedNode: anyNodeType) =>
+            nodeArray.forEach((movedNode: nodeType) =>
                 node.childNodes.splice(diff[options._const.to], 0, movedNode)
             )
             if (node.subsets) {
@@ -340,7 +340,7 @@ function applyVirtualDiff(
 }
 
 export function applyVirtual(
-    tree: nodeType,
+    tree: elementNodeType,
     diffs: Diff[],
     options: DiffDOMOptions
 ) {

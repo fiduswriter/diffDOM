@@ -7,10 +7,10 @@ interface subsetType {
     delete?: true
 }
 
-interface nodeType {
+interface elementNodeType {
     nodeName: string
     attributes?: { [key: string]: string }
-    childNodes?: anyNodeType[] // eslint-disable-line no-use-before-define
+    childNodes?: nodeType[] // eslint-disable-line no-use-before-define
     data?: string
     checked?: boolean
     value?: string | number
@@ -31,7 +31,7 @@ interface textNodeType {
     outerDone?: boolean
 }
 
-type anyNodeType = nodeType | textNodeType
+type nodeType = elementNodeType | textNodeType
 
 interface Document {
     createElement: (arg: string) => Element
@@ -43,7 +43,7 @@ interface Document {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface PreDiffApplyOptions {
     diff: Diff
-    node: anyNodeType
+    node: nodeType
 }
 
 type PreDiffApply = (PreDiffApplyOptions) => boolean
@@ -51,8 +51,8 @@ type PreDiffApply = (PreDiffApplyOptions) => boolean
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface PostDiffApplyOptions {
     diff: Diff
-    node: anyNodeType
-    newNode: anyNodeType
+    node: nodeType
+    newNode: nodeType
 }
 
 type PostDiffApply = (PostDiffApplyOptions) => void
@@ -126,17 +126,17 @@ type diffType = {
         | boolean
         | number[]
         | { [key: string]: string | { [key: string]: string } }
-        | nodeType
+        | elementNodeType
 }
 
 export {
-    anyNodeType,
+    nodeType,
     ConstNames,
     ConstNamesPartial,
     DiffDOMOptions,
     DiffDOMOptionsPartial,
     diffType,
-    nodeType,
+    elementNodeType,
     subsetType,
     textNodeType,
 }

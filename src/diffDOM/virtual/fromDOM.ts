@@ -1,7 +1,7 @@
-import { DiffDOMOptionsPartial, nodeType, textNodeType } from "../types"
+import { DiffDOMOptionsPartial, elementNodeType, textNodeType } from "../types"
 
 export function nodeToObj(aNode: Element, options: DiffDOMOptionsPartial = {}) {
-    const objNode: nodeType | textNodeType = {
+    const objNode: elementNodeType | textNodeType = {
         nodeName: aNode.nodeName,
     }
     if (aNode instanceof Text || aNode instanceof Comment) {

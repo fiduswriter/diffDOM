@@ -1,4 +1,4 @@
-import { anyNodeType } from "../types"
+import { nodeType } from "../types"
 
 // from html-parse-stringify (MIT)
 
@@ -97,10 +97,10 @@ const parseTag = (tag: string) => {
 }
 
 export const stringToObj = (html: string, options = { components: empty }) => {
-    const result: anyNodeType[] = []
-    let current: { type: string; node: anyNodeType; voidElement: boolean }
+    const result: nodeType[] = []
+    let current: { type: string; node: nodeType; voidElement: boolean }
     let level = -1
-    const arr: { type: string; node: anyNodeType; voidElement: boolean }[] = []
+    const arr: { type: string; node: nodeType; voidElement: boolean }[] = []
     let inComponent = false
 
     // handle text at top level

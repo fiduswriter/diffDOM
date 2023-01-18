@@ -4,7 +4,7 @@ import {
     DiffDOMOptions,
     DiffDOMOptionsPartial,
     diffType,
-    nodeType,
+    elementNodeType,
 } from "./types"
 import { applyDOM, undoDOM } from "./dom/index"
 import { DiffFinder } from "./virtual/index"
@@ -19,7 +19,7 @@ const DEFAULT_OPTIONS = {
     valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
     textDiff(
-        node: nodeType,
+        node: elementNodeType,
         currentValue: string,
         expectedValue: string,
         newValue: string
@@ -111,8 +111,8 @@ export class DiffDOM {
     }
 
     diff(
-        t1Node: string | nodeType | Element,
-        t2Node: string | nodeType | Element
+        t1Node: string | elementNodeType | Element,
+        t2Node: string | elementNodeType | Element
     ) {
         const finder = new DiffFinder(t1Node, t2Node, this.options)
         return finder.init()

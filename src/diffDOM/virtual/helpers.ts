@@ -1,4 +1,4 @@
-import { anyNodeType, nodeType, subsetType } from "../types"
+import { elementNodeType, nodeType, subsetType } from "../types"
 
 export class Diff {
     constructor(options = {}) {
@@ -17,18 +17,18 @@ export class Diff {
             | boolean
             | number[]
             | { [key: string]: string | { [key: string]: string } }
-            | nodeType
+            | elementNodeType
     ) {
         this[aKey] = aValue
         return this
     }
 }
 
-function elementDescriptors(el: anyNodeType) {
+function elementDescriptors(el: nodeType) {
     const output = []
     output.push(el.nodeName)
     if (el.nodeName !== "#text" && el.nodeName !== "#comment") {
-        el = el as nodeType
+        el = el as elementNodeType
         if (el.attributes) {
             if (el.attributes["class"]) {
                 output.push(
@@ -46,11 +46,11 @@ function elementDescriptors(el: anyNodeType) {
     return output
 }
 
-function findUniqueDescriptors(li: anyNodeType[]) {
+function findUniqueDescriptors(li: nodeType[]) {
     const uniqueDescriptors = {}
     const duplicateDescriptors = {}
 
-    li.forEach((node: anyNodeType) => {
+    li.forEach((node: nodeType) => {
         elementDescriptors(node).forEach((descriptor) => {
             const inUnique = descriptor in uniqueDescriptors
             const inDupes = descriptor in duplicateDescriptors
@@ -66,7 +66,7 @@ function findUniqueDescriptors(li: anyNodeType[]) {
     return uniqueDescriptors
 }
 
-export const uniqueInBoth = (l1: anyNodeType[], l2: anyNodeType[]) => {
+export const uniqueInBoth = (l1: nodeType[], l2: nodeType[]) => {
     const l1Unique = findUniqueDescriptors(l1)
     const l2Unique = findUniqueDescriptors(l2)
     const inBoth = {}
@@ -87,7 +87,7 @@ export const cloneObj = (obj: object) => {
     return JSON.parse(JSON.stringify(obj))
 }
 
-export function removeDone(tree: nodeType) {
+export function removeDone(tree: elementNodeType) {
     delete tree.outerDone
     delete tree.innerDone
     delete tree.valueDone
@@ -98,7 +98,7 @@ export function removeDone(tree: nodeType) {
     }
 }
 
-export function isEqual(e1: anyNodeType, e2: anyNodeType) {
+export function isEqual(e1: nodeType, e2: nodeType) {
     if (
         !["nodeName", "value", "checked", "selected", "data"].every(
             (element) => {
@@ -115,8 +115,8 @@ export function isEqual(e1: anyNodeType, e2: anyNodeType) {
         // Comment or Text
         return true
     }
-    e1 = e1 as nodeType
-    e2 = e2 as nodeType
+    e1 = e1 as elementNodeType
+    e2 = e2 as elementNodeType
     if (Boolean(e1.attributes) !== Boolean(e2.attributes)) {
         return false
     }
@@ -134,8 +134,8 @@ export function isEqual(e1: anyNodeType, e2: anyNodeType) {
         if (
             !e1Attributes.every((attribute) => {
                 if (
-                    (e1 as nodeType).attributes[attribute] !==
-                    (e2 as nodeType).attributes[attribute]
+                    (e1 as elementNodeType).attributes[attribute] !==
+                    (e2 as elementNodeType).attributes[attribute]
                 ) {
                     return false
                 }
@@ -150,7 +150,7 @@ export function isEqual(e1: anyNodeType, e2: anyNodeType) {
             return false
         }
         if (
-            !e1.childNodes.every((childNode: anyNodeType, index: number) =>
+            !e1.childNodes.every((childNode: nodeType, index: number) =>
                 isEqual(childNode, e2.childNodes[index])
             )
         ) {
@@ -162,8 +162,8 @@ export function isEqual(e1: anyNodeType, e2: anyNodeType) {
 }
 
 export const roughlyEqual = (
-    e1: anyNodeType,
-    e2: anyNodeType,
+    e1: nodeType,
+    e2: nodeType,
     uniqueDescriptors: { [key: string]: boolean },
     sameSiblings: boolean,
     preventRecursion = false
@@ -183,8 +183,8 @@ export const roughlyEqual = (
         return preventRecursion ? true : e1.data === e2.data
     }
 
-    e1 = e1 as nodeType
-    e2 = e2 as nodeType
+    e1 = e1 as elementNodeType
+    e2 = e2 as elementNodeType
 
     if (e1.nodeName in uniqueDescriptors) {
         return true
@@ -227,14 +227,14 @@ export const roughlyEqual = (
 
     if (preventRecursion) {
         return nodeList1.every(
-            (element: anyNodeType, index: number) =>
+            (element: nodeType, index: number) =>
                 element.nodeName === nodeList2[index].nodeName
         )
     } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
         // was not set, we must explicitly force it to true for child iterations.
         const childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2)
-        return nodeList1.every((element: anyNodeType, index: number) =>
+        return nodeList1.every((element: nodeType, index: number) =>
             roughlyEqual(
                 element,
                 nodeList2[index],
@@ -250,8 +250,8 @@ export const roughlyEqual = (
  * based on https://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Longest_common_substring#JavaScript
  */
 const findCommonSubsets = (
-    c1: anyNodeType[],
-    c2: anyNodeType[],
+    c1: nodeType[],
+    c2: nodeType[],
     marked1: boolean[],
     marked2: boolean[]
 ) => {
@@ -271,7 +271,7 @@ const findCommonSubsets = (
         subsetsSame = c1Length === c2Length
 
     if (subsetsSame) {
-        c1.some((element: anyNodeType, i: number) => {
+        c1.some((element: nodeType, i: number) => {
             const c1Desc = elementDescriptors(element)
             const c2Desc = elementDescriptors(c2[i])
             if (c1Desc.length !== c2Desc.length) {
@@ -353,8 +353,8 @@ const makeBooleanArray = (n: number, v: boolean) =>
  *
  */
 export const getGapInformation = (
-    t1: nodeType,
-    t2: nodeType,
+    t1: elementNodeType,
+    t2: elementNodeType,
     stable: subsetType[]
 ) => {
     const gaps1: (true | number)[] = t1.childNodes
@@ -393,7 +393,10 @@ const markBoth = (marked1, marked2, subset: subsetType, i: number) => {
     marked2[subset.newValue + i] = true
 }
 
-export const markSubTrees = (oldTree: nodeType, newTree: nodeType) => {
+export const markSubTrees = (
+    oldTree: elementNodeType,
+    newTree: elementNodeType
+) => {
     // note: the child lists are views, and so update as we update old/newTree
     const oldChildren = oldTree.childNodes ? oldTree.childNodes : []
 

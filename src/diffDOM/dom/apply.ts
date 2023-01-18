@@ -1,4 +1,4 @@
-import { DiffDOMOptions, anyNodeType, diffType } from "../types"
+import { DiffDOMOptions, diffType, nodeType } from "../types"
 
 import { objToNode } from "./fromVirtual"
 
@@ -122,9 +122,9 @@ export function applyDiff(
         case options._const.replaceElement:
             node.parentNode.replaceChild(
                 objToNode(
-                    diff[options._const.newValue] as anyNodeType,
+                    diff[options._const.newValue] as nodeType,
                     (
-                        diff[options._const.newValue] as anyNodeType
+                        diff[options._const.newValue] as nodeType
                     ).nodeName.toLowerCase() === "svg",
                     options
                 ),
@@ -159,7 +159,7 @@ export function applyDiff(
             }
             node.insertBefore(
                 objToNode(
-                    diff[options._const.element] as anyNodeType,
+                    diff[options._const.element] as nodeType,
                     node.namespaceURI === "http://www.w3.org/2000/svg",
                     options
                 ),

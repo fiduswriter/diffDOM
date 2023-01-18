@@ -1,7 +1,7 @@
-import { DiffDOMOptions, nodeType, textNodeType } from "../types"
+import { DiffDOMOptions, elementNodeType, textNodeType } from "../types"
 
 export function objToNode(
-    objNode: nodeType,
+    objNode: elementNodeType,
     insideSvg: boolean,
     options: DiffDOMOptions
 ) {
@@ -32,8 +32,9 @@ export function objToNode(
         }
         if (objNode.childNodes) {
             node = node as Element
-            objNode.childNodes.forEach((childNode: nodeType | textNodeType) =>
-                node.appendChild(objToNode(childNode, insideSvg, options))
+            objNode.childNodes.forEach(
+                (childNode: elementNodeType | textNodeType) =>
+                    node.appendChild(objToNode(childNode, insideSvg, options))
             )
         }
         if (options.valueDiffing) {
