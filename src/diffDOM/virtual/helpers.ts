@@ -64,13 +64,6 @@ export const uniqueInBoth = (l1: diffNodeType[], l2: diffNodeType[]) => {
     return inBoth
 }
 
-export const cloneObj = (obj: object) => {
-    if (global.structuredClone) {
-        return structuredClone(obj)
-    }
-    return JSON.parse(JSON.stringify(obj))
-}
-
 export const removeDone = (tree: elementDiffNodeType) => {
     delete tree.outerDone
     delete tree.innerDone

@@ -1,5 +1,5 @@
-import typescript from 'rollup-plugin-typescript2'
-import dts from 'rollup-plugin-dts'
+import typescript from "@rollup/plugin-typescript"
+import dts from "rollup-plugin-dts"
 import buble from "@rollup/plugin-buble"
 import terser from "@rollup/plugin-terser"
 
@@ -13,25 +13,13 @@ export default [
                 sourcemap: true,
             },
             {
-                file: "browser/diffDOM.js",
-                format: "iife",
-                name: "diffDOM",
+                file: "dist/module.js",
+                format: "es",
                 sourcemap: true,
             },
         ],
         plugins: [
-            typescript({
-                //check: false,
-                useTsconfigDeclarationDir: true,
-                tsconfigDefaults: {
-                    compilerOptions: {
-                        allowSyntheticDefaultImports: true,
-                        declaration: true,
-                        //emitDeclarationOnly: true,
-                        declarationDir: "dist/dts"
-                    }
-                }
-            }),
+            typescript(),
             buble(),
             terser()
         ],
@@ -40,5 +28,26 @@ export default [
         input: './dist/dts/index.d.ts',
         output: [{ file: 'dist/index.d.ts', format: 'es' }],
         plugins: [dts()],
+    },
+    {
+        input: "src/index.ts",
+        output: [
+            {
+                file: "browser/diffDOM.js",
+                format: "iife",
+                name: "diffDOM",
+                sourcemap: true,
+            },
+        ],
+        plugins: [
+            typescript({
+                compilerOptions: {
+                    declaration: false,
+                    declarationDir: undefined
+                }
+            }),
+            buble(),
+            terser()
+        ],
     },
 ]
