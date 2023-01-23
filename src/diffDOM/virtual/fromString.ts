@@ -2,7 +2,8 @@ import { nodeType } from "../types"
 
 // from html-parse-stringify (MIT)
 
-const tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g
+const tagRE =
+    /<\s*\/*[a-zA-Z:_][a-zA-Z0-9:_\-.]*\s*(?:"[^"]*"['"]*|'[^']*'['"]*|[^'"/>])*\/*\s*>|<!--(?:.|\n|\r)*?-->/g
 
 // re-used obj for quick lookups of components
 const empty = Object.create ? Object.create(null) : {}
@@ -17,7 +18,7 @@ function unescape(string: string) {
 
 // create optimized lookup object for
 // void elements as listed here:
-// http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
+// https://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
 const lookup = {
     area: true,
     base: true,
@@ -134,7 +135,7 @@ export const stringToObj = (html: string, options = { components: empty }) => {
                 return ""
             }
             const parent = arr[level]
-            if (parent) {
+            if (parent && comment.nodeName) {
                 if (!parent.node.childNodes) {
                     parent.node.childNodes = []
                 }
@@ -168,13 +169,12 @@ export const stringToObj = (html: string, options = { components: empty }) => {
                 })
             }
             // if we're at root, push new base node
-            if (level === 0) {
+            if (level === 0 && current.node.nodeName) {
                 result.push(current.node)
             }
 
             const parent = arr[level - 1]
-
-            if (parent) {
+            if (parent && current.node.nodeName) {
                 if (!parent.node.childNodes) {
                     parent.node.childNodes = []
                 }
