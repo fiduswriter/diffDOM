@@ -1,6 +1,6 @@
 import { DiffDOMOptionsPartial, elementNodeType, textNodeType } from "../types"
 
-export function nodeToObj(aNode: Element, options: DiffDOMOptionsPartial = {}) {
+export function nodeToObj(aNode: Element, options: DiffDOMOptionsPartial = {valueDiffing: true}) {
     const objNode: elementNodeType | textNodeType = {
         nodeName: aNode.nodeName,
     }
