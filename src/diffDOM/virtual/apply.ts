@@ -101,6 +101,9 @@ function applyVirtualDiff(
             break
         case options._const.modifyTextElement:
             node.data = diff[options._const.newValue]
+            if (parentNode.nodeName === "TEXTAREA") {
+                parentNode.value = diff[options._const.newValue]
+            }
             break
         case options._const.modifyValue:
             node.value = diff[options._const.newValue]

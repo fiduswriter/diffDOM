@@ -1,12 +1,10 @@
-import { nodeType } from "../types"
+import { DiffDOMOptionsPartial, nodeType } from "../types"
 
 // from html-parse-stringify (MIT)
 
 const tagRE =
     /<\s*\/*[a-zA-Z:_][a-zA-Z0-9:_\-.]*\s*(?:"[^"]*"['"]*|'[^']*'['"]*|[^'"/>])*\/*\s*>|<!--(?:.|\n|\r)*?-->/g
 
-// re-used obj for quick lookups of components
-const empty = Object.create ? Object.create(null) : {}
 const attrRE = /\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g
 
 function unescape(string: string) {
@@ -97,7 +95,10 @@ const parseTag = (tag: string) => {
     }
 }
 
-export const stringToObj = (html: string, options = { components: empty }) => {
+export const stringToObj = (
+    html: string,
+    options: DiffDOMOptionsPartial = { valueDiffing: true }
+) => {
     const result: nodeType[] = []
     let current: { type: string; node: nodeType; voidElement: boolean }
     let level = -1
@@ -148,13 +149,6 @@ export const stringToObj = (html: string, options = { components: empty }) => {
             current = parseTag(tag)
             level++
             if (
-                current.type === "tag" &&
-                options.components[current.node.nodeName]
-            ) {
-                current.type = "component"
-                inComponent = true
-            }
-            if (
                 !current.voidElement &&
                 !inComponent &&
                 nextChar &&
@@ -163,10 +157,19 @@ export const stringToObj = (html: string, options = { components: empty }) => {
                 if (!current.node.childNodes) {
                     current.node.childNodes = []
                 }
+                const data = unescape(
+                    html.slice(start, html.indexOf("<", start))
+                )
                 current.node.childNodes.push({
                     nodeName: "#text",
-                    data: unescape(html.slice(start, html.indexOf("<", start))),
+                    data,
                 })
+                if (
+                    options.valueDiffing &&
+                    current.node.nodeName === "TEXTAREA"
+                ) {
+                    current.node.value = data
+                }
             }
             // if we're at root, push new base node
             if (level === 0 && current.node.nodeName) {

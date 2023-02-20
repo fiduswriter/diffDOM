@@ -18,9 +18,7 @@ export function nodeToObj(
                     (objNode.attributes[attribute.name] = attribute.value)
             )
         }
-        if (aNode instanceof HTMLTextAreaElement) {
-            objNode.value = aNode.value
-        } else if (aNode.childNodes && aNode.childNodes.length > 0) {
+        if (aNode.childNodes && aNode.childNodes.length > 0) {
             objNode.childNodes = []
             const nodeArray = Array.prototype.slice.call(aNode.childNodes)
             nodeArray.forEach((childNode) =>
@@ -28,6 +26,9 @@ export function nodeToObj(
             )
         }
         if (options.valueDiffing) {
+            if (aNode instanceof HTMLTextAreaElement) {
+                objNode.value = aNode.value
+            }
             if (
                 aNode instanceof HTMLInputElement &&
                 ["radio", "checkbox"].includes(aNode.type.toLowerCase()) &&

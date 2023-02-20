@@ -90,6 +90,9 @@ export function applyDiff(
                 diff[options._const.oldValue] as string,
                 diff[options._const.newValue] as string
             )
+            if (node.parentNode instanceof HTMLTextAreaElement) {
+                node.parentNode.value = diff[options._const.newValue] as string
+            }
             break
         case options._const.modifyValue:
             if (!node || typeof node.value === "undefined") {
@@ -168,12 +171,17 @@ export function applyDiff(
             )
             break
         }
-        case options._const.removeTextElement:
+        case options._const.removeTextElement: {
             if (!node || node.nodeType !== 3) {
                 return false
             }
-            node.parentNode.removeChild(node)
+            const parentNode = node.parentNode
+            parentNode.removeChild(node)
+            if (parentNode instanceof HTMLTextAreaElement) {
+                parentNode.value = ""
+            }
             break
+        }
         case options._const.addTextElement: {
             const parentRoute = route.slice()
             const c: number = parentRoute.splice(parentRoute.length - 1, 1)[0]
@@ -185,6 +193,9 @@ export function applyDiff(
                 return false
             }
             node.insertBefore(newNode, node.childNodes[c] || null)
+            if (node.parentNode instanceof HTMLTextAreaElement) {
+                node.parentNode.value = diff[options._const.value] as string
+            }
             break
         }
         default:

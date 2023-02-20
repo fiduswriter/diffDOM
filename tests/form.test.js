@@ -67,14 +67,16 @@ describe("form", () => {
         expect(diff4).toHaveLength(1)
 
         const diff5 = dd.diff(first, second)
-        expect(diff5).toHaveLength(1)
+        expect(diff5).toHaveLength(2)
 
-        second.innerText = "Some text"
+        second.innerHTML = "Some text"
         const diff6 = dd.diff(first, second)
         dd.apply(first, diff6)
+        expect(first.innerHTML).toBe(second.innerHTML)
         const diff7 = dd.diff(first, third)
         dd.apply(first, diff7)
         expect(first.value).toBe(third.value)
+        expect(first.innerHTML).toBe(third.innerHTML)
     })
 
     it("can diff input type = text", () => {
