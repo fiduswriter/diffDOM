@@ -389,6 +389,7 @@ export class DiffFinder {
                         )
                         index -= 1
                     } else {
+        //                console.log(1)
                         diffs.push(
                             new Diff()
                                 .setValue(
@@ -477,6 +478,7 @@ export class DiffFinder {
                                     )
                             )
                         } else {
+        //                    console.log(2)
                             diffs.push(
                                 new Diff()
                                     .setValue(
@@ -571,12 +573,13 @@ export class DiffFinder {
         let similarNode
         let testI
         const diffs = []
-
+        console.log({gaps1: gaps1.slice(), gaps2: gaps2.slice(), shortest})
         for (
             let index2 = 0, index1 = 0;
             index2 < shortest;
             index1 += 1, index2 += 1
         ) {
+        //    console.log({index1, index2})
             if (
                 cachedSubtrees &&
                 (gaps1[index2] === true || gaps2[index2] === true)
@@ -651,7 +654,14 @@ export class DiffFinder {
                         shortest = Math.min(gaps1.length, gaps2.length)
                         index2 -= 1
                     }
-                } else {
+                } else if (!roughlyEqual(
+                    t1.childNodes[index1],
+                    t2.childNodes[index2],
+                    {},
+                    false,
+                    true
+                )) {
+                //    console.log(3)
                     diffs.push(
                         new Diff()
                             .setValue(

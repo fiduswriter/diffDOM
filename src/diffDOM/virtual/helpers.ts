@@ -179,11 +179,11 @@ export const roughlyEqual = (
     preventRecursion = false
 ) => {
     if (!e1 || !e2) {
-        return false
+        return 0
     }
 
     if (e1.nodeName !== e2.nodeName) {
-        return false
+        return 0
     }
 
     if (["#text", "#comment"].includes(e1.nodeName)) {
@@ -191,71 +191,82 @@ export const roughlyEqual = (
         // the mere fact that it's the same tag and "has text" means it's roughly
         // equal, and then we can find out the true text difference later.
         return preventRecursion
-            ? true
-            : (e1 as textDiffNodeType).data === (e2 as textDiffNodeType).data
+            ? 1
+            : (e1 as textDiffNodeType).data === (e2 as textDiffNodeType).data ? 1 : 0
     }
 
     e1 = e1 as elementDiffNodeType
     e2 = e2 as elementDiffNodeType
 
     if (e1.nodeName in uniqueDescriptors) {
-        return true
+        return 1
     }
+
+    let similarity = 1
 
     if (e1.attributes && e2.attributes) {
         if (e1.attributes.id) {
             if (e1.attributes.id !== e2.attributes.id) {
-                return false
+                similarity *= 0.5
             } else {
                 const idDescriptor = `${e1.nodeName}#${e1.attributes.id}`
                 if (idDescriptor in uniqueDescriptors) {
-                    return true
+                    return 1
                 }
             }
         }
         if (
-            e1.attributes["class"] &&
-            e1.attributes["class"] === e2.attributes["class"]
+            e1.attributes["class"]
         ) {
-            const classDescriptor = `${e1.nodeName}.${e1.attributes[
-                "class"
-            ].replace(/ /g, ".")}`
-            if (classDescriptor in uniqueDescriptors) {
-                return true
+            if (e1.attributes["class"] !== e2.attributes["class"]) {
+                similarity *= 0.7
+            } else {
+                const classDescriptor = `${e1.nodeName}.${e1.attributes[
+                    "class"
+                ].replace(/ /g, ".")}`
+                if (classDescriptor in uniqueDescriptors) {
+                    return 1
+                }
             }
         }
     }
 
-    if (sameSiblings) {
-        return true
+    if (!sameSiblings) {
+        similarity *= 0.6
     }
 
     const nodeList1 = e1.childNodes ? e1.childNodes.slice().reverse() : []
     const nodeList2 = e2.childNodes ? e2.childNodes.slice().reverse() : []
 
     if (nodeList1.length !== nodeList2.length) {
-        return false
-    }
-
-    if (preventRecursion) {
-        return nodeList1.every(
-            (element: nodeType, index: number) =>
-                element.nodeName === nodeList2[index].nodeName
-        )
+        similarity = 0
     } else {
-        // note: we only allow one level of recursion at any depth. If 'preventRecursion'
-        // was not set, we must explicitly force it to true for child iterations.
-        const childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2)
-        return nodeList1.every((element: nodeType, index: number) =>
-            roughlyEqual(
-                element,
-                nodeList2[index],
-                childUniqueDescriptors,
-                true,
-                true
-            )
-        )
+        if (preventRecursion) {
+            if (!nodeList1.every(
+                (element: nodeType, index: number) => element.nodeName === nodeList2[index].nodeName
+            )) {
+                similarity *= 0.8
+            }
+        } else {
+            // note: we only allow one level of recursion at any depth. If 'preventRecursion'
+            // was not set, we must explicitly force it to true for child iterations.
+            const childUniqueDescriptors = uniqueInBoth(nodeList1, nodeList2)
+            if (nodeList1.length) {
+                similarity *= (nodeList1.map((element: nodeType, index: number) =>
+                        roughlyEqual(
+                            element,
+                            nodeList2[index],
+                            childUniqueDescriptors,
+                            true,
+                            true
+                        ),
+                    ).reduce((a, b) => a + b, 0) / nodeList1.length)
+            }
+
+        }
     }
+    return Math.max(Math.min(similarity, 1), 0)
+
 }
 
 /**
@@ -268,6 +279,7 @@ const findCommonSubsets = (
     marked2: boolean[]
 ) => {
     let lcsSize = 0
+    let lcsSimilarity = 0
     let index: number[] = []
     const c1Length = c1.length
     const c2Length = c2.length
@@ -307,21 +319,30 @@ const findCommonSubsets = (
         const c1Element = c1[c1Index]
         for (let c2Index = 0; c2Index < c2Length; c2Index++) {
             const c2Element = c2[c2Index]
+            //console.log({c1Element, c2Element})
+            const elementSimilarity = roughlyEqual(
+                c1Element,
+                c2Element,
+                uniqueDescriptors,
+                subsetsSame
+            )
             if (
                 !marked1[c1Index] &&
                 !marked2[c2Index] &&
-                roughlyEqual(
-                    c1Element,
-                    c2Element,
-                    uniqueDescriptors,
-                    subsetsSame
-                )
+                elementSimilarity
             ) {
+            //    console.log('yes')
                 matches[c1Index + 1][c2Index + 1] = matches[c1Index][c2Index]
                     ? matches[c1Index][c2Index] + 1
                     : 1
-                if (matches[c1Index + 1][c2Index + 1] >= lcsSize) {
+                console.log([c1Index, c2Index, matches[c1Index + 1][c2Index + 1], lcsSize, elementSimilarity, lcsSimilarity])
+                if (matches[c1Index + 1][c2Index + 1] > lcsSize) {
                     lcsSize = matches[c1Index + 1][c2Index + 1]
+                    lcsSimilarity = elementSimilarity
+                    index = [c1Index + 1, c2Index + 1]
+                } else if (matches[c1Index + 1][c2Index + 1] === lcsSize && elementSimilarity > lcsSimilarity) {
+                    lcsSize = matches[c1Index + 1][c2Index + 1]
+                    lcsSimilarity = elementSimilarity
                     index = [c1Index + 1, c2Index + 1]
                 }
             } else {
@@ -333,7 +354,11 @@ const findCommonSubsets = (
     if (lcsSize === 0) {
         return false
     }
-
+    console.log({
+        oldValue: index[0] - lcsSize,
+        newValue: index[1] - lcsSize,
+        length: lcsSize,
+    })
     return {
         oldValue: index[0] - lcsSize,
         newValue: index[1] - lcsSize,
@@ -417,6 +442,13 @@ export const markSubTrees = (
     const marked2 = makeBooleanArray(newChildren.length, false)
     const subsets = []
 
+    // console.log({
+    //     oldChildren: JSON.parse(JSON.stringify(oldChildren)),
+    //     newChildren: JSON.parse(JSON.stringify(newChildren)),
+    //     marked1: JSON.parse(JSON.stringify(marked1)),
+    //     marked2: JSON.parse(JSON.stringify(marked2)),
+    // })
+
     const returnIndex = function () {
         return arguments[1]
     }
@@ -430,6 +462,7 @@ export const markSubTrees = (
             marked1,
             marked2
         )
+        //console.log({subset: JSON.parse(JSON.stringify(subset))})
         if (subset) {
             subsets.push(subset)
             const subsetArray = Array(...new Array(subset.length)).map(

@@ -570,7 +570,7 @@ const html = `
 `
 
 const caps = [
-    1, 1, 1, 27, 2, 5, 3, 1, 4, 1, 11, 4, 4, 4, 2, 3, 5, 1, 3, 3, 6, 1, 2, 3, 2,
+    1, 1, 1, 28, 2, 5, 3, 1, 4, 1, 11, 4, 4, 4, 2, 3, 5, 1, 3, 3, 6, 1, 2, 3, 2,
     2, 1, 4, 1, 3, 2, 10, 4, 15, 3, 13, 15, 1, 1, 3, 17, 12, 10, 10, 2, 1, 1, 1,
     30, 7, 20, 1, 1, 3, 2, 111, 8, 3, 8, 3,
 ]
@@ -585,9 +585,10 @@ describe("basic", () => {
             divs = document.querySelectorAll("div")
 
         for (let i = 0; i < divs.length; i += 2) {
+            console.log({i})
             const diffs = dd.diff(divs[i], divs[i + 1])
             expect(diffs).not.toHaveLength(0)
-            expect(diffs.length).toBeLessThanOrEqual(caps[i / 2])
+            expect(diffs).toHaveLength(caps[i / 2])
             const t1 = divs[i].cloneNode(true)
             dd.apply(t1, diffs)
             expect(
