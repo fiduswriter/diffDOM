@@ -123,18 +123,22 @@ export function applyDiff(
             }
             node.selected = diff[options._const.newValue]
             break
-        case options._const.replaceElement:
+        case options._const.replaceElement: {
+            const insideSvg =
+                (
+                    diff[options._const.newValue] as nodeType
+                ).nodeName.toLowerCase() === "svg" ||
+                node.parentNode.namespaceURI === "http://www.w3.org/2000/svg"
             node.parentNode.replaceChild(
                 objToNode(
                     diff[options._const.newValue] as nodeType,
-                    (
-                        diff[options._const.newValue] as nodeType
-                    ).nodeName.toLowerCase() === "svg",
+                    insideSvg,
                     options
                 ),
                 node
             )
             break
+        }
         case options._const.relocateGroup:
             nodeArray = Array(
                 ...new Array(diff[options._const.groupLength])

@@ -60,7 +60,7 @@ Hey, this is a <i>test</i>.<br><iframe src="http://www.youtube.com/embed/0m4-ZEm
             </tr>
         </table>
         <script>
-            var textarea = document.querySelector("textarea"),
+            const textarea = document.querySelector("textarea"),
                 outDiv = document.querySelector("div"),
                 newElement = document.createElement("div"),
                 dd = new diffDOM.DiffDOM()
@@ -78,7 +78,9 @@ Hey, this is a <i>test</i>.<br><iframe src="http://www.youtube.com/embed/0m4-ZEm
                         textarea.classList.add("success")
                         textarea.classList.remove("failure")
                     }
-                    dd.apply(outDiv, dd.diff(outDiv, newElement))
+                    const diff = dd.diff(outDiv, newElement)
+                    console.log({diff})
+                    dd.apply(outDiv, diff)
                 },
                 false
             )
