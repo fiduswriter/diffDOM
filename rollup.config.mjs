@@ -21,7 +21,21 @@ export default [
         plugins: [
             typescript(),
             buble(),
-            terser()
+        ],
+    },
+    {
+        input: "src/index.ts",
+        output: [
+            {
+                file: "dist/index.min.js",
+                format: "cjs",
+                sourcemap: true,
+            },
+        ],
+        plugins: [
+            typescript(),
+            buble(),
+            terser(),
         ],
     },
     {
