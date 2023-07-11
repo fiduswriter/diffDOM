@@ -46,7 +46,7 @@ const parseTag = (tag: string) => {
 
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if (tagMatch) {
-        res.nodeName = tagMatch[1].toUpperCase()
+        res.nodeName = tagMatch[1]
         if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === "/") {
             voidElement = true
         }
@@ -189,7 +189,8 @@ export const stringToObj = (
             if (
                 level > -1 &&
                 (current.voidElement ||
-                    current.node.nodeName === tag.slice(2, -1).toUpperCase())
+                    current.node.nodeName.toUpperCase() ===
+                        tag.slice(2, -1).toUpperCase())
             ) {
                 level--
                 // move current up a level to match the end tag
