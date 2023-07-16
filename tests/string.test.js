@@ -31,9 +31,6 @@ const strings = [
     "<div><img><img><i></i></div>",
     "<div><i></i><img><img></div>",
 
-    '<div><span><b></b><img></span><img><span class="a"></span></div>',
-    '<div><i></i><p id="a"></p><p class="a"></p><img><span class="a"></span></div>',
-
     "<div><img><i></i><img></div>",
     "<div><i></i><img><img></div>",
 

@@ -88,7 +88,7 @@ export const cleanNode = (diffNode: diffNodeType) => {
         }
         diffNode = diffNode as elementDiffNodeType
         if (Object.prototype.hasOwnProperty.call(diffNode, "attributes")) {
-            elementNode.attributes = diffNode.attributes
+            elementNode.attributes = { ...diffNode.attributes }
         }
         if (Object.prototype.hasOwnProperty.call(diffNode, "checked")) {
             elementNode.checked = diffNode.checked

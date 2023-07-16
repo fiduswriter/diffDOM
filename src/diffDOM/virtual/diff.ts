@@ -563,15 +563,15 @@ export class DiffFinder {
         const gapInformation = getGapInformation(t1, t2, subtrees)
         const gaps1 = gapInformation.gaps1
         const gaps2 = gapInformation.gaps2
+        const t1ChildNodes = t1.childNodes.slice()
+        const t2ChildNodes = t2.childNodes.slice()
         let shortest = Math.min(gaps1.length, gaps2.length)
         let destinationDifferent
         let toGroup
         let group
         let node
         let similarNode
-        let testI
         const diffs = []
-
         for (
             let index2 = 0, index1 = 0;
             index2 < shortest;
@@ -582,24 +582,25 @@ export class DiffFinder {
                 (gaps1[index2] === true || gaps2[index2] === true)
             ) {
                 // pass
-            } else if (gaps1[index2] === true) {
-                node = t1.childNodes[index1]
+            } else if (gaps1[index1] === true) {
+                node = t1ChildNodes[index1]
                 if (node.nodeName === "#text") {
-                    if (t2.childNodes[index2].nodeName === "#text") {
+                    if (t2ChildNodes[index2].nodeName === "#text") {
                         if (
                             (node as textDiffNodeType).data !==
-                            (t2.childNodes[index2] as textDiffNodeType).data
+                            (t2ChildNodes[index2] as textDiffNodeType).data
                         ) {
-                            testI = index1
+                            // Check whether a text node with the same value follows later on.
+                            let testI = index1
                             while (
-                                t1.childNodes.length > testI + 1 &&
-                                t1.childNodes[testI + 1].nodeName === "#text"
+                                t1ChildNodes.length > testI + 1 &&
+                                t1ChildNodes[testI + 1].nodeName === "#text"
                             ) {
                                 testI += 1
                                 if (
-                                    (t2.childNodes[index2] as textDiffNodeType)
+                                    (t2ChildNodes[index2] as textDiffNodeType)
                                         .data ===
-                                    (t1.childNodes[testI] as textDiffNodeType)
+                                    (t1ChildNodes[testI] as textDiffNodeType)
                                         .data
                                 ) {
                                     similarNode = true
@@ -616,7 +617,7 @@ export class DiffFinder {
                                         )
                                         .setValue(
                                             this.options._const.route,
-                                            route.concat(index2)
+                                            route.concat(index1)
                                         )
                                         .setValue(
                                             this.options._const.oldValue,
@@ -625,13 +626,14 @@ export class DiffFinder {
                                         .setValue(
                                             this.options._const.newValue,
                                             (
-                                                t2.childNodes[
+                                                t2ChildNodes[
                                                     index2
                                                 ] as textDiffNodeType
                                             ).data
                                         )
+                                    // t1ChildNodes at position index1 is not up-to-date, but that does not matter as
+                                    // index1 will increase +1
                                 )
-                                return diffs
                             }
                         }
                     } else {
@@ -643,14 +645,40 @@ export class DiffFinder {
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index2)
+                                    route.concat(index1)
                                 )
                                 .setValue(this.options._const.value, node.data)
                         )
-                        gaps1.splice(index2, 1)
+                        gaps1.splice(index1, 1)
+                        t1ChildNodes.splice(index1, 1)
                         shortest = Math.min(gaps1.length, gaps2.length)
+                        index1 -= 1
                         index2 -= 1
                     }
+                } else if (gaps2[index2] === true) {
+                    // both gaps1[index1] and gaps2[index2]  are true.
+                    // We replace one element with another.
+                    diffs.push(
+                        new Diff()
+                            .setValue(
+                                this.options._const.action,
+                                this.options._const.replaceElement
+                            )
+                            .setValue(
+                                this.options._const.oldValue,
+                                cleanNode(node)
+                            )
+                            .setValue(
+                                this.options._const.newValue,
+                                cleanNode(t2ChildNodes[index2])
+                            )
+                            .setValue(
+                                this.options._const.route,
+                                route.concat(index1)
+                            )
+                    )
+                    // t1ChildNodes at position index1 is not up-to-date, but that does not matter as
+                    // index1 will increase +1
                 } else {
                     diffs.push(
                         new Diff()
@@ -660,19 +688,21 @@ export class DiffFinder {
                             )
                             .setValue(
                                 this.options._const.route,
-                                route.concat(index2)
+                                route.concat(index1)
                             )
                             .setValue(
                                 this.options._const.element,
                                 cleanNode(node)
                             )
                     )
-                    gaps1.splice(index2, 1)
+                    gaps1.splice(index1, 1)
+                    t1ChildNodes.splice(index1, 1)
                     shortest = Math.min(gaps1.length, gaps2.length)
+                    index1 -= 1
                     index2 -= 1
                 }
             } else if (gaps2[index2] === true) {
-                node = t2.childNodes[index2]
+                node = t2ChildNodes[index2]
                 if (node.nodeName === "#text") {
                     diffs.push(
                         new Diff()
@@ -682,13 +712,17 @@ export class DiffFinder {
                             )
                             .setValue(
                                 this.options._const.route,
-                                route.concat(index2)
+                                route.concat(index1)
                             )
                             .setValue(this.options._const.value, node.data)
                     )
-                    gaps1.splice(index2, 0, true)
+                    gaps1.splice(index1, 0, true)
+                    t1ChildNodes.splice(index1, 0, {
+                        nodeName: "#text",
+                        data: node.data,
+                    })
                     shortest = Math.min(gaps1.length, gaps2.length)
-                    index1 -= 1
+                    //index1 += 1
                 } else {
                     diffs.push(
                         new Diff()
@@ -698,26 +732,27 @@ export class DiffFinder {
                             )
                             .setValue(
                                 this.options._const.route,
-                                route.concat(index2)
+                                route.concat(index1)
                             )
                             .setValue(
                                 this.options._const.element,
                                 cleanNode(node)
                             )
                     )
-                    gaps1.splice(index2, 0, true)
+                    gaps1.splice(index1, 0, true)
+                    t1ChildNodes.splice(index1, 0, cleanNode(node))
                     shortest = Math.min(gaps1.length, gaps2.length)
-                    index1 -= 1
+                    //index1 += 1
                 }
-            } else if (gaps1[index2] !== gaps2[index2]) {
+            } else if (gaps1[index1] !== gaps2[index2]) {
                 if (diffs.length > 0) {
                     return diffs
                 }
                 // group relocation
-                group = subtrees[gaps1[index2] as number]
+                group = subtrees[gaps1[index1] as number]
                 toGroup = Math.min(
                     group.newValue,
-                    t1.childNodes.length - group.length
+                    t1ChildNodes.length - group.length
                 )
                 if (toGroup !== group.oldValue) {
                     // Check whether destination nodes are different than originating ones.
@@ -725,8 +760,8 @@ export class DiffFinder {
                     for (let j = 0; j < group.length; j += 1) {
                         if (
                             !roughlyEqual(
-                                t1.childNodes[toGroup + j],
-                                t1.childNodes[group.oldValue + j],
+                                t1ChildNodes[toGroup + j],
+                                t1ChildNodes[group.oldValue + j],
                                 {},
                                 false,
                                 true

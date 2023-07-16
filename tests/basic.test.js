@@ -583,11 +583,12 @@ describe("basic", () => {
                 diffcap: 1000,
             }),
             divs = document.querySelectorAll("div")
-
+        let totalDiffs = 0
         for (let i = 0; i < divs.length; i += 2) {
             const diffs = dd.diff(divs[i], divs[i + 1])
             expect(diffs).not.toHaveLength(0)
             expect(diffs.length).toBeLessThanOrEqual(caps[i / 2])
+            totalDiffs += diffs.length
             const t1 = divs[i].cloneNode(true)
             dd.apply(t1, diffs)
             expect(
@@ -599,5 +600,6 @@ describe("basic", () => {
                 t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML
             ).toBe(true)
         }
+        expect(totalDiffs).toBeLessThanOrEqual(408)
     })
 })

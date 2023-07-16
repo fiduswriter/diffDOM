@@ -9,7 +9,6 @@
         "test": "tests"
     },
     "scripts": {
-        "ts-migrate": "ts-migrate",
         "test": "jest",
         "lint": "eslint src/",
         "build": "rollup -c",
