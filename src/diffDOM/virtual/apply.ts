@@ -1,5 +1,6 @@
 import { DiffDOMOptions, elementNodeType, nodeType, subsetType } from "../types"
 import { Diff } from "../helpers"
+import {cleanNode} from "./helpers"
 // ===== Apply a virtual diff =====
 
 function getFromVirtualRoute(tree: elementNodeType, route: number[]) {
@@ -118,7 +119,7 @@ function applyVirtualDiff(
             node.selected = diff[options._const.newValue]
             break
         case options._const.replaceElement:
-            newNode = diff[options._const.newValue]
+            newNode = cleanNode(diff[options._const.newValue])
             parentNode.childNodes[nodeIndex] = newNode
             break
         case options._const.relocateGroup:
@@ -213,7 +214,7 @@ function applyVirtualDiff(
             route = diff[options._const.route].slice()
             const c: number = route.splice(route.length - 1, 1)[0]
             node = getFromVirtualRoute(tree, route)?.node
-            newNode = diff[options._const.element]
+            newNode = cleanNode(diff[options._const.element])
 
             if (!node.childNodes) {
                 node.childNodes = []
@@ -279,9 +280,7 @@ function applyVirtualDiff(
         case options._const.addTextElement: {
             route = diff[options._const.route].slice()
             const c: number = route.splice(route.length - 1, 1)[0]
-            newNode = {}
-            newNode.nodeName = "#text"
-            newNode.data = diff[options._const.value]
+            newNode = {nodeName: "#text", data: diff[options._const.value]}
             node = getFromVirtualRoute(tree, route).node
             if (!node.childNodes) {
                 node.childNodes = []

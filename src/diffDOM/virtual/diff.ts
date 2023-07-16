@@ -499,7 +499,6 @@ export class DiffFinder {
 
                         childNodesLengthDifference -= 1
                     } else if (t1ChildNodes.length < t2ChildNodes.length) {
-                        const cloneChild = cleanNode(e2)
                         diffs = diffs.concat([
                             new Diff()
                                 .setValue(
@@ -508,14 +507,14 @@ export class DiffFinder {
                                 )
                                 .setValue(
                                     this.options._const.element,
-                                    cloneChild
+                                    cleanNode(e2)
                                 )
                                 .setValue(
                                     this.options._const.route,
                                     route.concat(index)
                                 ),
                         ])
-                        t1ChildNodes.splice(i, 0, cloneChild)
+                        t1ChildNodes.splice(i, 0, cleanNode(e2))
                         childNodesLengthDifference -= 1
                     } else {
                         diffs = diffs.concat([
