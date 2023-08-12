@@ -19,7 +19,7 @@ Check http://fiduswriter.github.io/diffDOM for demo and tests.
 Include the diffDOM file in your HTML like this:
 
 ```html
-<script src="browser/diffDOM.js"></script>
+<script src="browser/diffDOM.min.js"></script>
 ```
 
 Or like this if you import from npm:

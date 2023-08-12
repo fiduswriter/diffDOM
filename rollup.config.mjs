@@ -61,6 +61,26 @@ export default [
                 }
             }),
             buble(),
+        ],
+    },
+    {
+        input: "src/index.ts",
+        output: [
+            {
+                file: "browser/diffDOM.min.js",
+                format: "iife",
+                name: "diffDOM",
+                sourcemap: true,
+            },
+        ],
+        plugins: [
+            typescript({
+                compilerOptions: {
+                    declaration: false,
+                    declarationDir: undefined
+                }
+            }),
+            buble(),
             terser()
         ],
     },
