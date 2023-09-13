@@ -177,7 +177,7 @@ export class DiffFinder {
         let attrLength
         let pos
         let i
-        if (t1.nodeName !== t2.nodeName) {
+        if (t1.nodeName.toUpperCase() !== t2.nodeName.toUpperCase()) {
             if (!route.length) {
                 throw new Error("Top level nodes have to be of the same kind.")
             }
