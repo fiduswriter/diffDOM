@@ -202,10 +202,21 @@ dd = new diffDOM.DiffDOM({
 #### Disable value diff detection
 
 For forms that have been filled out by a user in ways that have changed which value is associated with an input field or which options are checked/selected without
-the DOM having been updated, the values are diffed. For use cases in which no changes have been made to any of the form values, one may choose to skip diffing the values. To do this, hand `false` as a third configuration option to diffDOM:
+the DOM having been updated, the values are diffed. For use cases in which no changes have been made to any of the form values, one may choose to skip diffing the values. To do this, set `valueDiffing` to `false` as a configuration option to diffDOM:
 
 ```js
 dd = new diffDOM.DiffDOM({
     valueDiffing: false,
+})
+```
+
+#### Interprete strings as case caseSensitive
+
+Strings of HTML can normally be interpreted case-insensitively as HTML tags don't differentiate between uppercase and lowercase. However, in the case of XML (SVGs, XHTML) there is a difference and this should be enabled. To do this, set `caseSensitive` to `true` as a configuration option to diffDOM:
+
+
+```js
+dd = new diffDOM.DiffDOM({
+    caseSensitive: true,
 })
 ```

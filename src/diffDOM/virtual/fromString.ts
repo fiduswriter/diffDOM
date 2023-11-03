@@ -36,7 +36,7 @@ const lookup = {
     wbr: true,
 }
 
-const parseTag = (tag: string) => {
+const parseTag = (tag: string, caseSensitive: boolean) => {
     const res = {
         nodeName: "",
         attributes: {},
@@ -46,7 +46,7 @@ const parseTag = (tag: string) => {
 
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if (tagMatch) {
-        res.nodeName = tagMatch[1]
+        res.nodeName = caseSensitive ? tagMatch[1] : tagMatch[1].toUpperCase()
         if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === "/") {
             voidElement = true
         }
@@ -97,7 +97,7 @@ const parseTag = (tag: string) => {
 
 export const stringToObj = (
     html: string,
-    options: DiffDOMOptionsPartial = { valueDiffing: true }
+    options: DiffDOMOptionsPartial = { valueDiffing: true, caseSensitive: false }
 ) => {
     const result: nodeType[] = []
     let current: { type: string; node: nodeType; voidElement: boolean }
@@ -128,7 +128,7 @@ export const stringToObj = (
         const nextChar = html.charAt(start)
 
         if (isComment) {
-            const comment = parseTag(tag).node
+            const comment = parseTag(tag, options.caseSensitive).node
 
             // if we're at root, push new base node
             if (level < 0) {
@@ -146,7 +146,7 @@ export const stringToObj = (
         }
 
         if (isOpen) {
-            current = parseTag(tag)
+            current = parseTag(tag, options.caseSensitive)
             level++
             if (
                 !current.voidElement &&
@@ -188,9 +188,11 @@ export const stringToObj = (
         if (!isOpen || current.voidElement) {
             if (
                 level > -1 &&
-                (current.voidElement ||
-                    current.node.nodeName.toUpperCase() ===
-                        tag.slice(2, -1).toUpperCase())
+                (
+                    current.voidElement ||
+                    (options.caseSensitive && current.node.nodeName === tag.slice(2, -1)) ||
+                    (!options.caseSensitive && current.node.nodeName.toUpperCase() === tag.slice(2, -1).toUpperCase())
+                )
             ) {
                 level--
                 // move current up a level to match the end tag
