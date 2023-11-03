@@ -46,7 +46,10 @@ const parseTag = (tag: string, caseSensitive: boolean) => {
 
     let tagMatch = tag.match(/<\/?([^\s]+?)[/\s>]/)
     if (tagMatch) {
-        res.nodeName = (caseSensitive || tagMatch[1] === "svg") ? tagMatch[1] : tagMatch[1].toUpperCase()
+        res.nodeName =
+            caseSensitive || tagMatch[1] === "svg"
+                ? tagMatch[1]
+                : tagMatch[1].toUpperCase()
         if (lookup[tagMatch[1]] || tag.charAt(tag.length - 2) === "/") {
             voidElement = true
         }
@@ -97,13 +100,17 @@ const parseTag = (tag: string, caseSensitive: boolean) => {
 
 export const stringToObj = (
     html: string,
-    options: DiffDOMOptionsPartial = { valueDiffing: true, caseSensitive: false }
+    options: DiffDOMOptionsPartial = {
+        valueDiffing: true,
+        caseSensitive: false,
+    }
 ) => {
     const result: nodeType[] = []
     let current: { type: string; node: nodeType; voidElement: boolean }
     let level = -1
     const arr: { type: string; node: nodeType; voidElement: boolean }[] = []
-    let inComponent = false, insideSvg = false
+    let inComponent = false,
+        insideSvg = false
 
     // handle text at top level
     if (html.indexOf("<") !== 0) {
@@ -147,7 +154,7 @@ export const stringToObj = (
 
         if (isOpen) {
             current = parseTag(tag, options.caseSensitive || insideSvg)
-            if (current.node.nodeName==="svg") {
+            if (current.node.nodeName === "svg") {
                 insideSvg = true
             }
             level++
@@ -191,16 +198,17 @@ export const stringToObj = (
         if (!isOpen || current.voidElement) {
             if (
                 level > -1 &&
-                (
-                    current.voidElement ||
-                    (options.caseSensitive && current.node.nodeName === tag.slice(2, -1)) ||
-                    (!options.caseSensitive && current.node.nodeName.toUpperCase() === tag.slice(2, -1).toUpperCase())
-                )
+                (current.voidElement ||
+                    (options.caseSensitive &&
+                        current.node.nodeName === tag.slice(2, -1)) ||
+                    (!options.caseSensitive &&
+                        current.node.nodeName.toUpperCase() ===
+                            tag.slice(2, -1).toUpperCase()))
             ) {
                 level--
                 // move current up a level to match the end tag
                 if (level > -1) {
-                    if (current.node.nodeName==="svg") {
+                    if (current.node.nodeName === "svg") {
                         insideSvg = false
                     }
                     current = arr[level]

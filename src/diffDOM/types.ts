@@ -105,7 +105,7 @@ interface DiffDOMOptions {
     maxDepth: number | false // False or a numeral. If set to a numeral, limits the level of depth that the the diff mechanism looks for differences. If false, goes through the entire tree.
     maxChildCount: number // False or a numeral. If set to a numeral, only does a simplified form of diffing of contents so that the number of diffs cannot be higher than the number of child nodes.
     valueDiffing: boolean // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
-    caseSensitive: boolean // Whether to preserve the case of an input string. Important when including CML (XHTML, SVG, etc.)  
+    caseSensitive: boolean // Whether to preserve the case of an input string. Important when including CML (XHTML, SVG, etc.)
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
     textDiff: (
         node: textNodeType | Text | Comment,
