@@ -220,3 +220,5 @@ dd = new diffDOM.DiffDOM({
     caseSensitive: true,
 })
 ```
+
+**NOTE!** If there is an SVG inside of the HTML in the string, diffDOM can automatically determine that it should switch to case sensitivity. It is only if the diff happens entirely within an SVG that it is required to specify this.
