@@ -461,5 +461,3 @@ export class DiffTracker {
         this.list.forEach((li: Diff) => fn(li))
     }
 }
-
-//export const elementHasValue = (element: Element) : boolean => element instanceof HTMLButtonElement || element instanceof HTMLDataElement || element instanceof HTMLInputElement || element instanceof HTMLLIElement || element instanceof HTMLMeterElement || element instanceof HTMLOptionElement || element instanceof HTMLProgressElement || element instanceof HTMLParamElement

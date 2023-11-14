@@ -1,3 +1,5 @@
+import {checkElementType} from "./diffDOM/helpers"
+
 /**
  * Use TraceLogger to figure out function calls inside
  * JS objects by wrapping an object with a TraceLogger
@@ -113,8 +115,8 @@ export class TraceLogger {
             if (typeof v === "string") {
                 return v
             }
-            if (v instanceof HTMLElement) {
-                return v.outerHTML || "<empty>"
+            if (checkElementType(v, "HTMLElement")) {
+                return (v as HTMLElement).outerHTML || "<empty>"
             }
             if (v instanceof Array) {
                 return `[${v.map(stringCollapse).join(",")}]`

@@ -1,4 +1,5 @@
 import { DiffDOMOptionsPartial, elementNodeType, textNodeType } from "../types"
+import {checkElementType} from "../helpers"
 
 export function nodeToObj(
     aNode: Element,
@@ -7,8 +8,8 @@ export function nodeToObj(
     const objNode: elementNodeType | textNodeType = {
         nodeName: aNode.nodeName,
     }
-    if (aNode instanceof Text || aNode instanceof Comment) {
-        ;(objNode as unknown as textNodeType).data = aNode.data
+    if (checkElementType(aNode, "Text") || checkElementType(aNode, "Comment")) {
+        ;(objNode as unknown as textNodeType).data = (aNode as unknown as Text | Comment).data
     } else {
         if (aNode.attributes && aNode.attributes.length > 0) {
             objNode.attributes = {}
@@ -26,29 +27,29 @@ export function nodeToObj(
             )
         }
         if (options.valueDiffing) {
-            if (aNode instanceof HTMLTextAreaElement) {
-                objNode.value = aNode.value
+            if (checkElementType(aNode, "HTMLTextAreaElement")) {
+                objNode.value = (aNode as HTMLTextAreaElement).value
             }
             if (
-                aNode instanceof HTMLInputElement &&
-                ["radio", "checkbox"].includes(aNode.type.toLowerCase()) &&
-                aNode.checked !== undefined
+                checkElementType(aNode, "HTMLInputElement") &&
+                ["radio", "checkbox"].includes((aNode as HTMLInputElement).type.toLowerCase()) &&
+                (aNode as HTMLInputElement).checked !== undefined
             ) {
-                objNode.checked = aNode.checked
+                objNode.checked = (aNode as HTMLInputElement).checked
             } else if (
-                aNode instanceof HTMLButtonElement ||
-                aNode instanceof HTMLDataElement ||
-                aNode instanceof HTMLInputElement ||
-                aNode instanceof HTMLLIElement ||
-                aNode instanceof HTMLMeterElement ||
-                aNode instanceof HTMLOptionElement ||
-                aNode instanceof HTMLProgressElement ||
-                aNode instanceof HTMLParamElement
+                checkElementType(aNode, "HTMLButtonElement") ||
+                checkElementType(aNode, "HTMLDataElement") ||
+                checkElementType(aNode, "HTMLInputElement") ||
+                checkElementType(aNode, "HTMLLIElement") ||
+                checkElementType(aNode, "HTMLMeterElement") ||
+                checkElementType(aNode, "HTMLOptionElement") ||
+                checkElementType(aNode, "HTMLProgressElement") ||
+                checkElementType(aNode, "HTMLParamElement")
             ) {
-                objNode.value = aNode.value
+                objNode.value = (aNode as HTMLButtonElement | HTMLDataElement | HTMLInputElement | HTMLLIElement | HTMLMeterElement | HTMLOptionElement | HTMLProgressElement | HTMLParamElement).value
             }
-            if (aNode instanceof HTMLOptionElement) {
-                objNode.selected = aNode.selected
+            if (checkElementType(aNode, "HTMLOptionElement")) {
+                objNode.selected = (aNode as HTMLOptionElement).selected
             }
         }
     }

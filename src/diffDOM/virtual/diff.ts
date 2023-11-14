@@ -15,7 +15,7 @@ import {
     removeDone,
     roughlyEqual,
 } from "./helpers"
-import { Diff } from "../helpers"
+import { Diff, checkElementType, } from "../helpers"
 import { applyVirtual } from "./apply"
 import { nodeToObj } from "./fromDOM"
 import { stringToObj } from "./fromString"
@@ -39,15 +39,15 @@ export class DiffFinder {
     ) {
         this.options = options
         this.t1 = (
-            typeof Element !== "undefined" && t1Node instanceof Element
-                ? nodeToObj(t1Node, this.options)
+            typeof Element !== "undefined" && checkElementType(t1Node, "Element")
+                ? nodeToObj((t1Node as Element), this.options)
                 : typeof t1Node === "string"
                 ? stringToObj(t1Node, this.options)
                 : JSON.parse(JSON.stringify(t1Node))
         ) as elementDiffNodeType
         this.t2 = (
-            typeof Element !== "undefined" && t2Node instanceof Element
-                ? nodeToObj(t2Node, this.options)
+            typeof Element !== "undefined" && checkElementType(t2Node, "Element")
+                ? nodeToObj((t2Node as Element), this.options)
                 : typeof t2Node === "string"
                 ? stringToObj(t2Node, this.options)
                 : JSON.parse(JSON.stringify(t2Node))
@@ -56,14 +56,14 @@ export class DiffFinder {
         this.foundAll = false
         if (this.debug) {
             this.t1Orig =
-                typeof Element !== "undefined" && t1Node instanceof Element
-                    ? nodeToObj(t1Node, this.options)
+                typeof Element !== "undefined" && checkElementType(t1Node, "Element")
+                    ? nodeToObj((t1Node as Element), this.options)
                     : typeof t1Node === "string"
                     ? stringToObj(t1Node, this.options)
                     : JSON.parse(JSON.stringify(t1Node))
             this.t2Orig =
-                typeof Element !== "undefined" && t2Node instanceof Element
-                    ? nodeToObj(t2Node, this.options)
+                typeof Element !== "undefined" && checkElementType(t2Node, "Element")
+                    ? nodeToObj((t2Node as Element), this.options)
                     : typeof t2Node === "string"
                     ? stringToObj(t2Node, this.options)
                     : JSON.parse(JSON.stringify(t2Node))
