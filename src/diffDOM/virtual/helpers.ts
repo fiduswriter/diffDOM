@@ -18,8 +18,8 @@ const elementDescriptors = (el: diffNodeType) => {
                 output.push(
                     `${el.nodeName}.${el.attributes["class"].replace(
                         / /g,
-                        "."
-                    )}`
+                        ".",
+                    )}`,
                 )
             }
             if (el.attributes.id) {
@@ -101,7 +101,7 @@ export const cleanNode = (diffNode: diffNodeType) => {
         }
         if (Object.prototype.hasOwnProperty.call(diffNode, "childNodes")) {
             elementNode.childNodes = diffNode.childNodes.map((diffChildNode) =>
-                cleanNode(diffChildNode)
+                cleanNode(diffChildNode),
             )
         }
         return elementNode
@@ -116,7 +116,7 @@ export const isEqual = (e1: diffNodeType, e2: diffNodeType) => {
                     return false
                 }
                 return true
-            }
+            },
         )
     ) {
         return false
@@ -161,7 +161,7 @@ export const isEqual = (e1: diffNodeType, e2: diffNodeType) => {
         }
         if (
             !e1.childNodes.every((childNode: nodeType, index: number) =>
-                isEqual(childNode, e2.childNodes[index])
+                isEqual(childNode, e2.childNodes[index]),
             )
         ) {
             return false
@@ -176,7 +176,7 @@ export const roughlyEqual = (
     e2: diffNodeType,
     uniqueDescriptors: { [key: string]: boolean },
     sameSiblings: boolean,
-    preventRecursion = false
+    preventRecursion = false,
 ) => {
     if (!e1 || !e2) {
         return false
@@ -240,7 +240,7 @@ export const roughlyEqual = (
     if (preventRecursion) {
         return nodeList1.every(
             (element: nodeType, index: number) =>
-                element.nodeName === nodeList2[index].nodeName
+                element.nodeName === nodeList2[index].nodeName,
         )
     } else {
         // note: we only allow one level of recursion at any depth. If 'preventRecursion'
@@ -252,8 +252,8 @@ export const roughlyEqual = (
                 nodeList2[index],
                 childUniqueDescriptors,
                 true,
-                true
-            )
+                true,
+            ),
         )
     }
 }
@@ -265,7 +265,7 @@ const findCommonSubsets = (
     c1: diffNodeType[],
     c2: diffNodeType[],
     marked1: boolean[],
-    marked2: boolean[]
+    marked2: boolean[],
 ) => {
     let lcsSize = 0
     let index: number[] = []
@@ -314,7 +314,7 @@ const findCommonSubsets = (
                     c1Element,
                     c2Element,
                     uniqueDescriptors,
-                    subsetsSame
+                    subsetsSame,
                 )
             ) {
                 matches[c1Index + 1][c2Index + 1] = matches[c1Index][c2Index]
@@ -367,7 +367,7 @@ const makeBooleanArray = (n: number, v: boolean) =>
 export const getGapInformation = (
     t1: elementDiffNodeType,
     t2: elementDiffNodeType,
-    stable: subsetType[]
+    stable: subsetType[],
 ) => {
     const gaps1: (true | number)[] = t1.childNodes
         ? (makeBooleanArray(t1.childNodes.length, true) as true[])
@@ -407,7 +407,7 @@ const markBoth = (marked1, marked2, subset: subsetType, i: number) => {
 
 export const markSubTrees = (
     oldTree: elementDiffNodeType,
-    newTree: elementDiffNodeType
+    newTree: elementDiffNodeType,
 ) => {
     // note: the child lists are views, and so update as we update old/newTree
     const oldChildren = oldTree.childNodes ? oldTree.childNodes : []
@@ -428,15 +428,15 @@ export const markSubTrees = (
             oldChildren,
             newChildren,
             marked1,
-            marked2
+            marked2,
         )
         if (subset) {
             subsets.push(subset)
             const subsetArray = Array(...new Array(subset.length)).map(
-                returnIndex
+                returnIndex,
             )
             subsetArray.forEach((item) =>
-                markBoth(marked1, marked2, subset, item)
+                markBoth(marked1, marked2, subset, item),
             )
         } else {
             foundAllSubsets = true

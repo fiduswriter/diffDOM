@@ -103,7 +103,7 @@ export const stringToObj = (
     options: DiffDOMOptionsPartial = {
         valueDiffing: true,
         caseSensitive: false,
-    }
+    },
 ) => {
     const result: nodeType[] = []
     let current: { type: string; node: nodeType; voidElement: boolean }
@@ -168,7 +168,7 @@ export const stringToObj = (
                     current.node.childNodes = []
                 }
                 const data = unescape(
-                    html.slice(start, html.indexOf("<", start))
+                    html.slice(start, html.indexOf("<", start)),
                 )
                 current.node.childNodes.push({
                     nodeName: "#text",
@@ -225,7 +225,7 @@ export const stringToObj = (
                 // no tag after the text node.
                 const end = html.indexOf("<", start)
                 let data = unescape(
-                    html.slice(start, end === -1 ? undefined : end)
+                    html.slice(start, end === -1 ? undefined : end),
                 )
                 childNodes.push({
                     nodeName: "#text",

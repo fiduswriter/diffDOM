@@ -1,9 +1,10 @@
 import { DiffDOMOptions, elementNodeType, textNodeType } from "../types"
+import { checkElementType } from "../helpers"
 
 export function objToNode(
     objNode: elementNodeType,
     insideSvg: boolean,
-    options: DiffDOMOptions
+    options: DiffDOMOptions,
 ) {
     let node: Element | Text | Comment
     if (objNode.nodeName === "#text") {
@@ -14,12 +15,12 @@ export function objToNode(
         if (insideSvg) {
             node = options.document.createElementNS(
                 "http://www.w3.org/2000/svg",
-                objNode.nodeName
+                objNode.nodeName,
             )
         } else if (objNode.nodeName.toLowerCase() === "svg") {
             node = options.document.createElementNS(
                 "http://www.w3.org/2000/svg",
-                "svg"
+                "svg",
             )
             insideSvg = true
         } else {
@@ -27,35 +28,51 @@ export function objToNode(
         }
         if (objNode.attributes) {
             Object.entries(objNode.attributes).forEach(([key, value]) =>
-                (node as Element).setAttribute(key, value)
+                (node as Element).setAttribute(key, value),
             )
         }
         if (objNode.childNodes) {
             node = node as Element
             objNode.childNodes.forEach(
                 (childNode: elementNodeType | textNodeType) =>
-                    node.appendChild(objToNode(childNode, insideSvg, options))
+                    node.appendChild(objToNode(childNode, insideSvg, options)),
             )
         }
         if (options.valueDiffing) {
             if (
                 objNode.value &&
-                (node instanceof HTMLButtonElement ||
-                    node instanceof HTMLDataElement ||
-                    node instanceof HTMLInputElement ||
-                    node instanceof HTMLLIElement ||
-                    node instanceof HTMLMeterElement ||
-                    node instanceof HTMLOptionElement ||
-                    node instanceof HTMLProgressElement ||
-                    node instanceof HTMLParamElement)
+                checkElementType(
+                    node,
+                    "HTMLButtonElement",
+                    "HTMLDataElement",
+                    "HTMLInputElement",
+                    "HTMLLIElement",
+                    "HTMLMeterElement",
+                    "HTMLOptionElement",
+                    "HTMLProgressElement",
+                    "HTMLParamElement",
+                )
             ) {
-                node.value = objNode.value
+                ;(
+                    node as
+                        | HTMLButtonElement
+                        | HTMLDataElement
+                        | HTMLInputElement
+                        | HTMLLIElement
+                        | HTMLMeterElement
+                        | HTMLOptionElement
+                        | HTMLProgressElement
+                        | HTMLParamElement
+                ).value = objNode.value
             }
-            if (objNode.checked && node instanceof HTMLInputElement) {
-                node.checked = objNode.checked
+            if (objNode.checked && checkElementType(node, "HTMLInputElement")) {
+                ;(node as HTMLInputElement).checked = objNode.checked
             }
-            if (objNode.selected && node instanceof HTMLOptionElement) {
-                node.selected = objNode.selected
+            if (
+                objNode.selected &&
+                checkElementType(node, "HTMLOptionElement")
+            ) {
+                ;(node as HTMLOptionElement).selected = objNode.selected
             }
         }
     }
