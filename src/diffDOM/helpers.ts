@@ -24,18 +24,17 @@ export class Diff {
     }
 }
 
-export const checkElementType = (element, ...elementTypeNames: string[]) => {
+export function checkElementType(element, ...elementTypeNames: string[]) {
     if (typeof element === "undefined" || element === null) {
         return false
     }
-    // Use by default the global scope from node.js, with a fallback on the node's parent window,
-    // or the current window (for web browser environment).
-    const scope = global || element?.ownerDocument?.defaultView || window
     return elementTypeNames.some(
         (elementTypeName) =>
-            // We need to check if the specified type is defined in the given scope
+            // We need to check if the specified type is defined
             // because otherwise instanceof throws an exception.
-            typeof scope?.[elementTypeName] === "function" &&
-            element instanceof scope[elementTypeName],
+            typeof element?.ownerDocument?.defaultView?.[elementTypeName] ===
+                "function" &&
+            element instanceof
+                element.ownerDocument.defaultView[elementTypeName],
     )
 }
