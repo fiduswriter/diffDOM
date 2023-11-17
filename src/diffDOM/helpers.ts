@@ -28,38 +28,14 @@ export const checkElementType = (element, ...elementTypeNames: string[]) => {
     if (typeof element === "undefined" || element === null) {
         return false
     }
-
-    if (typeof window !== "undefined") {
-        // For browser environment
-        if (
-            elementTypeNames.some((elementTypeName) => {
-                if (typeof window[elementTypeName] === "function") {
-                    if (
-                        element instanceof window[elementTypeName] ||
-                        (element.ownerDocument?.defaultView &&
-                            element instanceof
-                                element.ownerDocument.defaultView[
-                                    elementTypeName
-                                ])
-                    ) {
-                        return true
-                    } else {
-                        return false
-                    }
-                }
-            })
-        ) {
-            return true
-        } else {
-            return false
-        }
-    } else {
-        // For node.js
-        return (
-            typeof global !== "undefined" &&
-            elementTypeNames.some(
-                (elementTypeName) => element instanceof global[elementTypeName],
-            )
-        )
-    }
+    // Use by default the global scope from node.js, with a fallback on the node's parent window,
+    // or the current window (for web browser environment).
+    const scope = global || element?.ownerDocument?.defaultView || window
+    return elementTypeNames.some(
+        (elementTypeName) =>
+            // We need to check if the specified type is defined in the given scope
+            // because otherwise instanceof throws an exception.
+            typeof scope?.[elementTypeName] === "function" &&
+            element instanceof scope[elementTypeName],
+    )
 }
