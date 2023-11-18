@@ -19,6 +19,7 @@ const DEFAULT_OPTIONS = {
     maxChildCount: 50, // False or a numeral. If set to a numeral, only does a simplified form of diffing of contents so that the number of diffs cannot be higher than the number of child nodes.
     valueDiffing: true, // Whether to take into consideration the values of forms that differ from auto assigned values (when a user fills out a form).
     // syntax: textDiff: function (node, currentValue, expectedValue, newValue)
+    ignoreChildrenClass: false, // False or string. If set to a string, will ignore children with a class set to this string.
     textDiff(
         node: textNodeType,
         currentValue: string,

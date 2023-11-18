@@ -461,3 +461,17 @@ export class DiffTracker {
         this.list.forEach((li: Diff) => fn(li))
     }
 }
+
+const hideWalker = (node: elementNodeType, regex: RegExp) => {
+    if (node.attributes?.class && regex.test(node.attributes.class)) {
+        // remove children
+        node.childNodes = []
+    } else if (node.childNodes) {
+        node.childNodes.forEach((childNode) => hideWalker(childNode, regex))
+    }
+}
+
+export const hideChildren = (node: elementNodeType, className: string) => {
+    const regex = new RegExp(`\\b${className}\\b`)
+    hideWalker(node, regex)
+}

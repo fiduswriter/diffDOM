@@ -14,6 +14,7 @@ import {
     markSubTrees,
     removeDone,
     roughlyEqual,
+    hideChildren,
 } from "./helpers"
 import { Diff, checkElementType } from "../helpers"
 import { applyVirtual } from "./apply"
@@ -54,6 +55,10 @@ export class DiffFinder {
                   ? stringToObj(t2Node, this.options)
                   : JSON.parse(JSON.stringify(t2Node))
         ) as elementDiffNodeType
+        if (this.options.ignoreChildrenClass) {
+            hideChildren(this.t1, this.options.ignoreChildrenClass)
+            hideChildren(this.t2, this.options.ignoreChildrenClass)
+        }
         this.diffcount = 0
         this.foundAll = false
         if (this.debug) {

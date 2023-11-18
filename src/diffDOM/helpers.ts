@@ -24,7 +24,7 @@ export class Diff {
     }
 }
 
-export function checkElementType(element, ...elementTypeNames: string[]) {
+export const checkElementType = (element, ...elementTypeNames: string[]) => {
     if (typeof element === "undefined" || element === null) {
         return false
     }
