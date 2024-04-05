@@ -17,6 +17,9 @@ export function objToNode(
                 "http://www.w3.org/2000/svg",
                 objNode.nodeName,
             )
+            if (objNode.nodeName === "foreignObject") {
+                insideSvg = false
+            }
         } else if (objNode.nodeName.toLowerCase() === "svg") {
             node = options.document.createElementNS(
                 "http://www.w3.org/2000/svg",
