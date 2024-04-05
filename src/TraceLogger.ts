@@ -65,7 +65,7 @@ export class TraceLogger {
             | number
             | boolean
             | false
-            | (string | HTMLElement | number | boolean | false)[],
+            | (string | HTMLElement | number | boolean | false)[]
     ) {
         this.padding += this.pad
         this.log(`├─> entering ${fn}`, args)
@@ -79,12 +79,12 @@ export class TraceLogger {
             | number
             | boolean
             | false
-            | (string | HTMLElement | number | boolean | false)[],
+            | (string | HTMLElement | number | boolean | false)[]
     ) {
         this.log("│<──┘ generated return value", result)
         this.padding = this.padding.substring(
             0,
-            this.padding.length - this.pad.length,
+            this.padding.length - this.pad.length
         )
     }
     // log message formatting
@@ -107,7 +107,7 @@ export class TraceLogger {
                 | number
                 | boolean
                 | false
-                | (string | HTMLElement | number | boolean | false)[],
+                | (string | HTMLElement | number | boolean | false)[]
         ) {
             if (!v) {
                 return "<falsey>"

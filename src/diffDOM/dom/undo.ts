@@ -13,7 +13,7 @@ function swap(obj: object, p1: string | number, p2: string | number) {
 function undoDiff(
     tree: Element,
     diff: diffType,
-    options: DiffDOMOptions, // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
+    options: DiffDOMOptions // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
     switch (diff[options._const.action]) {
         case options._const.addAttribute:
@@ -80,7 +80,7 @@ function undoDiff(
 export function undoDOM(
     tree: Element,
     diffs: (diffType | Diff)[],
-    options: DiffDOMOptions,
+    options: DiffDOMOptions
 ) {
     diffs = diffs.slice()
     diffs.reverse()

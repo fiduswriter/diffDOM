@@ -111,7 +111,7 @@ interface DiffDOMOptions {
         node: textNodeType | Text | Comment,
         currentValue: string,
         expectedValue: string,
-        newValue: string,
+        newValue: string
     ) => void
     preVirtualDiffApply: PreDiffApply
     postVirtualDiffApply: PostDiffApply

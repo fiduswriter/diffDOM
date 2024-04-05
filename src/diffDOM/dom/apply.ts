@@ -7,7 +7,7 @@ import { objToNode } from "./fromVirtual"
 
 const getFromRoute = (
     node: Element,
-    route: number[],
+    route: number[]
 ): Element | Text | false => {
     route = route.slice()
     while (route.length > 0) {
@@ -20,7 +20,7 @@ const getFromRoute = (
 export function applyDiff(
     tree: Element,
     diff: diffType,
-    options: DiffDOMOptions, // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
+    options: DiffDOMOptions // {preDiffApply, postDiffApply, textDiff, valueDiffing, _const}
 ) {
     const action = diff[options._const.action] as string | number
     const route = diff[options._const.route] as number[]
@@ -28,7 +28,7 @@ export function applyDiff(
 
     if (
         ![options._const.addElement, options._const.addTextElement].includes(
-            action,
+            action
         )
     ) {
         // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
@@ -56,7 +56,7 @@ export function applyDiff(
             }
             node.setAttribute(
                 diff[options._const.name] as string,
-                diff[options._const.value] as string,
+                diff[options._const.value] as string
             )
             break
         case options._const.modifyAttribute:
@@ -65,7 +65,7 @@ export function applyDiff(
             }
             node.setAttribute(
                 diff[options._const.name] as string,
-                diff[options._const.newValue] as string,
+                diff[options._const.newValue] as string
             )
             if (
                 checkElementType(node, "HTMLInputElement") &&
@@ -88,7 +88,7 @@ export function applyDiff(
                 node,
                 node.data,
                 diff[options._const.oldValue] as string,
-                diff[options._const.newValue] as string,
+                diff[options._const.newValue] as string
             )
             if (checkElementType(node.parentNode, "HTMLTextAreaElement")) {
                 node.parentNode.value = diff[options._const.newValue] as string
@@ -108,7 +108,7 @@ export function applyDiff(
                 node,
                 node.data,
                 diff[options._const.oldValue] as string,
-                diff[options._const.newValue] as string,
+                diff[options._const.newValue] as string
             )
             break
         case options._const.modifyChecked:
@@ -133,19 +133,19 @@ export function applyDiff(
                 objToNode(
                     diff[options._const.newValue] as nodeType,
                     insideSvg,
-                    options,
+                    options
                 ),
-                node,
+                node
             )
             break
         }
         case options._const.relocateGroup:
             nodeArray = Array(
-                ...new Array(diff[options._const.groupLength]),
+                ...new Array(diff[options._const.groupLength])
             ).map(() =>
                 node.removeChild(
-                    node.childNodes[diff[options._const.from] as number],
-                ),
+                    node.childNodes[diff[options._const.from] as number]
+                )
             )
             nodeArray.forEach((childNode, index) => {
                 if (index === 0) {
@@ -169,9 +169,9 @@ export function applyDiff(
                 objToNode(
                     diff[options._const.element] as nodeType,
                     node.namespaceURI === "http://www.w3.org/2000/svg",
-                    options,
+                    options
                 ),
-                node.childNodes[c] || null,
+                node.childNodes[c] || null
             )
             break
         }
@@ -190,7 +190,7 @@ export function applyDiff(
             const parentRoute = route.slice()
             const c: number = parentRoute.splice(parentRoute.length - 1, 1)[0]
             newNode = options.document.createTextNode(
-                diff[options._const.value] as string,
+                diff[options._const.value] as string
             )
             node = getFromRoute(tree, parentRoute)
             if (!node.childNodes) {
@@ -220,9 +220,9 @@ export function applyDiff(
 export function applyDOM(
     tree: Element,
     diffs: (Diff | diffType)[],
-    options: DiffDOMOptions,
+    options: DiffDOMOptions
 ) {
     return diffs.every((diff: Diff | diffType) =>
-        applyDiff(tree, diff as diffType, options),
+        applyDiff(tree, diff as diffType, options)
     )
 }

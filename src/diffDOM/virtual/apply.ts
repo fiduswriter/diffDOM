@@ -24,13 +24,13 @@ function getFromVirtualRoute(tree: elementNodeType, route: number[]) {
 function applyVirtualDiff(
     tree: elementNodeType,
     diff: Diff,
-    options: DiffDOMOptions, // {preVirtualDiffApply, postVirtualDiffApply, _const}
+    options: DiffDOMOptions // {preVirtualDiffApply, postVirtualDiffApply, _const}
 ) {
     let node, parentNode, nodeIndex
 
     if (
         ![options._const.addElement, options._const.addTextElement].includes(
-            diff[options._const.action],
+            diff[options._const.action]
         )
     ) {
         // For adding nodes, we calculate the route later on. It's different because it includes the position of the newly added item.
@@ -126,11 +126,11 @@ function applyVirtualDiff(
             nodeArray = node.childNodes
                 .splice(
                     diff[options._const.from],
-                    diff[options._const.groupLength],
+                    diff[options._const.groupLength]
                 )
                 .reverse()
             nodeArray.forEach((movedNode: nodeType) =>
-                node.childNodes.splice(diff[options._const.to], 0, movedNode),
+                node.childNodes.splice(diff[options._const.to], 0, movedNode)
             )
             if (node.subsets) {
                 node.subsets.forEach((map: subsetType) => {
@@ -321,7 +321,7 @@ function applyVirtualDiff(
 
     if (node.subsets) {
         node.subsets = node.subsets.filter(
-            (map: subsetType) => !map.delete && map.oldValue !== map.newValue,
+            (map: subsetType) => !map.delete && map.oldValue !== map.newValue
         )
         if (newSubsets.length) {
             node.subsets = node.subsets.concat(newSubsets)
@@ -340,7 +340,7 @@ function applyVirtualDiff(
 export function applyVirtual(
     tree: elementNodeType,
     diffs: Diff[],
-    options: DiffDOMOptions,
+    options: DiffDOMOptions
 ) {
     diffs.forEach((diff: Diff) => {
         applyVirtualDiff(tree, diff, options)

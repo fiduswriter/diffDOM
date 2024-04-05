@@ -4,7 +4,7 @@ import { checkElementType } from "../helpers"
 export function objToNode(
     objNode: elementNodeType,
     insideSvg: boolean,
-    options: DiffDOMOptions,
+    options: DiffDOMOptions
 ) {
     let node: Element | Text | Comment
     if (objNode.nodeName === "#text") {
@@ -15,7 +15,7 @@ export function objToNode(
         if (insideSvg) {
             node = options.document.createElementNS(
                 "http://www.w3.org/2000/svg",
-                objNode.nodeName,
+                objNode.nodeName
             )
             if (objNode.nodeName === "foreignObject") {
                 insideSvg = false
@@ -23,7 +23,7 @@ export function objToNode(
         } else if (objNode.nodeName.toLowerCase() === "svg") {
             node = options.document.createElementNS(
                 "http://www.w3.org/2000/svg",
-                "svg",
+                "svg"
             )
             insideSvg = true
         } else {
@@ -31,14 +31,14 @@ export function objToNode(
         }
         if (objNode.attributes) {
             Object.entries(objNode.attributes).forEach(([key, value]) =>
-                (node as Element).setAttribute(key, value),
+                (node as Element).setAttribute(key, value)
             )
         }
         if (objNode.childNodes) {
             node = node as Element
             objNode.childNodes.forEach(
                 (childNode: elementNodeType | textNodeType) =>
-                    node.appendChild(objToNode(childNode, insideSvg, options)),
+                    node.appendChild(objToNode(childNode, insideSvg, options))
             )
         }
         if (options.valueDiffing) {
@@ -53,7 +53,7 @@ export function objToNode(
                     "HTMLMeterElement",
                     "HTMLOptionElement",
                     "HTMLProgressElement",
-                    "HTMLParamElement",
+                    "HTMLParamElement"
                 )
             ) {
                 ;(

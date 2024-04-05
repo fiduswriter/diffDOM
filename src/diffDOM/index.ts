@@ -23,7 +23,7 @@ const DEFAULT_OPTIONS = {
         node: textNodeType,
         currentValue: string,
         expectedValue: string,
-        newValue: string,
+        newValue: string
     ) {
         node.data = newValue
         return
@@ -92,7 +92,7 @@ export class DiffDOM {
             const constNames: ConstNamesPartial = {}
             if (options.compress) {
                 varNames.forEach(
-                    (varName, index) => (constNames[varName] = index),
+                    (varName, index) => (constNames[varName] = index)
                 )
             } else {
                 varNames.forEach((varName) => (constNames[varName] = varName))
@@ -113,7 +113,7 @@ export class DiffDOM {
 
     diff(
         t1Node: string | elementNodeType | Element,
-        t2Node: string | elementNodeType | Element,
+        t2Node: string | elementNodeType | Element
     ) {
         const finder = new DiffFinder(t1Node, t2Node, this.options)
         return finder.init()
