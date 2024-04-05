@@ -35,7 +35,7 @@ export class DiffFinder {
     constructor(
         t1Node: string | elementNodeType | Element,
         t2Node: string | elementNodeType | Element,
-        options: DiffDOMOptions
+        options: DiffDOMOptions,
     ) {
         this.options = options
         this.t1 = (
@@ -43,16 +43,16 @@ export class DiffFinder {
             checkElementType(t1Node, "Element")
                 ? nodeToObj(t1Node as Element, this.options)
                 : typeof t1Node === "string"
-                ? stringToObj(t1Node, this.options)
-                : JSON.parse(JSON.stringify(t1Node))
+                  ? stringToObj(t1Node, this.options)
+                  : JSON.parse(JSON.stringify(t1Node))
         ) as elementDiffNodeType
         this.t2 = (
             typeof Element !== "undefined" &&
             checkElementType(t2Node, "Element")
                 ? nodeToObj(t2Node as Element, this.options)
                 : typeof t2Node === "string"
-                ? stringToObj(t2Node, this.options)
-                : JSON.parse(JSON.stringify(t2Node))
+                  ? stringToObj(t2Node, this.options)
+                  : JSON.parse(JSON.stringify(t2Node))
         ) as elementDiffNodeType
         this.diffcount = 0
         this.foundAll = false
@@ -62,15 +62,15 @@ export class DiffFinder {
                 checkElementType(t1Node, "Element")
                     ? nodeToObj(t1Node as Element, this.options)
                     : typeof t1Node === "string"
-                    ? stringToObj(t1Node, this.options)
-                    : JSON.parse(JSON.stringify(t1Node))
+                      ? stringToObj(t1Node, this.options)
+                      : JSON.parse(JSON.stringify(t1Node))
             this.t2Orig =
                 typeof Element !== "undefined" &&
                 checkElementType(t2Node, "Element")
                     ? nodeToObj(t2Node as Element, this.options)
                     : typeof t2Node === "string"
-                    ? stringToObj(t2Node, this.options)
-                    : JSON.parse(JSON.stringify(t2Node))
+                      ? stringToObj(t2Node, this.options)
+                      : JSON.parse(JSON.stringify(t2Node))
         }
 
         this.tracker = new DiffTracker()
@@ -88,8 +88,8 @@ export class DiffFinder {
                 if (this.diffcount > this.options.diffcap) {
                     throw new Error(
                         `surpassed diffcap:${JSON.stringify(
-                            this.t1Orig
-                        )} -> ${JSON.stringify(this.t2Orig)}`
+                            this.t1Orig,
+                        )} -> ${JSON.stringify(this.t2Orig)}`,
                     )
                 }
             }
@@ -189,7 +189,7 @@ export class DiffFinder {
                 new Diff()
                     .setValue(
                         this.options._const.action,
-                        this.options._const.replaceElement
+                        this.options._const.replaceElement,
                     )
                     .setValue(this.options._const.oldValue, cleanNode(t1))
                     .setValue(this.options._const.newValue, cleanNode(t2))
@@ -200,14 +200,14 @@ export class DiffFinder {
             route.length &&
             this.options.diffcap <
                 Math.abs(
-                    (t1.childNodes || []).length - (t2.childNodes || []).length
+                    (t1.childNodes || []).length - (t2.childNodes || []).length,
                 )
         ) {
             return [
                 new Diff()
                     .setValue(
                         this.options._const.action,
-                        this.options._const.replaceElement
+                        this.options._const.replaceElement,
                     )
                     .setValue(this.options._const.oldValue, cleanNode(t1))
                     .setValue(this.options._const.newValue, cleanNode(t2))
@@ -225,16 +225,16 @@ export class DiffFinder {
                     new Diff()
                         .setValue(
                             this.options._const.action,
-                            this.options._const.modifyTextElement
+                            this.options._const.modifyTextElement,
                         )
                         .setValue(this.options._const.route, route)
                         .setValue(
                             this.options._const.oldValue,
-                            (t1 as textDiffNodeType).data
+                            (t1 as textDiffNodeType).data,
                         )
                         .setValue(
                             this.options._const.newValue,
-                            (t2 as textDiffNodeType).data
+                            (t2 as textDiffNodeType).data,
                         ),
                 ]
             } else {
@@ -242,16 +242,16 @@ export class DiffFinder {
                     new Diff()
                         .setValue(
                             this.options._const.action,
-                            this.options._const.modifyComment
+                            this.options._const.modifyComment,
                         )
                         .setValue(this.options._const.route, route)
                         .setValue(
                             this.options._const.oldValue,
-                            (t1 as textDiffNodeType).data
+                            (t1 as textDiffNodeType).data,
                         )
                         .setValue(
                             this.options._const.newValue,
-                            (t2 as textDiffNodeType).data
+                            (t2 as textDiffNodeType).data,
                         ),
                 ]
             }
@@ -272,14 +272,14 @@ export class DiffFinder {
                     new Diff()
                         .setValue(
                             this.options._const.action,
-                            this.options._const.removeAttribute
+                            this.options._const.removeAttribute,
                         )
                         .setValue(this.options._const.route, route)
                         .setValue(this.options._const.name, attr)
                         .setValue(
                             this.options._const.value,
-                            t1.attributes[attr]
-                        )
+                            t1.attributes[attr],
+                        ),
                 )
             } else {
                 attr2.splice(pos, 1)
@@ -288,18 +288,18 @@ export class DiffFinder {
                         new Diff()
                             .setValue(
                                 this.options._const.action,
-                                this.options._const.modifyAttribute
+                                this.options._const.modifyAttribute,
                             )
                             .setValue(this.options._const.route, route)
                             .setValue(this.options._const.name, attr)
                             .setValue(
                                 this.options._const.oldValue,
-                                t1.attributes[attr]
+                                t1.attributes[attr],
                             )
                             .setValue(
                                 this.options._const.newValue,
-                                t2.attributes[attr]
-                            )
+                                t2.attributes[attr],
+                            ),
                     )
                 }
             }
@@ -312,11 +312,11 @@ export class DiffFinder {
                 new Diff()
                     .setValue(
                         this.options._const.action,
-                        this.options._const.addAttribute
+                        this.options._const.addAttribute,
                     )
                     .setValue(this.options._const.route, route)
                     .setValue(this.options._const.name, attr)
-                    .setValue(this.options._const.value, t2.attributes[attr])
+                    .setValue(this.options._const.value, t2.attributes[attr]),
             )
         }
 
@@ -326,13 +326,13 @@ export class DiffFinder {
     findInnerDiff(
         t1: elementDiffNodeType,
         t2: elementDiffNodeType,
-        route: number[]
+        route: number[],
     ) {
         const t1ChildNodes = t1.childNodes ? t1.childNodes.slice() : []
         const t2ChildNodes = t2.childNodes ? t2.childNodes.slice() : []
         const last = Math.max(t1ChildNodes.length, t2ChildNodes.length)
         let childNodesLengthDifference = Math.abs(
-            t1ChildNodes.length - t2ChildNodes.length
+            t1ChildNodes.length - t2ChildNodes.length,
         )
         let diffs: Diff[] = []
         let index = 0
@@ -341,8 +341,8 @@ export class DiffFinder {
             const subtrees = cachedSubtrees
                 ? t1.subsets
                 : t1.childNodes && t2.childNodes
-                ? markSubTrees(t1, t2)
-                : []
+                  ? markSubTrees(t1, t2)
+                  : []
             if (subtrees.length > 0) {
                 /* One or more groups have been identified among the childnodes of t1
                  * and t2.
@@ -352,7 +352,7 @@ export class DiffFinder {
                     t2,
                     subtrees,
                     route,
-                    cachedSubtrees
+                    cachedSubtrees,
                 )
                 if (diffs.length > 0) {
                     return diffs
@@ -380,16 +380,16 @@ export class DiffFinder {
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.removeTextElement
+                                    this.options._const.removeTextElement,
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index)
+                                    route.concat(index),
                                 )
                                 .setValue(
                                     this.options._const.value,
-                                    (e1 as textDiffNodeType).data
-                                )
+                                    (e1 as textDiffNodeType).data,
+                                ),
                         )
                         index -= 1
                     } else {
@@ -397,16 +397,16 @@ export class DiffFinder {
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.removeElement
+                                    this.options._const.removeElement,
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index)
+                                    route.concat(index),
                                 )
                                 .setValue(
                                     this.options._const.element,
-                                    cleanNode(e1)
-                                )
+                                    cleanNode(e1),
+                                ),
                         )
                         index -= 1
                     }
@@ -416,32 +416,32 @@ export class DiffFinder {
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.addTextElement
+                                    this.options._const.addTextElement,
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index)
+                                    route.concat(index),
                                 )
                                 .setValue(
                                     this.options._const.value,
-                                    (e2 as textDiffNodeType).data
-                                )
+                                    (e2 as textDiffNodeType).data,
+                                ),
                         )
                     } else {
                         diffs.push(
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.addElement
+                                    this.options._const.addElement,
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index)
+                                    route.concat(index),
                                 )
                                 .setValue(
                                     this.options._const.element,
-                                    cleanNode(e2)
-                                )
+                                    cleanNode(e2),
+                                ),
                         )
                     }
                 }
@@ -460,7 +460,7 @@ export class DiffFinder {
                     last < this.options.maxChildCount
                 ) {
                     diffs = diffs.concat(
-                        this.findNextDiff(e1, e2, route.concat(index))
+                        this.findNextDiff(e1, e2, route.concat(index)),
                     )
                 } else if (!isEqual(e1, e2)) {
                     if (t1ChildNodes.length > t2ChildNodes.length) {
@@ -469,32 +469,32 @@ export class DiffFinder {
                                 new Diff()
                                     .setValue(
                                         this.options._const.action,
-                                        this.options._const.removeTextElement
+                                        this.options._const.removeTextElement,
                                     )
                                     .setValue(
                                         this.options._const.route,
-                                        route.concat(index)
+                                        route.concat(index),
                                     )
                                     .setValue(
                                         this.options._const.value,
-                                        (e1 as textDiffNodeType).data
-                                    )
+                                        (e1 as textDiffNodeType).data,
+                                    ),
                             )
                         } else {
                             diffs.push(
                                 new Diff()
                                     .setValue(
                                         this.options._const.action,
-                                        this.options._const.removeElement
+                                        this.options._const.removeElement,
                                     )
                                     .setValue(
                                         this.options._const.element,
-                                        cleanNode(e1)
+                                        cleanNode(e1),
                                     )
                                     .setValue(
                                         this.options._const.route,
-                                        route.concat(index)
-                                    )
+                                        route.concat(index),
+                                    ),
                             )
                         }
                         t1ChildNodes.splice(i, 1)
@@ -507,15 +507,15 @@ export class DiffFinder {
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.addElement
+                                    this.options._const.addElement,
                                 )
                                 .setValue(
                                     this.options._const.element,
-                                    cleanNode(e2)
+                                    cleanNode(e2),
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index)
+                                    route.concat(index),
                                 ),
                         ])
                         t1ChildNodes.splice(i, 0, cleanNode(e2))
@@ -525,19 +525,19 @@ export class DiffFinder {
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.replaceElement
+                                    this.options._const.replaceElement,
                                 )
                                 .setValue(
                                     this.options._const.oldValue,
-                                    cleanNode(e1)
+                                    cleanNode(e1),
                                 )
                                 .setValue(
                                     this.options._const.newValue,
-                                    cleanNode(e2)
+                                    cleanNode(e2),
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index)
+                                    route.concat(index),
                                 ),
                         ])
                     }
@@ -554,7 +554,7 @@ export class DiffFinder {
         t2: elementDiffNodeType,
         subtrees: subsetType[],
         route: number[],
-        cachedSubtrees: boolean
+        cachedSubtrees: boolean,
     ) {
         /* Either t1.childNodes and t2.childNodes have the same length, or
          * there are at least two groups of similar elements can be found.
@@ -616,15 +616,15 @@ export class DiffFinder {
                                         .setValue(
                                             this.options._const.action,
                                             this.options._const
-                                                .modifyTextElement
+                                                .modifyTextElement,
                                         )
                                         .setValue(
                                             this.options._const.route,
-                                            route.concat(index1)
+                                            route.concat(index1),
                                         )
                                         .setValue(
                                             this.options._const.oldValue,
-                                            node.data
+                                            node.data,
                                         )
                                         .setValue(
                                             this.options._const.newValue,
@@ -632,8 +632,8 @@ export class DiffFinder {
                                                 t2ChildNodes[
                                                     index2
                                                 ] as textDiffNodeType
-                                            ).data
-                                        )
+                                            ).data,
+                                        ),
                                     // t1ChildNodes at position index1 is not up-to-date, but that does not matter as
                                     // index1 will increase +1
                                 )
@@ -644,13 +644,13 @@ export class DiffFinder {
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.removeTextElement
+                                    this.options._const.removeTextElement,
                                 )
                                 .setValue(
                                     this.options._const.route,
-                                    route.concat(index1)
+                                    route.concat(index1),
                                 )
-                                .setValue(this.options._const.value, node.data)
+                                .setValue(this.options._const.value, node.data),
                         )
                         gaps1.splice(index1, 1)
                         t1ChildNodes.splice(index1, 1)
@@ -665,20 +665,20 @@ export class DiffFinder {
                         new Diff()
                             .setValue(
                                 this.options._const.action,
-                                this.options._const.replaceElement
+                                this.options._const.replaceElement,
                             )
                             .setValue(
                                 this.options._const.oldValue,
-                                cleanNode(node)
+                                cleanNode(node),
                             )
                             .setValue(
                                 this.options._const.newValue,
-                                cleanNode(t2ChildNodes[index2])
+                                cleanNode(t2ChildNodes[index2]),
                             )
                             .setValue(
                                 this.options._const.route,
-                                route.concat(index1)
-                            )
+                                route.concat(index1),
+                            ),
                     )
                     // t1ChildNodes at position index1 is not up-to-date, but that does not matter as
                     // index1 will increase +1
@@ -687,16 +687,16 @@ export class DiffFinder {
                         new Diff()
                             .setValue(
                                 this.options._const.action,
-                                this.options._const.removeElement
+                                this.options._const.removeElement,
                             )
                             .setValue(
                                 this.options._const.route,
-                                route.concat(index1)
+                                route.concat(index1),
                             )
                             .setValue(
                                 this.options._const.element,
-                                cleanNode(node)
-                            )
+                                cleanNode(node),
+                            ),
                     )
                     gaps1.splice(index1, 1)
                     t1ChildNodes.splice(index1, 1)
@@ -711,13 +711,13 @@ export class DiffFinder {
                         new Diff()
                             .setValue(
                                 this.options._const.action,
-                                this.options._const.addTextElement
+                                this.options._const.addTextElement,
                             )
                             .setValue(
                                 this.options._const.route,
-                                route.concat(index1)
+                                route.concat(index1),
                             )
-                            .setValue(this.options._const.value, node.data)
+                            .setValue(this.options._const.value, node.data),
                     )
                     gaps1.splice(index1, 0, true)
                     t1ChildNodes.splice(index1, 0, {
@@ -731,16 +731,16 @@ export class DiffFinder {
                         new Diff()
                             .setValue(
                                 this.options._const.action,
-                                this.options._const.addElement
+                                this.options._const.addElement,
                             )
                             .setValue(
                                 this.options._const.route,
-                                route.concat(index1)
+                                route.concat(index1),
                             )
                             .setValue(
                                 this.options._const.element,
-                                cleanNode(node)
-                            )
+                                cleanNode(node),
+                            ),
                     )
                     gaps1.splice(index1, 0, true)
                     t1ChildNodes.splice(index1, 0, cleanNode(node))
@@ -755,7 +755,7 @@ export class DiffFinder {
                 group = subtrees[gaps1[index1] as number]
                 toGroup = Math.min(
                     group.newValue,
-                    t1ChildNodes.length - group.length
+                    t1ChildNodes.length - group.length,
                 )
                 if (toGroup !== group.oldValue) {
                     // Check whether destination nodes are different than originating ones.
@@ -767,7 +767,7 @@ export class DiffFinder {
                                 t1ChildNodes[group.oldValue + j],
                                 {},
                                 false,
-                                true
+                                true,
                             )
                         ) {
                             destinationDifferent = true
@@ -778,15 +778,15 @@ export class DiffFinder {
                             new Diff()
                                 .setValue(
                                     this.options._const.action,
-                                    this.options._const.relocateGroup
+                                    this.options._const.relocateGroup,
                                 )
                                 .setValue(
                                     this.options._const.groupLength,
-                                    group.length
+                                    group.length,
                                 )
                                 .setValue(
                                     this.options._const.from,
-                                    group.oldValue
+                                    group.oldValue,
                                 )
                                 .setValue(this.options._const.to, toGroup)
                                 .setValue(this.options._const.route, route),
@@ -801,7 +801,7 @@ export class DiffFinder {
     findValueDiff(
         t1: elementDiffNodeType,
         t2: elementDiffNodeType,
-        route: number[]
+        route: number[],
     ) {
         // Differences of value. Only useful if the value/selection/checked value
         // differs from what is represented in the DOM. For example in the case
@@ -813,11 +813,11 @@ export class DiffFinder {
                 new Diff()
                     .setValue(
                         this.options._const.action,
-                        this.options._const.modifySelected
+                        this.options._const.modifySelected,
                     )
                     .setValue(this.options._const.oldValue, t1.selected)
                     .setValue(this.options._const.newValue, t2.selected)
-                    .setValue(this.options._const.route, route)
+                    .setValue(this.options._const.route, route),
             )
         }
 
@@ -830,11 +830,11 @@ export class DiffFinder {
                 new Diff()
                     .setValue(
                         this.options._const.action,
-                        this.options._const.modifyValue
+                        this.options._const.modifyValue,
                     )
                     .setValue(this.options._const.oldValue, t1.value || "")
                     .setValue(this.options._const.newValue, t2.value || "")
-                    .setValue(this.options._const.route, route)
+                    .setValue(this.options._const.route, route),
             )
         }
         if (t1.checked !== t2.checked) {
@@ -842,11 +842,11 @@ export class DiffFinder {
                 new Diff()
                     .setValue(
                         this.options._const.action,
-                        this.options._const.modifyChecked
+                        this.options._const.modifyChecked,
                     )
                     .setValue(this.options._const.oldValue, t1.checked)
                     .setValue(this.options._const.newValue, t2.checked)
-                    .setValue(this.options._const.route, route)
+                    .setValue(this.options._const.route, route),
             )
         }
 

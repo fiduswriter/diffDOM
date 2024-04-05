@@ -17,7 +17,7 @@ export class Diff {
             | boolean
             | number[]
             | { [key: string]: string | { [key: string]: string } }
-            | elementNodeType
+            | elementNodeType,
     ) {
         this[aKey] = aValue
         return this
@@ -35,6 +35,6 @@ export function checkElementType(element, ...elementTypeNames: string[]) {
             typeof element?.ownerDocument?.defaultView?.[elementTypeName] ===
                 "function" &&
             element instanceof
-                element.ownerDocument.defaultView[elementTypeName]
+                element.ownerDocument.defaultView[elementTypeName],
     )
 }

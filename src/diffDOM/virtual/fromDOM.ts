@@ -3,7 +3,7 @@ import { checkElementType } from "../helpers"
 
 export function nodeToObj(
     aNode: Element,
-    options: DiffDOMOptionsPartial = { valueDiffing: true }
+    options: DiffDOMOptionsPartial = { valueDiffing: true },
 ) {
     const objNode: elementNodeType | textNodeType = {
         nodeName: aNode.nodeName,
@@ -18,14 +18,14 @@ export function nodeToObj(
             const nodeArray = Array.prototype.slice.call(aNode.attributes)
             nodeArray.forEach(
                 (attribute) =>
-                    (objNode.attributes[attribute.name] = attribute.value)
+                    (objNode.attributes[attribute.name] = attribute.value),
             )
         }
         if (aNode.childNodes && aNode.childNodes.length > 0) {
             objNode.childNodes = []
             const nodeArray = Array.prototype.slice.call(aNode.childNodes)
             nodeArray.forEach((childNode) =>
-                objNode.childNodes.push(nodeToObj(childNode, options))
+                objNode.childNodes.push(nodeToObj(childNode, options)),
             )
         }
         if (options.valueDiffing) {
@@ -35,7 +35,7 @@ export function nodeToObj(
             if (
                 checkElementType(aNode, "HTMLInputElement") &&
                 ["radio", "checkbox"].includes(
-                    (aNode as HTMLInputElement).type.toLowerCase()
+                    (aNode as HTMLInputElement).type.toLowerCase(),
                 ) &&
                 (aNode as HTMLInputElement).checked !== undefined
             ) {
@@ -50,7 +50,7 @@ export function nodeToObj(
                     "HTMLMeterElement",
                     "HTMLOptionElement",
                     "HTMLProgressElement",
-                    "HTMLParamElement"
+                    "HTMLParamElement",
                 )
             ) {
                 objNode.value = (
