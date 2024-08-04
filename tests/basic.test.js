@@ -567,12 +567,65 @@ const html = `
 <div class="flower">ROSE</div>
 <div id="tree"></div>
 <script src="script.js"></script></div>
+
+<div><b class="test-c"><b class="test-0">
+
+    <b class="test-1">
+
+
+                <span>XX</span>
+
+
+
+                <span>XX</span>
+
+
+
+                <span>XX</span>
+
+
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+
+    </b></b></b></div>
+
+
+<div><b class="test-c"><b class="test-0">
+
+    <b class="test-1">
+
+
+                <span>XX</span>
+
+
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+                <span>XX</span>
+
+
+    </b></b></b></div>
 `
 
 const caps = [
     1, 1, 1, 27, 2, 5, 3, 1, 4, 1, 11, 4, 4, 4, 2, 3, 5, 1, 3, 3, 6, 1, 2, 3, 2,
     2, 1, 4, 1, 3, 2, 10, 4, 15, 3, 13, 15, 1, 1, 3, 17, 12, 10, 10, 2, 1, 1, 1,
-    30, 7, 20, 1, 1, 3, 2, 111, 8, 3, 8, 3,
+    30, 7, 20, 1, 1, 3, 2, 111, 8, 3, 8, 3, 16
 ]
 
 describe("basic", () => {
@@ -600,6 +653,6 @@ describe("basic", () => {
                 t1.isEqualNode(divs[i]) || t1.innerHTML === divs[i].innerHTML
             ).toBe(true)
         }
-        expect(totalDiffs).toBeLessThanOrEqual(408)
+        expect(totalDiffs).toBeLessThanOrEqual(424)
     })
 })

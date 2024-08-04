@@ -757,7 +757,7 @@ export class DiffFinder {
                     group.newValue,
                     t1ChildNodes.length - group.length,
                 )
-                if (toGroup !== group.oldValue) {
+                if (toGroup !== group.oldValue && toGroup > -1) {
                     // Check whether destination nodes are different than originating ones.
                     destinationDifferent = false
                     for (let j = 0; j < group.length; j += 1) {
