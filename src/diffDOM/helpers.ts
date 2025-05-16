@@ -28,13 +28,10 @@ export function checkElementType(element, ...elementTypeNames: string[]) {
     if (typeof element === "undefined" || element === null) {
         return false
     }
-    return elementTypeNames.some(
-        (elementTypeName) =>
-            // We need to check if the specified type is defined
-            // because otherwise instanceof throws an exception.
-            typeof element?.ownerDocument?.defaultView?.[elementTypeName] ===
-                "function" &&
-            element instanceof
-                element.ownerDocument.defaultView[elementTypeName],
-    )
+    return elementTypeNames.some((elementTypeName) => {
+        const typeIsDefined = typeof window[elementTypeName] === "function"
+        const elementIsThisType = element instanceof window[elementTypeName]
+
+        return typeIsDefined && elementIsThisType
+    })
 }

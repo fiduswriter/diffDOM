@@ -35,14 +35,13 @@ describe("parsing", () => {
             htmlDocument.body.childNodes[1].childNodes[1].childNodes[1]
                 .textContent
 
-        console.log(h1TextContentInParsedDocument)
+        // Sanity check: Ensure the text we want to check actually exists
+        expect(h1TextContentInParsedDocument).toEqual(h1TextContent)
 
         const documentObject = nodeToObj(htmlDocument.body)
         const h1Object =
             documentObject.childNodes[1].childNodes[1].childNodes[1]
                 .childNodes[0]
-
-        console.log(h1Object)
 
         expect(h1Object.data).toEqual(h1TextContent)
     })
