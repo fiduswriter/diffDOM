@@ -40,7 +40,11 @@ export class DiffFinder {
         this.options = options
         this.t1 = (
             typeof Element !== "undefined" &&
-            checkElementType(t1Node, this.options.simplifiedElementCheck, "Element")
+            checkElementType(
+                t1Node,
+                this.options.simplifiedElementCheck,
+                "Element",
+            )
                 ? nodeToObj(t1Node as Element, this.options)
                 : typeof t1Node === "string"
                   ? stringToObj(t1Node, this.options)
@@ -48,7 +52,11 @@ export class DiffFinder {
         ) as elementDiffNodeType
         this.t2 = (
             typeof Element !== "undefined" &&
-            checkElementType(t2Node, this.options.simplifiedElementCheck, "Element")
+            checkElementType(
+                t2Node,
+                this.options.simplifiedElementCheck,
+                "Element",
+            )
                 ? nodeToObj(t2Node as Element, this.options)
                 : typeof t2Node === "string"
                   ? stringToObj(t2Node, this.options)
@@ -59,14 +67,22 @@ export class DiffFinder {
         if (this.debug) {
             this.t1Orig =
                 typeof Element !== "undefined" &&
-                checkElementType(t1Node, this.options.simplifiedElementCheck, "Element")
+                checkElementType(
+                    t1Node,
+                    this.options.simplifiedElementCheck,
+                    "Element",
+                )
                     ? nodeToObj(t1Node as Element, this.options)
                     : typeof t1Node === "string"
                       ? stringToObj(t1Node, this.options)
                       : JSON.parse(JSON.stringify(t1Node))
             this.t2Orig =
                 typeof Element !== "undefined" &&
-                checkElementType(t2Node, this.options.simplifiedElementCheck, "Element")
+                checkElementType(
+                    t2Node,
+                    this.options.simplifiedElementCheck,
+                    "Element",
+                )
                     ? nodeToObj(t2Node as Element, this.options)
                     : typeof t2Node === "string"
                       ? stringToObj(t2Node, this.options)

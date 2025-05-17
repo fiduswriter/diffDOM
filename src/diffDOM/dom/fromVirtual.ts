@@ -69,12 +69,23 @@ export function objToNode(
                         | HTMLParamElement
                 ).value = objNode.value
             }
-            if (objNode.checked && checkElementType(node, options.simplifiedElementCheck, "HTMLInputElement")) {
+            if (
+                objNode.checked &&
+                checkElementType(
+                    node,
+                    options.simplifiedElementCheck,
+                    "HTMLInputElement",
+                )
+            ) {
                 ;(node as HTMLInputElement).checked = objNode.checked
             }
             if (
                 objNode.selected &&
-                checkElementType(node, options.simplifiedElementCheck, "HTMLOptionElement")
+                checkElementType(
+                    node,
+                    options.simplifiedElementCheck,
+                    "HTMLOptionElement",
+                )
             ) {
                 ;(node as HTMLOptionElement).selected = objNode.selected
             }

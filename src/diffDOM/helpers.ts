@@ -32,7 +32,11 @@ export class Diff {
  * @param simplifiedCheck If true, uses simplified checking based on nodeName/nodeType
  * @returns boolean indicating if the element matches any of the specified types
  */
-export function checkElementType(element, simplifiedCheck = false, ...elementTypeNames: string[]) {
+export function checkElementType(
+    element,
+    simplifiedCheck = false,
+    ...elementTypeNames: string[]
+) {
     if (typeof element === "undefined" || element === null) {
         return false
     }
@@ -42,28 +46,34 @@ export function checkElementType(element, simplifiedCheck = false, ...elementTyp
         return elementTypeNames.some((elementTypeName) => {
             // Special case for basic element types
             if (elementTypeName === "Element") {
-                return element.nodeType === 1 ||
-                       (typeof element.nodeName === "string" &&
+                return (
+                    element.nodeType === 1 ||
+                    (typeof element.nodeName === "string" &&
                         element.nodeName !== "#text" &&
-                        element.nodeName !== "#comment");
+                        element.nodeName !== "#comment")
+                )
             }
             if (elementTypeName === "Text") {
-                return element.nodeType === 3 ||
-                       element.nodeName === "#text";
+                return element.nodeType === 3 || element.nodeName === "#text"
             }
             if (elementTypeName === "Comment") {
-                return element.nodeType === 8 ||
-                       element.nodeName === "#comment";
+                return element.nodeType === 8 || element.nodeName === "#comment"
             }
 
             // For HTML element types, check nodeName
-            if (elementTypeName.startsWith("HTML") && elementTypeName.endsWith("Element")) {
-                const tagName = elementTypeName.slice(4, -7).toLowerCase();
-                return (element.nodeName && element.nodeName.toLowerCase() === tagName);
+            if (
+                elementTypeName.startsWith("HTML") &&
+                elementTypeName.endsWith("Element")
+            ) {
+                const tagName = elementTypeName.slice(4, -7).toLowerCase()
+                return (
+                    element.nodeName &&
+                    element.nodeName.toLowerCase() === tagName
+                )
             }
 
-            return false;
-        });
+            return false
+        })
     }
 
     // DOM-based check
