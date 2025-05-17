@@ -51,7 +51,7 @@ export function applyDiff(
 
     switch (action) {
         case options._const.addAttribute:
-            if (!node || !checkElementType(node, "Element")) {
+            if (!node || !checkElementType(node, options.simplifiedElementCheck, "Element")) {
                 return false
             }
             node.setAttribute(
@@ -60,7 +60,7 @@ export function applyDiff(
             )
             break
         case options._const.modifyAttribute:
-            if (!node || !checkElementType(node, "Element")) {
+            if (!node || !checkElementType(node, options.simplifiedElementCheck, "Element")) {
                 return false
             }
             node.setAttribute(
@@ -68,20 +68,20 @@ export function applyDiff(
                 diff[options._const.newValue] as string,
             )
             if (
-                checkElementType(node, "HTMLInputElement") &&
+                checkElementType(node, options.simplifiedElementCheck, "HTMLInputElement") &&
                 diff[options._const.name] === "value"
             ) {
                 node.value = diff[options._const.newValue] as string
             }
             break
         case options._const.removeAttribute:
-            if (!node || !checkElementType(node, "Element")) {
+            if (!node || !checkElementType(node, options.simplifiedElementCheck, "Element")) {
                 return false
             }
             node.removeAttribute(diff[options._const.name] as string)
             break
         case options._const.modifyTextElement:
-            if (!node || !checkElementType(node, "Text")) {
+            if (!node || !checkElementType(node, options.simplifiedElementCheck, "Text")) {
                 return false
             }
             options.textDiff(
@@ -90,7 +90,7 @@ export function applyDiff(
                 diff[options._const.oldValue] as string,
                 diff[options._const.newValue] as string,
             )
-            if (checkElementType(node.parentNode, "HTMLTextAreaElement")) {
+            if (checkElementType(node.parentNode, options.simplifiedElementCheck, "HTMLTextAreaElement")) {
                 node.parentNode.value = diff[options._const.newValue] as string
             }
             break
@@ -101,7 +101,7 @@ export function applyDiff(
             node.value = diff[options._const.newValue]
             break
         case options._const.modifyComment:
-            if (!node || !checkElementType(node, "Comment")) {
+            if (!node || !checkElementType(node, options.simplifiedElementCheck, "Comment")) {
                 return false
             }
             options.textDiff(
@@ -161,7 +161,7 @@ export function applyDiff(
             const parentRoute = route.slice()
             const c: number = parentRoute.splice(parentRoute.length - 1, 1)[0]
             node = getFromRoute(tree, parentRoute)
-            if (!checkElementType(node, "Element")) {
+            if (!checkElementType(node, options.simplifiedElementCheck, "Element")) {
                 return false
             }
             node.insertBefore(
@@ -180,7 +180,7 @@ export function applyDiff(
             }
             const parentNode = node.parentNode
             parentNode.removeChild(node)
-            if (checkElementType(parentNode, "HTMLTextAreaElement")) {
+            if (checkElementType(parentNode, options.simplifiedElementCheck, "HTMLTextAreaElement")) {
                 parentNode.value = ""
             }
             break
@@ -196,7 +196,7 @@ export function applyDiff(
                 return false
             }
             node.insertBefore(newNode, node.childNodes[c] || null)
-            if (checkElementType(node.parentNode, "HTMLTextAreaElement")) {
+            if (checkElementType(node.parentNode, options.simplifiedElementCheck, "HTMLTextAreaElement")) {
                 node.parentNode.value = diff[options._const.value] as string
             }
             break

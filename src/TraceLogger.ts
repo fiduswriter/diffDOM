@@ -115,7 +115,8 @@ export class TraceLogger {
             if (typeof v === "string") {
                 return v
             }
-            if (checkElementType(v, "HTMLElement")) {
+            // Use simplified check for HTMLElement since this is outside the main diff process
+            if (checkElementType(v, true, "HTMLElement")) {
                 return (v as HTMLElement).outerHTML || "<empty>"
             }
             if (v instanceof Array) {

@@ -3,12 +3,12 @@ import { checkElementType } from "../helpers"
 
 export function nodeToObj(
     aNode: Element,
-    options: DiffDOMOptionsPartial = { valueDiffing: true },
+    options: DiffDOMOptionsPartial = { valueDiffing: true, simplifiedElementCheck: true },
 ) {
     const objNode: elementNodeType | textNodeType = {
         nodeName: aNode.nodeName,
     }
-    if (checkElementType(aNode, "Text", "Comment")) {
+    if (checkElementType(aNode, options.simplifiedElementCheck, "Text", "Comment")) {
         ;(objNode as unknown as textNodeType).data = (
             aNode as unknown as Text | Comment
         ).data
@@ -29,11 +29,11 @@ export function nodeToObj(
             )
         }
         if (options.valueDiffing) {
-            if (checkElementType(aNode, "HTMLTextAreaElement")) {
+            if (checkElementType(aNode, options.simplifiedElementCheck, "HTMLTextAreaElement")) {
                 objNode.value = (aNode as HTMLTextAreaElement).value
             }
             if (
-                checkElementType(aNode, "HTMLInputElement") &&
+                checkElementType(aNode, options.simplifiedElementCheck, "HTMLInputElement") &&
                 ["radio", "checkbox"].includes(
                     (aNode as HTMLInputElement).type.toLowerCase(),
                 ) &&
@@ -43,6 +43,7 @@ export function nodeToObj(
             } else if (
                 checkElementType(
                     aNode,
+                    options.simplifiedElementCheck,
                     "HTMLButtonElement",
                     "HTMLDataElement",
                     "HTMLInputElement",
@@ -65,7 +66,7 @@ export function nodeToObj(
                         | HTMLParamElement
                 ).value
             }
-            if (checkElementType(aNode, "HTMLOptionElement")) {
+            if (checkElementType(aNode, options.simplifiedElementCheck, "HTMLOptionElement")) {
                 objNode.selected = (aNode as HTMLOptionElement).selected
             }
         }
