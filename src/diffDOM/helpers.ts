@@ -55,7 +55,8 @@ export function checkElementType(
                     // Additional check for real DOM elements that might not have nodeType
                     (element.tagName && typeof element.tagName === "string") ||
                     // Check if it has DOM element-like properties (fallback)
-                    (element.setAttribute && typeof element.setAttribute === "function")
+                    (element.setAttribute &&
+                        typeof element.setAttribute === "function")
                 )
             }
             if (elementTypeName === "Text") {
@@ -81,23 +82,24 @@ export function checkElementType(
 
             return false
         })
-        
+
         // If simplified check succeeds, return true
         if (simplifiedResult) {
             return true
         }
-        
+
         // Fallback to DOM-based check if simplified check fails and element has ownerDocument
         if (element.ownerDocument) {
             return elementTypeNames.some(
                 (elementTypeName) =>
-                    typeof element?.ownerDocument?.defaultView?.[elementTypeName] ===
-                        "function" &&
+                    typeof element?.ownerDocument?.defaultView?.[
+                        elementTypeName
+                    ] === "function" &&
                     element instanceof
                         element.ownerDocument.defaultView[elementTypeName],
             )
         }
-        
+
         return false
     }
 
